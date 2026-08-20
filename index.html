@@ -216,9 +216,13 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="chart-box"><h3 style="margin:0 0 12px">Low Stock Items</h3><table class="low-list"><tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>${low.map(x=>`<tr><td>${esc(x.name)}</td><td class="low">${x.qty}</td><td>${esc(x.unit)}</td></tr>`).join('')||'<tr><td colspan="3">No low stock items.</td></tr>'}</table><button class="btn primary" style="width:100%;margin-top:12px" onclick="openPage('Stock')">View All Stock</button></div></div>
 </div>
 <aside class="today-summary"><h3>Today's Summary</h3>
+<div class="actions no-print" style="margin:0 0 8px">
+<button class="btn light" onclick="editTodaySummary()">✏️ Edit</button>
+<button class="btn success" onclick="updateTodaySummary()">💾 Update</button>
+</div>
 <div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b></div>
-<div class="summary-row"><span>Sales</span><b class="green">${money(todaySales)}</b></div>
-<div class="summary-row"><span>Purchase</span><b class="orange">${money(todayPurchase)}</b></div>
+<div class="summary-row"><span>Sales</span><b id="todaySalesVal" class="green">${money(todaySales)}</b></div>
+<div class="summary-row"><span>Purchase</span><b id="todayPurchaseVal" class="orange">${money(todayPurchase)}</b></div>
 <div class="summary-row"><span>Sales Return</span><b class="red">${money(todaySalesReturn)}</b></div>
 <div class="summary-row"><span>Purchase Return</span><b class="blue">${money(todayPurchaseReturn)}</b></div>
 <div class="summary-row"><span>Receipt Today</span><b class="green">${money(todayReceipts)}</b></div>
@@ -228,10 +232,57 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(rec)}</b></div>
 <div class="summary-row"><span>Pending Payable</span><b class="red">${money(pay)}</b></div>
 <div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b></div>
-<div class="summary-row"><span>Expected Profit</span><b class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b></div>
+<div class="summary-row"><span>Expected Profit</span><b id="todayProfitVal" class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b></div>
 </aside>
 </div><div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
 }
+
+function editTodaySummary(){
+  const today=new Date().toLocaleDateString('en-GB');
+  const todayTx=db.transactions.filter(x=>x.date===today);
+  const sales=todayTx.filter(x=>x.type==='Credit'&&/Invoice|Sales/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+  const purchase=todayTx.filter(x=>x.type==='Debit'&&/Purchase/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+  const rec=db.invoices.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.grand||0),0);
+  const pay=db.purchases.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.total||0),0);
+  const stockCost=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.rate)||0),0);
+  const stockSale=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
+  const profit=stockSale-stockCost;
+  const box=document.getElementById('modalbox');
+  box.innerHTML=`<h3>✏️ Edit Today's Summary</h3>
+  <p class="sub">Admin can manually adjust dashboard summary values. These values are stored separately from transactions.</p>
+  <div class="grid2">
+    <div class="field"><label>Sales</label><input id="etsales" type="number" value="${Number(localStorage.getItem('GP_TODAY_SALES_OVERRIDE')??sales)}"></div>
+    <div class="field"><label>Purchase</label><input id="etpurchase" type="number" value="${Number(localStorage.getItem('GP_TODAY_PURCHASE_OVERRIDE')??purchase)}"></div>
+    <div class="field"><label>Receivable</label><input id="etrec" type="number" value="${Number(localStorage.getItem('GP_TODAY_RECEIVABLE_OVERRIDE')??rec)}"></div>
+    <div class="field"><label>Payable</label><input id="etpay" type="number" value="${Number(localStorage.getItem('GP_TODAY_PAYABLE_OVERRIDE')??pay)}"></div>
+    <div class="field"><label>Stock Cost</label><input id="etscost" type="number" value="${Number(localStorage.getItem('GP_TODAY_STOCKCOST_OVERRIDE')??stockCost)}"></div>
+    <div class="field"><label>Stock Sale Value</label><input id="etssale" type="number" value="${Number(localStorage.getItem('GP_TODAY_STOCKSALE_OVERRIDE')??stockSale)}"></div>
+    <div class="field"><label>Expected Profit</label><input id="etprofit" type="number" value="${Number(localStorage.getItem('GP_TODAY_PROFIT_OVERRIDE')??profit)}"></div>
+  </div>
+  <div class="actions"><button class="btn success" onclick="updateTodaySummary()">💾 Update</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`;
+  document.getElementById('modal').classList.add('show');
+}
+function updateTodaySummary(){
+  const vals={
+    sales:document.getElementById('etsales')?.value,
+    purchase:document.getElementById('etpurchase')?.value,
+    rec:document.getElementById('etrec')?.value,
+    pay:document.getElementById('etpay')?.value,
+    scost:document.getElementById('etscost')?.value,
+    ssale:document.getElementById('etssale')?.value,
+    profit:document.getElementById('etprofit')?.value
+  };
+  if(!Object.values(vals).every(v=>v!==undefined && v!=='' && isFinite(Number(v)))){toast('Enter valid summary values');return;}
+  localStorage.setItem('GP_TODAY_SALES_OVERRIDE',vals.sales);
+  localStorage.setItem('GP_TODAY_PURCHASE_OVERRIDE',vals.purchase);
+  localStorage.setItem('GP_TODAY_RECEIVABLE_OVERRIDE',vals.rec);
+  localStorage.setItem('GP_TODAY_PAYABLE_OVERRIDE',vals.pay);
+  localStorage.setItem('GP_TODAY_STOCKCOST_OVERRIDE',vals.scost);
+  localStorage.setItem('GP_TODAY_STOCKSALE_OVERRIDE',vals.ssale);
+  localStorage.setItem('GP_TODAY_PROFIT_OVERRIDE',vals.profit);
+  closeModal(); dashboard(); toast('✅ Today’s Summary updated');
+}
+
 function billing(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing</h2>
 <div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Customer</label><select id="bc"><option value="">Walk-in Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
