@@ -87,6 +87,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .payment-panel{border:1px solid #ead8c7;background:#fffaf4}
 .payment-panel h3{margin:0 0 12px;color:#5a2b0b}
 .payment-summary{margin-top:10px;padding:10px;border-radius:8px;background:#f4eadf;font-weight:600}
+
+<style>
+.payment-panel .btn.primary{margin-top:10px}
+.payment-panel .payment-summary{display:inline-block;margin-right:10px}
+</style>
 </style>
 </style>
 </style>
@@ -152,6 +157,101 @@ function applyBillPaymentToInvoice(invoice){
   invoice.paymentNote=document.getElementById('billPaymentNote')?.value||'';
   invoice.paymentStatus=p.outstanding<=0 ? 'Paid' : (p.received>0 ? 'Part Paid' : 'Outstanding');
   return invoice;
+}
+
+
+/* === Firebase Payment Persistence === */
+async function saveInvoicePaymentToFirebase(invoice){
+  try{
+    const uid = (typeof firebase!=='undefined' && firebase.auth && firebase.auth().currentUser)
+      ? firebase.auth().currentUser.uid : null;
+
+    // Use an existing Firestore instance if the ERP has one.
+    let fs = null;
+    if(typeof dbFirebase!=='undefined') fs=dbFirebase;
+    else if(typeof firestore!=='undefined') fs=firestore;
+    else if(typeof firebase!=='undefined' && firebase.firestore) fs=firebase.firestore();
+
+    if(!fs) return false;
+
+    const invoiceId = String(invoice.id || invoice.invoiceNo || ('INV-'+Date.now()));
+    const payload = {
+      ...invoice,
+      paymentMode: invoice.paymentMode || 'Cash',
+      receivedAmount: Number(invoice.receivedAmount || 0),
+      outstandingAmount: Number(invoice.outstandingAmount || 0),
+      paymentStatus: invoice.paymentStatus || 'Outstanding',
+      paymentNote: invoice.paymentNote || '',
+      updatedAt: new Date().toISOString(),
+      updatedBy: uid || ''
+    };
+
+    // Prefer the ERP's existing invoices collection.
+    await fs.collection('invoices').doc(invoiceId).set(payload,{merge:true});
+    return true;
+  }catch(err){
+    console.warn('Firebase payment save failed:',err);
+    return false;
+  }
+}
+
+async function savePaymentAndInvoice(invoice){
+  const p=updateBillPayment();
+  invoice.paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
+  invoice.receivedAmount=Number(p.received||0);
+  invoice.outstandingAmount=Number(p.outstanding||0);
+  invoice.paymentNote=document.getElementById('billPaymentNote')?.value||'';
+  invoice.paymentStatus=p.outstanding<=0 ? 'Paid' : (p.received>0 ? 'Part Paid' : 'Outstanding');
+
+  // Local ERP record
+  try{
+    if(Array.isArray(db.invoices)){
+      const id=String(invoice.id||invoice.invoiceNo||'');
+      const idx=db.invoices.findIndex(x=>String(x.id||x.invoiceNo||'')===id);
+      if(idx>=0) db.invoices[idx]={...db.invoices[idx],...invoice};
+      else db.invoices.push(invoice);
+      localStorage.setItem(DBKEY,JSON.stringify(db));
+    }
+  }catch(e){ console.warn('Local invoice save failed:',e); }
+
+  // Firebase record
+  await saveInvoicePaymentToFirebase(invoice);
+  return invoice;
+}
+
+function restoreInvoicePayment(invoice){
+  if(!invoice)return;
+  const mode=document.getElementById('billPaymentMode');
+  const rec=document.getElementById('billReceivedAmount');
+  const out=document.getElementById('billOutstandingAmount');
+  const note=document.getElementById('billPaymentNote');
+  if(mode) mode.value=invoice.paymentMode||'Cash';
+  if(rec) rec.value=Number(invoice.receivedAmount||0);
+  if(out) out.value=Number(invoice.outstandingAmount||0).toFixed(2);
+  if(note) note.value=invoice.paymentNote||'';
+  updateBillPayment();
+}
+
+
+async function saveCurrentBillPayment(){
+  let invoice = null;
+  try{
+    if(typeof currentInvoice!=='undefined' && currentInvoice) invoice=currentInvoice;
+    else if(window.currentInvoice) invoice=window.currentInvoice;
+  }catch(e){}
+  if(!invoice){
+    invoice={
+      id:'INV-'+Date.now(),
+      invoiceNo:'INV-'+Date.now(),
+      customerName:document.getElementById('customerName')?.value||'',
+      mobile:document.getElementById('customerMobile')?.value||'',
+      address:document.getElementById('customerAddress')?.value||'',
+      total:getBillGrandTotal()
+    };
+  }
+  await savePaymentAndInvoice(invoice);
+  if(typeof toast==='function') toast('✅ Payment saved successfully');
+  else alert('Payment saved successfully');
 }
 
 </script>
@@ -636,7 +736,7 @@ function saleReturn(){document.getElementById('app').innerHTML=`<section class="
       <input id="billPaymentNote" placeholder="Cash / UPI reference / note">
     </div>
   </div>
-  <div class="payment-summary" id="billPaymentSummary">Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00</div>
+  <div class="payment-summary" id="billPaymentSummary">Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00</div><button class="btn primary" type="button" onclick="saveCurrentBillPayment()">💾 Save Payment</button>
 </div>
 <div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('sale')">Save Sales Return</button></div></section>`;addReturnRow('sale')}
 function purchaseReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↪️ Purchase Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Supplier</label><select id="prSupplier"><option value="">Select supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="prDate" type="date" value="${iso()}"></div><div class="field"><label>Bill Ref.</label><input id="prRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('purchase')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Purchase Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div><div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('purchase')">Save Purchase Return</button></div></section>`;addReturnRow('purchase')}
