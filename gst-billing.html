@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5b2a0b">
+<title>Ganesh Plywood - GST Billing</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#222}
+header{background:#5b2a0b;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:21px}header small{opacity:.85}
+.container{max-width:1000px;margin:auto;padding:14px}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #00000012}
+h2{font-size:18px;margin:0 0 12px;color:#5b2a0b}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+label{font-size:13px;font-weight:bold;display:block;margin-bottom:4px}
+input,select,button{font:inherit}input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;background:#fff}
+.table-wrap{overflow:auto}.items{width:100%;border-collapse:collapse;min-width:780px}.items th{background:#5b2a0b;color:#fff;padding:9px;font-size:13px}.items td{padding:6px;border-bottom:1px solid #eee}.items input{padding:8px}
+.right{text-align:right}.totals{max-width:420px;margin-left:auto}.row{display:flex;justify-content:space-between;padding:6px 0}.grand{font-size:20px;font-weight:bold;border-top:2px solid #5b2a0b;margin-top:6px;padding-top:10px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}.btn{border:0;border-radius:9px;padding:11px 16px;cursor:pointer;background:#5b2a0b;color:#fff}.green{background:#218838}.blue{background:#1769aa}.red{background:#c62828}.gray{background:#666}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{flex:1;min-width:130px}
+.note{font-size:12px;color:#666}.remove{background:#c62828;color:white;border:0;border-radius:6px;padding:7px 9px}
+.saved{max-height:250px;overflow:auto}.saved div{padding:9px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;gap:8px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.container{padding:9px}.card{padding:12px}}
+@media print{
+body{background:#fff}.no-print{display:none!important}.card{box-shadow:none;border:0;margin:0;padding:4px}
+header{background:#fff;color:#000;position:static;border-bottom:2px solid #000}
+.items th{background:#ddd;color:#000}.container{max-width:none}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>🧾 Ganesh Plywood — GST Billing</h1>
+<small>GST Invoice / Sales Bill</small>
+</header>
+
+<div class="container">
+<div class="card">
+<h2>Invoice & Customer</h2>
+<div class="grid">
+<div><label>Invoice No.</label><input id="invoiceNo"></div>
+<div><label>Date</label><input id="invoiceDate" type="date"></div>
+<div><label>Customer Name *</label><input id="customerName" placeholder="Customer name"></div>
+<div><label>Mobile</label><input id="mobile" inputmode="tel" placeholder="10 digit mobile"></div>
+<div><label>GSTIN</label><input id="gstin" placeholder="Optional"></div>
+<div><label>Place of Supply</label><input id="place" placeholder="Maharashtra"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Items</h2>
+<div class="table-wrap">
+<table class="items">
+<thead><tr>
+<th>Item</th><th>HSN</th><th>Qty</th><th>Unit</th><th>Rate ₹</th><th>Discount ₹</th><th>GST %</th><th>Amount ₹</th><th></th>
+</tr></thead>
+<tbody id="itemsBody"></tbody>
+</table>
+</div>
+<div class="btns no-print" style="margin-top:10px">
+<button class="btn" onclick="addItem()">+ Add Item</button>
+</div>
+</div>
+
+<div class="card">
+<h2>Tax & Payment</h2>
+<div class="grid">
+<div><label>Supply Type</label><select id="taxType" onchange="calculate()"><option value="intra">Intra-State (CGST + SGST)</option><option value="inter">Inter-State (IGST)</option></select></div>
+<div><label>Payment Mode</label><select id="paymentMode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Credit</option></select></div>
+</div>
+<div class="totals">
+<div class="row"><span>Subtotal</span><b id="subtotal">₹0.00</b></div>
+<div class="row"><span>Total Discount</span><b id="discount">₹0.00</b></div>
+<div class="row"><span>Taxable Amount</span><b id="taxable">₹0.00</b></div>
+<div class="row" id="cgstRow"><span>CGST</span><b id="cgst">₹0.00</b></div>
+<div class="row" id="sgstRow"><span>SGST</span><b id="sgst">₹0.00</b></div>
+<div class="row" id="igstRow" style="display:none"><span>IGST</span><b id="igst">₹0.00</b></div>
+<div class="row grand"><span>Grand Total</span><b id="grand">₹0.00</b></div>
+<div class="row"><span>Round Off</span><b id="round">₹0.00</b></div>
+</div>
+<p class="note">GST is calculated item-wise. For intra-state sales, GST is split equally into CGST and SGST. Verify HSN/GST rates and GSTIN before issuing a tax invoice.</p>
+</div>
+
+<div class="card no-print">
+<div class="actions">
+<button class="btn green" onclick="saveInvoice()">💾 Save Invoice</button>
+<button class="btn blue" onclick="printInvoice()">🖨️ Print / PDF</button>
+<button class="btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
+<button class="btn gray" onclick="newInvoice()">🆕 New</button>
+</div>
+</div>
+
+<div class="card no-print">
+<h2>Saved Invoices</h2>
+<div id="saved" class="saved"></div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let itemCount=0;
+
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function today(){return new Date().toISOString().slice(0,10);}
+function nextInvoice(){
+ let n=Number(localStorage.getItem("gp_invoice_seq")||0)+1;
+ localStorage.setItem("gp_invoice_seq",n);
+ return "GP-"+new Date().getFullYear()+"-"+String(n).padStart(4,"0");
+}
+function addItem(data={}){
+ itemCount++;
+ const tr=document.createElement("tr");
+ tr.dataset.id=itemCount;
+ tr.innerHTML=`
+<td><input class="iname" value="${esc(data.name||"")}"></td>
+<td><input class="ihsn" value="${esc(data.hsn||"")}"></td>
+<td><input class="iqty" type="number" min="0" step="0.001" value="${data.qty??1}" oninput="calculate()"></td>
+<td><input class="iunit" value="${esc(data.unit||"Nos")}"></td>
+<td><input class="irate" type="number" min="0" step="0.01" value="${data.rate??0}" oninput="calculate()"></td>
+<td><input class="idiscount" type="number" min="0" step="0.01" value="${data.discount??0}" oninput="calculate()"></td>
+<td><input class="igstp" type="number" min="0" max="100" step="0.01" value="${data.gst??18}" oninput="calculate()"></td>
+<td class="iamt right">₹0.00</td>
+<td><button class="remove" onclick="this.closest('tr').remove();calculate()">×</button></td>`;
+ $("itemsBody").appendChild(tr); calculate();
+}
+function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll('"',"&quot;");}
+function calculate(){
+ let subtotal=0,discount=0,taxable=0,cgst=0,sgst=0,igst=0;
+ document.querySelectorAll("#itemsBody tr").forEach(tr=>{
+  const q=+tr.querySelector(".iqty").value||0,r=+tr.querySelector(".irate").value||0,d=+tr.querySelector(".idiscount").value||0,g=+tr.querySelector(".igstp").value||0;
+  const base=q*r; const dis=Math.min(d,base); const tx=base-dis; const tax=tx*g/100;
+  subtotal+=base;discount+=dis;taxable+=tx;
+  if($("taxType").value==="intra"){cgst+=tax/2;sgst+=tax/2}else igst+=tax;
+  tr.querySelector(".iamt").textContent=money(tx+tax);
+ });
+ const total=taxable+cgst+sgst+igst, rounded=Math.round(total), ro=rounded-total;
+ $("subtotal").textContent=money(subtotal);$("discount").textContent=money(discount);$("taxable").textContent=money(taxable);
+ $("cgst").textContent=money(cgst);$("sgst").textContent=money(sgst);$("igst").textContent=money(igst);
+ $("cgstRow").style.display=$("taxType").value==="intra"?"flex":"none";
+ $("sgstRow").style.display=$("taxType").value==="intra"?"flex":"none";
+ $("igstRow").style.display=$("taxType").value==="inter"?"flex":"none";
+ $("grand").textContent=money(total);$("round").textContent=money(ro);
+}
+function getInvoice(){
+ const items=[...document.querySelectorAll("#itemsBody tr")].map(tr=>({
+  name:tr.querySelector(".iname").value,hsn:tr.querySelector(".ihsn").value,qty:+tr.querySelector(".iqty").value||0,
+  unit:tr.querySelector(".iunit").value,rate:+tr.querySelector(".irate").value||0,discount:+tr.querySelector(".idiscount").value||0,gst:+tr.querySelector(".igstp").value||0
+ }));
+ return {invoiceNo:$("invoiceNo").value,date:$("invoiceDate").value,customer:$("customerName").value,mobile:$("mobile").value,gstin:$("gstin").value,place:$("place").value,taxType:$("taxType").value,payment:$("paymentMode").value,items};
+}
+function saveInvoice(){
+ const inv=getInvoice(); if(!inv.customer.trim()){alert("Customer Name is required.");return}
+ const list=JSON.parse(localStorage.getItem("gp_invoices")||"[]");
+ const i=list.findIndex(x=>x.invoiceNo===inv.invoiceNo);
+ if(i>=0)list[i]=inv;else list.unshift(inv);
+ localStorage.setItem("gp_invoices",JSON.stringify(list)); renderSaved(); alert("Invoice saved successfully.");
+}
+function renderSaved(){
+ const list=JSON.parse(localStorage.getItem("gp_invoices")||"[]");$("saved").innerHTML="";
+ if(!list.length){$("saved").innerHTML='<div>No saved invoices.</div>';return}
+ list.slice(0,30).forEach((x,i)=>{
+  const d=document.createElement("div");d.innerHTML=`<span><b>${esc(x.invoiceNo)}</b><br><small>${esc(x.date)} — ${esc(x.customer)}</small></span><button class="btn gray" onclick="loadInvoice(${i})">Open</button>`;$("saved").appendChild(d)
+ });
+}
+function loadInvoice(i){
+ const list=JSON.parse(localStorage.getItem("gp_invoices")||"[]"),x=list[i]; if(!x)return;
+ $("invoiceNo").value=x.invoiceNo;$("invoiceDate").value=x.date;$("customerName").value=x.customer;$("mobile").value=x.mobile||"";
+ $("gstin").value=x.gstin||"";$("place").value=x.place||"";$("taxType").value=x.taxType||"intra";$("paymentMode").value=x.payment||"Cash";
+ $("itemsBody").innerHTML="";x.items.forEach(addItem);calculate();scrollTo({top:0,behavior:"smooth"});
+}
+function newInvoice(){
+ $("invoiceNo").value=nextInvoice();$("invoiceDate").value=today();$("customerName").value="";$("mobile").value="";$("gstin").value="";$("place").value="Maharashtra";
+ $("taxType").value="intra";$("paymentMode").value="Cash";$("itemsBody").innerHTML="";addItem();addItem();calculate();
+}
+function printInvoice(){calculate();window.print();}
+function shareWhatsApp(){
+ const inv=getInvoice(); calculate();
+ const text=`Ganesh Plywood GST Invoice\nInvoice: ${inv.invoiceNo}\nDate: ${inv.date}\nCustomer: ${inv.customer}\nTotal: ${$("grand").textContent}\nPayment: ${inv.payment}`;
+ const phone=inv.mobile.replace(/\D/g,"");
+ const url="https://wa.me/"+(phone.length===10?"91"+phone:"")+(phone.length===10?"?text=":"?text=")+encodeURIComponent(text);
+ window.open(url,"_blank");
+}
+$("taxType").addEventListener("change",calculate);
+$("invoiceNo").value=nextInvoice();$("invoiceDate").value=today();$("place").value="Maharashtra";addItem();addItem();renderSaved();calculate();
+</script>
+</body>
+</html>
