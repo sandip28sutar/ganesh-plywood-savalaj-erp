@@ -385,7 +385,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="card dash-card"><div class="title green">Stock Sale Value</div><div class="value">${money(saleValue)}</div><div class="sub">Current sales-rate value</div></div>
 <div class="card dash-card"><div class="title green">Expected Profit</div><div class="value">${money(profitValue)}</div><div class="sub">Sales rate − purchase rate</div></div>
 </div>
-<div class="section-title">Quick Actions</div><div class="quick">${[['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚']].map(x=>`<button onclick="openPage('${x[0]}')"><i>${x[1]}</i>${x[0]}</button>`).join('')}</div>
+<div class="section-title">Quick Actions</div><div class="quick">${[['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚']].map(x=>`<button onclick="openPage('${x[0]}')"><i>${x[1]}</i>${x[0]}</button>`).join('')}<button onclick="document.getElementById('sssAdvancedERP').style.display='block';sssRefreshAdvanced();"><i>🚀</i>Advanced ERP</button></div>
 <div class="section-title">Recent Transactions</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Particular</th><th>Type</th><th>Amount</th><th>Status</th></tr>${recent.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.particular)}</td><td>${esc(x.type)}</td><td>${money(x.amount)}</td><td><span class="badge paid">Success</span></td></tr>`).join('')||'<tr><td colspan="5">No transactions.</td></tr>'}</table></div>
 <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-top:14px"><div class="chart-box"><h3 style="margin:0">Stock Overview</h3><div class="donut"><div class="donut-center">${totalQty}<br><small>Total Items</small></div></div><div class="legend">${catData.map(x=>`<span>${esc(x.name)}</span><b>${x.qty.toLocaleString('en-IN')}</b>`).join('')}</div></div>
 <div class="chart-box"><h3 style="margin:0 0 12px">Low Stock Items</h3><table class="low-list"><tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>${low.map(x=>`<tr><td>${esc(x.name)}</td><td class="low">${x.qty}</td><td>${esc(x.unit)}</td></tr>`).join('')||'<tr><td colspan="3">No low stock items.</td></tr>'}</table><button class="btn primary" style="width:100%;margin-top:12px" onclick="openPage('Stock')">View All Stock</button></div></div>
@@ -435,6 +435,61 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
     </table>
   </div>
 </div>
+
+<!-- SSS TECHNOLOGY ADVANCED ERP MODULES -->
+<section id="sssAdvancedERP" class="page" style="display:none">
+  <h2>🚀 Advanced Business ERP</h2>
+
+  <div class="cards">
+    <div class="card"><div class="title">💰 Customer Receivable</div><div class="value" id="sssReceivable">₹0.00</div><div class="sub">Outstanding</div></div>
+    <div class="card"><div class="title">🏦 Supplier Payable</div><div class="value" id="sssPayable">₹0.00</div><div class="sub">Outstanding</div></div>
+    <div class="card"><div class="title">📦 Stock Value</div><div class="value" id="sssStockValue">₹0.00</div><div class="sub">Current stock</div></div>
+    <div class="card"><div class="title">📈 Gross Profit</div><div class="value" id="sssProfit">₹0.00</div><div class="sub">Sales − Purchase − Expenses</div></div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <h3>💸 Expense Management</h3>
+    <div class="grid4">
+      <div class="field"><label>Date</label><input id="sssExpDate" type="date"></div>
+      <div class="field"><label>Expense Head</label><select id="sssExpHead"><option>Transport</option><option>Labour</option><option>Petrol</option><option>Electricity</option><option>Rent</option><option>Loading / Unloading</option><option>Other</option></select></div>
+      <div class="field"><label>Amount</label><input id="sssExpAmount" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Note</label><input id="sssExpNote" placeholder="Expense details"></div>
+    </div>
+    <button class="btn primary" onclick="sssSaveExpense()">💾 Save Expense</button>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <h3>📒 Customer / Supplier Ledger</h3>
+    <div class="grid4">
+      <div class="field"><label>Party Type</label><select id="sssLedgerPartyType"><option>Customer</option><option>Supplier</option></select></div>
+      <div class="field"><label>Party Name</label><input id="sssLedgerParty" placeholder="Party name"></div>
+      <div class="field"><label>Entry Type</label><select id="sssLedgerType"><option>Sale</option><option>Purchase</option><option>Payment Received</option><option>Payment Paid</option><option>Adjustment</option></select></div>
+      <div class="field"><label>Amount</label><input id="sssLedgerAmount" type="number" min="0" step=".01"></div>
+    </div>
+    <button class="btn primary" onclick="sssSaveLedger()">💾 Save Ledger Entry</button>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <h3>🪑 Furniture / 🚪 Door Work Order</h3>
+    <div class="grid4">
+      <div class="field"><label>Customer</label><input id="sssJobCustomer"></div>
+      <div class="field"><label>Work Type</label><select id="sssJobType"><option>Furniture</option><option>Kitchen</option><option>Wardrobe</option><option>TV Unit</option><option>Door</option><option>Other</option></select></div>
+      <div class="field"><label>Size / Specification</label><input id="sssJobSize" placeholder="e.g. 8 x 7 ft"></div>
+      <div class="field"><label>Quantity</label><input id="sssJobQty" type="number" min="1" value="1"></div>
+      <div class="field"><label>Material Cost</label><input id="sssJobMaterial" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Labour Cost</label><input id="sssJobLabour" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Other Cost</label><input id="sssJobOther" type="number" min="0" step=".01"></div>
+      <div class="field"><label>Sale / Contract Value</label><input id="sssJobSale" type="number" min="0" step=".01"></div>
+    </div>
+    <button class="btn primary" onclick="sssSaveWorkOrder()">💾 Save Work Order</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn light" onclick="sssRefreshAdvanced()">↻ Refresh Dashboard</button>
+    <button class="btn light" onclick="sssExportCSV()">📊 Export Excel/CSV</button>
+    <button class="btn light" onclick="sssPrintReport()">🖨️ Print Report</button>
+  </div>
+</section>
 <div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
 applyAdminSummaryControls();
 }
@@ -709,7 +764,84 @@ Received: ${money(x.receivedAmount||0)} &nbsp; | &nbsp;
 Outstanding: ${money(x.outstandingAmount||0)} &nbsp; | &nbsp;
 Status: ${esc(x.paymentStatus||x.status||'Outstanding')}
 ${x.paymentNote?`<br>Reference: ${esc(x.paymentNote)}`:''}</div>`;
-return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}<br><b>Mobile:</b> ${esc(x.customerPhone||'-')}<br><b>Address:</b> ${esc(x.customerAddress||'-')}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${payment}${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p></body></html>`;
+return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}<br><b>Mobile:</b> ${esc(x.customerPhone||'-')}<br><b>Address:</b> ${esc(x.customerAddress||'-')}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${payment}${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p>
+<script>
+/* ===== SSS Technology Advanced ERP - added to existing index.html ===== */
+(function(){
+  function arr(k){ if(!Array.isArray(db[k])) db[k]=[]; return db[k]; }
+  function money(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function saveDB(){ try{ localStorage.setItem(DBKEY,JSON.stringify(db)); }catch(e){} }
+
+  window.sssRefreshAdvanced=function(){
+    const inv=arr('invoices'), pur=arr('purchases'), st=arr('stock'), ex=arr('expenses');
+    const recv=inv.reduce((s,x)=>s+Number(x.outstandingAmount||0),0);
+    const pay=pur.reduce((s,x)=>s+Number(x.outstandingAmount||0),0);
+    const sv=st.reduce((s,x)=>s+Number(x.qty||0)*Number(x.rate||0),0);
+    const sales=inv.reduce((s,x)=>s+Number(x.grand||x.total||x.amount||0),0);
+    const purchases=pur.reduce((s,x)=>s+Number(x.grand||x.total||x.amount||0),0);
+    const expenses=ex.reduce((s,x)=>s+Number(x.amount||0),0);
+    const profit=sales-purchases-expenses;
+    [['sssReceivable',recv],['sssPayable',pay],['sssStockValue',sv],['sssProfit',profit]].forEach(([id,v])=>{
+      const e=document.getElementById(id); if(e)e.textContent=money(v);
+    });
+  };
+
+  window.sssSaveExpense=function(){
+    const x={id:'EXP-'+Date.now(),date:document.getElementById('sssExpDate')?.value||new Date().toISOString().slice(0,10),
+      head:document.getElementById('sssExpHead')?.value||'Other',
+      amount:Number(document.getElementById('sssExpAmount')?.value||0),
+      note:document.getElementById('sssExpNote')?.value||''};
+    if(!x.amount){alert('Enter expense amount');return;}
+    arr('expenses').push(x);saveDB();sssRefreshAdvanced();alert('Expense saved');
+  };
+
+  window.sssSaveLedger=function(){
+    const x={id:'LED-'+Date.now(),date:new Date().toISOString().slice(0,10),
+      partyType:document.getElementById('sssLedgerPartyType')?.value||'Customer',
+      partyName:document.getElementById('sssLedgerParty')?.value||'',
+      type:document.getElementById('sssLedgerType')?.value||'Adjustment',
+      amount:Number(document.getElementById('sssLedgerAmount')?.value||0)};
+    if(!x.partyName||!x.amount){alert('Party name and amount are required');return;}
+    arr('ledger').push(x);saveDB();alert('Ledger entry saved');
+  };
+
+  window.sssSaveWorkOrder=function(){
+    const x={id:'JOB-'+Date.now(),date:new Date().toISOString().slice(0,10),
+      customer:document.getElementById('sssJobCustomer')?.value||'',
+      type:document.getElementById('sssJobType')?.value||'Furniture',
+      size:document.getElementById('sssJobSize')?.value||'',
+      qty:Number(document.getElementById('sssJobQty')?.value||1),
+      material:Number(document.getElementById('sssJobMaterial')?.value||0),
+      labour:Number(document.getElementById('sssJobLabour')?.value||0),
+      other:Number(document.getElementById('sssJobOther')?.value||0),
+      sale:Number(document.getElementById('sssJobSale')?.value||0)};
+    x.cost=x.material+x.labour+x.other;x.profit=x.sale-x.cost;
+    if(!x.customer){alert('Customer name is required');return;}
+    arr('workOrders').push(x);saveDB();alert('Work order saved');
+  };
+
+  window.sssExportCSV=function(){
+    const rows=[];Object.keys(db).forEach(k=>{if(Array.isArray(db[k]))db[k].forEach(x=>rows.push({Module:k,...x}));});
+    const keys=[...new Set(rows.flatMap(x=>Object.keys(x)))];
+    const csv=[keys.join(','),...rows.map(x=>keys.map(k=>`"${String(x[k]??'').replace(/"/g,'""')}"`).join(','))].join('\\n');
+    const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='Ganesh_Plywood_ERP_Data.csv';a.click();
+  };
+
+  window.sssPrintReport=function(){
+    sssRefreshAdvanced();
+    const w=window.open('','_blank');if(!w)return;
+    w.document.write('<html><head><title>Ganesh Plywood ERP Report</title></head><body style="font-family:Arial;padding:30px"><h1>Ganesh Plywood ERP</h1><p>SSS Technology</p><h2>Advanced Business Report</h2><p>Generated: '+new Date().toLocaleString()+'</p><button onclick="print()">Print</button></body></html>');
+    w.document.close();
+  };
+
+  window.addEventListener('load',function(){
+    ['expenses','ledger','workOrders'].forEach(k=>arr(k));
+    saveDB();setTimeout(sssRefreshAdvanced,500);
+  });
+})();
+</script>
+
+</body></html>`;
 }
 function printSaved(i){let w=open('','_blank');w.document.write(invoiceHTML(db.invoices[i]));w.document.close();w.print()}
 function printDraft(){let d=calcBill(),cu=getBillingCustomer(),x={no:'DRAFT',date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',customerPhone:cu?.phone||'',customerAddress:cu?.address||'',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,inter:d.inter,billType:document.getElementById('billtype')?.value||'gst'};let w=open('','_blank');w.document.write(invoiceHTML(x));w.document.close();w.print()}
