@@ -33,7 +33,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .today-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px #00000010}
 .today-summary h3{margin:0 0 12px;color:var(--brown)}
 .summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}
-.summary-row b{font-size:14px}
+.summary-row b{font-size:14px}.summary-actions{margin-left:auto;display:none;gap:4px}.summary-actions .btn{padding:4px 7px;font-size:11px}.today-summary.admin-editable .summary-actions{display:flex}.summary-row{align-items:center;gap:8px}.summary-row>b{margin-left:auto}.summary-row .summary-actions{margin-left:8px}.today-summary.admin-editable .summary-row>b{margin-left:auto}
 .chart-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;min-height:300px}
 .donut{width:190px;height:190px;border-radius:50%;margin:10px auto 15px;position:relative;background:conic-gradient(#1269d8 0 20%,#f2b600 20% 37%,#6d28d9 37% 53%,#18b879 53% 74%,#8b8b8b 74% 100%)}
 .donut:after{content:'';position:absolute;inset:48px;background:#fff;border-radius:50%}
@@ -217,90 +217,78 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 </div>
 <aside class="today-summary"><h3>Today's Summary</h3>
 <div id="todaySummaryAdminControls" class="actions no-print" style="margin:0 0 8px;display:none">
-<button class="btn light" onclick="editTodaySummary()">✏️ Edit</button>
-<button class="btn success" onclick="updateTodaySummary()">💾 Update</button>
-<button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete</button>
+<button class="btn light" onclick="editTodaySummary()">✏️ Edit All</button>
+<button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete All Edits</button>
 </div>
-<div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b></div>
-<div class="summary-row"><span>Sales</span><b id="todaySalesVal" class="green">${money(todaySales)}</b></div>
-<div class="summary-row"><span>Purchase</span><b id="todayPurchaseVal" class="orange">${money(todayPurchase)}</b></div>
-<div class="summary-row"><span>Sales Return</span><b class="red">${money(todaySalesReturn)}</b></div>
-<div class="summary-row"><span>Purchase Return</span><b class="blue">${money(todayPurchaseReturn)}</b></div>
-<div class="summary-row"><span>Receipt Today</span><b class="green">${money(todayReceipts)}</b></div>
-<div class="summary-row"><span>Payment Today</span><b class="red">${money(todayPayments)}</b></div>
-<div class="summary-row"><span>Closing Stock</span><b class="purple">${money(closingValue)}</b></div>
-<div class="summary-row"><span>Stock Change</span><b class="${stockChange>=0?'green':'red'}">${money(stockChange)}</b></div>
-<div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(rec)}</b></div>
-<div class="summary-row"><span>Pending Payable</span><b class="red">${money(pay)}</b></div>
-<div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b></div>
-<div class="summary-row"><span>Expected Profit</span><b id="todayProfitVal" class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b></div>
+<div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales</span><b class="green">${money(todaySales)}</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase</span><b class="orange">${money(todayPurchase)}</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales Return</span><b class="red">${money(todaySalesReturn)}</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase Return</span><b class="blue">${money(todayPurchaseReturn)}</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Receipt Today</span><b class="green">${money(todayReceipts)}</b><span class="summary-actions no-print" data-key="receipts"><button class="btn light" onclick="editSummaryField('receipts')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receipts')">🗑️</button></span></div>
+<div class="summary-row"><span>Payment Today</span><b class="red">${money(todayPayments)}</b><span class="summary-actions no-print" data-key="payments"><button class="btn light" onclick="editSummaryField('payments')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payments')">🗑️</button></span></div>
+<div class="summary-row"><span>Closing Stock</span><b class="purple">${money(closingValue)}</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Change</span><b class="${stockChange>=0?'green':'red'}">${money(stockChange)}</b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(rec)}</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Payable</span><b class="red">${money(pay)}</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
+<div class="summary-row"><span>Expected Profit</span><b class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b><span class="summary-actions no-print" data-key="profit"><button class="btn light" onclick="editSummaryField('profit')">✏️</button><button class="btn danger" onclick="deleteSummaryField('profit')">🗑️</button></span></div>
 </aside>
 </div><div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
+applyAdminSummaryControls();
 }
 
-function editTodaySummary(){
-  if(!isAdminUser()){toast('⛔ Admin access only');return;}
-  const today=new Date().toLocaleDateString('en-GB');
-  const todayTx=db.transactions.filter(x=>x.date===today);
-  const sales=todayTx.filter(x=>x.type==='Credit'&&/Invoice|Sales/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
-  const purchase=todayTx.filter(x=>x.type==='Debit'&&/Purchase/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+function summaryOverrideKey(key){return 'GP_TODAY_SUMMARY_'+key.toUpperCase();}
+function isAdminUser(){const role=window.GP_CURRENT_ROLE||window.currentRole||localStorage.getItem('GP_ROLE')||'';return String(role).toLowerCase()==='admin';}
+function summaryCalculatedValues(){
+  const todayISO=iso(), todayIN=dateIN(), isToday=d=>String(d||'').slice(0,10)===todayISO||d===todayIN;
+  const todayTx=db.transactions.filter(x=>isToday(x.date));
+  const sales=(db.invoices||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.grand||0),0);
+  const purchase=(db.purchases||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+  const salesReturn=(db.salesReturns||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+  const purchaseReturn=(db.purchaseReturns||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+  const receipts=todayTx.filter(x=>x.type==='Credit'&&/Receipt|Payment Received/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+  const payments=todayTx.filter(x=>x.type==='Debit'&&/Payment to|Payment Made/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
   const rec=db.invoices.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.grand||0),0);
   const pay=db.purchases.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.total||0),0);
-  const stockCost=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.rate)||0),0);
-  const stockSale=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
-  const profit=stockSale-stockCost;
-  const box=document.getElementById('modalbox');
-  box.innerHTML=`<h3>✏️ Edit Today's Summary</h3>
-  <p class="sub">Admin can manually adjust dashboard summary values. These values are stored separately from transactions.</p>
-  <div class="grid2">
-    <div class="field"><label>Sales</label><input id="etsales" type="number" value="${Number(localStorage.getItem('GP_TODAY_SALES_OVERRIDE')??sales)}"></div>
-    <div class="field"><label>Purchase</label><input id="etpurchase" type="number" value="${Number(localStorage.getItem('GP_TODAY_PURCHASE_OVERRIDE')??purchase)}"></div>
-    <div class="field"><label>Receivable</label><input id="etrec" type="number" value="${Number(localStorage.getItem('GP_TODAY_RECEIVABLE_OVERRIDE')??rec)}"></div>
-    <div class="field"><label>Payable</label><input id="etpay" type="number" value="${Number(localStorage.getItem('GP_TODAY_PAYABLE_OVERRIDE')??pay)}"></div>
-    <div class="field"><label>Stock Cost</label><input id="etscost" type="number" value="${Number(localStorage.getItem('GP_TODAY_STOCKCOST_OVERRIDE')??stockCost)}"></div>
-    <div class="field"><label>Stock Sale Value</label><input id="etssale" type="number" value="${Number(localStorage.getItem('GP_TODAY_STOCKSALE_OVERRIDE')??stockSale)}"></div>
-    <div class="field"><label>Expected Profit</label><input id="etprofit" type="number" value="${Number(localStorage.getItem('GP_TODAY_PROFIT_OVERRIDE')??profit)}"></div>
-  </div>
-  <div class="actions"><button class="btn success" onclick="updateTodaySummary()">💾 Update</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`;
-  document.getElementById('modal').classList.add('show');
+  const purchaseValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.rate)||0),0);
+  const saleValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
+  return {opening:0,sales,purchase,salesReturn,purchaseReturn,receipts,payments,closing:purchaseValue,stockChange:0,receivable:rec,payable:pay,stockSale:saleValue,profit:saleValue-purchaseValue};
+}
+function getSummaryValue(key, calculated){const v=localStorage.getItem(summaryOverrideKey(key));return v===null?calculated:Number(v);}
+function editSummaryField(key){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  const c=summaryCalculatedValues(), value=getSummaryValue(key,c[key]??0);
+  modal(`<h3>✏️ Edit Today's Summary — ${esc(key)}</h3><div class="field"><label>Amount</label><input id="singleSummaryValue" type="number" step="0.01" value="${value}"></div><div class="actions"><button class="btn success" onclick="saveSummaryField('${key}')">💾 Update</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`);
+}
+function saveSummaryField(key){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  const el=document.getElementById('singleSummaryValue'), v=Number(el?.value);
+  if(!el||el.value===''||!Number.isFinite(v))return toast('Enter a valid amount');
+  localStorage.setItem(summaryOverrideKey(key),String(v)); closeModal(); dashboard(); toast('✅ Summary value updated');
+}
+function deleteSummaryField(key){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  if(!confirm(`Delete the edited value for ${key}? It will return to the calculated value.`))return;
+  localStorage.removeItem(summaryOverrideKey(key)); dashboard(); toast('🗑️ Summary value reset');
+}
+function editTodaySummary(){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  const c=summaryCalculatedValues(), keys=Object.keys(c);
+  const fields=keys.map(k=>`<div class="field"><label>${esc(k)}</label><input id="sum_${k}" type="number" step="0.01" value="${getSummaryValue(k,c[k])}"></div>`).join('');
+  modal(`<h3>✏️ Edit Today's Summary — All</h3><div class="grid2">${fields}</div><div class="actions"><button class="btn success" onclick="updateTodaySummary()">💾 Update All</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`);
+}
+function updateTodaySummary(){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  const c=summaryCalculatedValues();
+  for(const k of Object.keys(c)){const el=document.getElementById('sum_'+k); if(!el)continue; const v=Number(el.value); if(el.value===''||!Number.isFinite(v))return toast('Invalid value for '+k); localStorage.setItem(summaryOverrideKey(k),String(v));}
+  closeModal(); dashboard(); toast('✅ Today’s Summary updated');
 }
 function deleteTodaySummary(){
-  if(!isAdminUser()){toast('⛔ Admin access only');return;}
-  if(!confirm('Delete today’s manually edited summary values? Dashboard will return to calculated values.')) return;
-  [
-    'GP_TODAY_SALES_OVERRIDE',
-    'GP_TODAY_PURCHASE_OVERRIDE',
-    'GP_TODAY_RECEIVABLE_OVERRIDE',
-    'GP_TODAY_PAYABLE_OVERRIDE',
-    'GP_TODAY_STOCKCOST_OVERRIDE',
-    'GP_TODAY_STOCKSALE_OVERRIDE',
-    'GP_TODAY_PROFIT_OVERRIDE'
-  ].forEach(k=>localStorage.removeItem(k));
-  closeModal();
-  dashboard();
-  toast('🗑️ Today’s Summary overrides deleted');
-}
-
-function updateTodaySummary(){
-  if(!isAdminUser()){toast('⛔ Admin access only');return;}
-  const vals={
-    sales:document.getElementById('etsales')?.value,
-    purchase:document.getElementById('etpurchase')?.value,
-    rec:document.getElementById('etrec')?.value,
-    pay:document.getElementById('etpay')?.value,
-    scost:document.getElementById('etscost')?.value,
-    ssale:document.getElementById('etssale')?.value,
-    profit:document.getElementById('etprofit')?.value
-  };
-  if(!Object.values(vals).every(v=>v!==undefined && v!=='' && isFinite(Number(v)))){toast('Enter valid summary values');return;}
-  localStorage.setItem('GP_TODAY_SALES_OVERRIDE',vals.sales);
-  localStorage.setItem('GP_TODAY_PURCHASE_OVERRIDE',vals.purchase);
-  localStorage.setItem('GP_TODAY_RECEIVABLE_OVERRIDE',vals.rec);
-  localStorage.setItem('GP_TODAY_PAYABLE_OVERRIDE',vals.pay);
-  localStorage.setItem('GP_TODAY_STOCKCOST_OVERRIDE',vals.scost);
-  localStorage.setItem('GP_TODAY_STOCKSALE_OVERRIDE',vals.ssale);
-  localStorage.setItem('GP_TODAY_PROFIT_OVERRIDE',vals.profit);
-  closeModal(); dashboard(); toast('✅ Today’s Summary updated');
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  if(!confirm('Delete all manually edited Today’s Summary values?'))return;
+  const c=summaryCalculatedValues(); Object.keys(c).forEach(k=>localStorage.removeItem(summaryOverrideKey(k)));
+  dashboard(); toast('🗑️ All summary edits deleted');
 }
 
 function billing(){
@@ -563,8 +551,7 @@ function isAdminUser(){
   return String(role).toLowerCase()==='admin';
 }
 function applyAdminSummaryControls(){
-  const el=document.getElementById('todaySummaryAdminControls');
-  if(el) el.style.display=isAdminUser()?'flex':'none';
+  const admin=isAdminUser(); const el=document.getElementById('todaySummaryAdminControls'); if(el) el.style.display=admin?'flex':'none'; const card=document.querySelector('.today-summary'); if(card) card.classList.toggle('admin-editable',admin); document.querySelectorAll('.summary-actions').forEach(x=>x.style.display=admin?'flex':'none');
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('show')}
