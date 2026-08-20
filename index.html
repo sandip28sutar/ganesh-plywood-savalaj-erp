@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1976d2">
   <title>Ganesh Plywood ERP</title>
+  <meta name="ganesh-erp-version" content="2026.08.20-firebase-fixed">
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -99,9 +100,30 @@ const firebaseConfig = {
   appId: "1:601577954725:web:f00cb33d523a2abf761c4c"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+// Firebase must be initialized before any login/database operation.
+let auth, db;
+
+try {
+  if (!window.firebase || !firebase.apps) {
+    throw new Error("Firebase SDK did not load.");
+  }
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  auth = firebase.auth();
+  db = firebase.firestore();
+} catch (e) {
+  console.error("Firebase initialization failed:", e);
+  const msg = document.getElementById('loginMsg');
+  if (msg) {
+    msg.style.display = 'block';
+    msg.style.background = '#ffebee';
+    msg.style.color = '#c62828';
+    msg.textContent = 'Firebase could not be initialized. Please refresh the app.';
+  }
+}
 
 auth.onAuthStateChanged(async user => {
   if(user){
