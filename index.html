@@ -125,51 +125,51 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="login" id="login"><div class="loginbox"><h2>🔐 Ganesh Plywood</h2><p>Multi User Login</p><div class="field"><label>User ID</label><input id="loginUser" autocomplete="username" placeholder="Enter User ID"></div><div class="field"><label>Password / PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="12" autocomplete="current-password" placeholder="Enter Password"></div><button class="btn primary" style="width:100%" onclick="checkPin()">Login</button><div class="login-users"><button onclick="quickUser('admin')">Admin</button><button onclick="quickUser('manager')">Manager</button><button onclick="quickUser('staff')">Staff</button><button onclick="firebaseLogin()">☁️ Firebase</button></div><small>Default Admin: admin / 2828</small><small style="display:block;margin-top:6px">☁️ Firebase: Email + Password Login</small></div></div>
 
 
-<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js">
-// Billing payment tracking: Cash / UPI / Bank / Credit / Mixed.
-
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
+<script>
+// Billing payment helpers - loaded as executable JavaScript (not inside a src script tag).
 function getBillGrandTotal(){
   const el=document.getElementById('grand');
-  if(!el) return 0;
-  return Number(String(el.textContent||'').replace(/[^0-9.-]/g,''))||0;
+  return el ? (Number(String(el.textContent||'').replace(/[^0-9.-]/g,''))||0) : 0;
 }
 function updateBillPayment(){
   const total=getBillGrandTotal();
+  const mode=document.getElementById('billPaymentMode')?.value||'Cash';
   let cash=Number(document.getElementById('billCashAmount')?.value||0);
   let upi=Number(document.getElementById('billUpiAmount')?.value||0);
-  if(cash<0) cash=0; if(upi<0) upi=0;
+  if(cash<0)cash=0;if(upi<0)upi=0;
   let received=cash+upi;
   if(received>total){
     received=total;
-    if(cash>total) cash=total;
-    upi=Math.max(0,received-cash);
+    if(cash>total){cash=total;upi=0;} else upi=Math.max(0,total-cash);
+    const c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount');
+    if(c)c.value=cash.toFixed(2);if(u)u.value=upi.toFixed(2);
   }
-  const re=document.getElementById('billReceivedAmount');
-  const oe=document.getElementById('billOutstandingAmount');
-  if(re) re.value=received.toFixed(2);
-  if(oe) oe.value=Math.max(0,total-received).toFixed(2);
-  const s=document.getElementById('billPaymentSummary');
-  if(s)s.innerHTML=`Cash: <b>₹${cash.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; UPI: <b>₹${upi.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${Math.max(0,total-received).toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
-  return {total,received,outstanding:Math.max(0,total-received),cash,upi};
+  // Credit mode means no amount received unless the user enters cash/UPI.
+  if(mode==='Credit' && cash===0 && upi===0) received=0;
+  const outstanding=Math.max(0,total-received);
+  const r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount');
+  if(r)r.value=received.toFixed(2);if(o)o.value=outstanding.toFixed(2);
+  const summary=document.getElementById('billPaymentSummary');
+  if(summary)summary.innerHTML=`Cash: <b>₹${cash.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; UPI: <b>₹${upi.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${outstanding.toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
+  return {total,received,outstanding,cash,upi,mode};
 }
 function resetBillPayment(){
-  const m=document.getElementById('billPaymentMode'),c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount'),r=document.getElementById('billReceivedAmount'),n=document.getElementById('billPaymentNote');
-  if(m)m.value='Cash'; if(c)c.value='0'; if(u)u.value='0'; if(r)r.value='0'; if(n)n.value=''; updateBillPayment();
+  const ids=['billCashAmount','billUpiAmount','billReceivedAmount','billOutstandingAmount','billPaymentNote'];
+  ids.forEach(id=>{const e=document.getElementById(id);if(e)e.value='0';});
+  const n=document.getElementById('billPaymentNote');if(n)n.value='';
+  const m=document.getElementById('billPaymentMode');if(m)m.value='Cash';
+  updateBillPayment();
 }
 function restoreInvoicePayment(invoice){
   if(!invoice)return;
   const m=document.getElementById('billPaymentMode'),c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount'),r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount'),n=document.getElementById('billPaymentNote');
-  if(m)m.value=invoice.paymentMode||'Cash';
-  if(c)c.value=Number(invoice.cashReceived||0);
-  if(u)u.value=Number(invoice.upiReceived||0);
-  if(r)r.value=Number(invoice.receivedAmount||0);
-  if(o)o.value=Number(invoice.outstandingAmount||0).toFixed(2);
-  if(n)n.value=invoice.paymentNote||'';
-  updateBillPayment();
+  if(m)m.value=invoice.paymentMode||'Cash';if(c)c.value=Number(invoice.cashReceived||0);if(u)u.value=Number(invoice.upiReceived||0);if(r)r.value=Number(invoice.receivedAmount||0);if(o)o.value=Number(invoice.outstandingAmount||0).toFixed(2);if(n)n.value=invoice.paymentNote||'';updateBillPayment();
 }
 </script>
-<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
+
 <script>
 // Ganesh Plywood Firebase configuration
 window.GANESH_FIREBASE_CONFIG = {
@@ -285,7 +285,7 @@ function save(){
   localStorage.setItem(DBKEY,JSON.stringify(db));
   cloudSave();
 }
-async function cloudSave(){
+window.cloudSave=async function cloudSave(){
   try{
     const g=window.GP_FIREBASE;
     if(!g||!g.enabled||!g.user)return;
@@ -530,7 +530,7 @@ Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00
 </div>
 
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
-<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
+<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button> ${isAdminUser()?`<button class="btn light" onclick="editSavedInvoice(${db.invoices.length-1-i})">✏️ Edit</button><button class="btn danger" onclick="deleteSavedInvoice(${db.invoices.length-1-i})">🗑️ Delete</button>`:''}</td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
 addBillRow();toggleBillType();resetBillPayment()
 }
 function fillBillingCustomer(){
@@ -596,7 +596,7 @@ document.querySelectorAll('#billrows tr').forEach((r,i)=>{
 });
 return{items:a,taxable:tx,gst:gs,grand:tx+gs,inter,billType:non?'nongst':'gst'}
 }
-function saveBill(){
+async function saveBill(){
 let d=calcBill();
 if(!d.items.length||d.grand<=0)return toast('Add item and amount');
 
@@ -662,11 +662,28 @@ outstandingAmount:pay.outstanding,
 status:paymentStatus
 });
 
-// Customer auto-create/update is already handled by getBillingCustomer().
+// Save locally immediately, then push the complete ERP database to Firebase when logged in.
 save();
+if(window.GP_FIREBASE?.enabled && window.GP_FIREBASE?.user && window.cloudSave) { try { await window.cloudSave(); } catch(e) {} }
 
 toast(cu?'Invoice saved & customer/payment updated successfully':'Invoice saved with payment details successfully');
 billing();
+}
+function editSavedInvoice(index){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  const x=db.invoices[index];if(!x)return;
+  modal(`<h3>✏️ Edit Invoice Payment</h3><div class="grid2"><div class="field"><label>Payment Mode</label><select id="eim"><option ${x.paymentMode==='Cash'?'selected':''}>Cash</option><option ${x.paymentMode==='UPI'?'selected':''}>UPI</option><option ${x.paymentMode==='Bank'?'selected':''}>Bank</option><option ${x.paymentMode==='Credit'?'selected':''}>Credit</option><option ${x.paymentMode==='Mixed'?'selected':''}>Mixed</option></select></div><div class="field"><label>Cash Received</label><input id="eic" type="number" value="${Number(x.cashReceived||0)}"></div><div class="field"><label>UPI Received</label><input id="eiu" type="number" value="${Number(x.upiReceived||0)}"></div><div class="field"><label>Reference</label><input id="ein" value="${esc(x.paymentNote||'')}"></div></div><div class="actions"><button class="btn success" onclick="saveInvoicePaymentEdit(${index})">💾 Update</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`);
+}
+async function saveInvoicePaymentEdit(index){
+  const x=db.invoices[index];if(!x)return;
+  x.paymentMode=document.getElementById('eim').value;x.cashReceived=Number(document.getElementById('eic').value||0);x.upiReceived=Number(document.getElementById('eiu').value||0);x.receivedAmount=x.cashReceived+x.upiReceived;x.receivedAmount=Math.min(x.receivedAmount,Number(x.grand||0));x.outstandingAmount=Math.max(0,Number(x.grand||0)-x.receivedAmount);x.paymentStatus=x.outstandingAmount<=0?'Paid':(x.receivedAmount>0?'Part Paid':'Outstanding');x.status=x.paymentStatus;x.paymentNote=document.getElementById('ein').value.trim();x.paymentUpdatedAt=new Date().toISOString();
+  save();if(window.GP_FIREBASE?.enabled&&window.GP_FIREBASE?.user){try{await window.cloudSave()}catch(e){}}
+  closeModal();billing();toast('Invoice payment updated');
+}
+function deleteSavedInvoice(index){
+  if(!isAdminUser())return toast('⛔ Admin access only');
+  if(!confirm('Delete this invoice? Stock will NOT be automatically restored. Continue?'))return;
+  db.invoices.splice(index,1);save();billing();toast('Invoice deleted');
 }
 function invoiceHTML(x){
 let cg=x.inter?0:x.gst/2,ig=x.inter?x.gst:0,non=x.billType==='nongst';
@@ -691,7 +708,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>📦 Stock M
 <div class="panel table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>HSN</th><th>Unit</th><th>Qty</th><th>Min</th><th>Purchase Rate</th><th>Sell Rate</th><th>Value</th><th>GST</th><th>Action</th></tr></thead><tbody id="stocktable"></tbody></table></div></section>`;renderStockTable()
 }
 function renderStockTable(){let q=(document.getElementById('stockSearch')?.value||'').toLowerCase(),cat=document.getElementById('stockCat')?.value||'',a=db.stock.filter(x=>(x.name+' '+x.category+' '+x.hsn).toLowerCase().includes(q)&&( !cat||x.category===cat));document.getElementById('stocktable').innerHTML=a.map(x=>{let min=x.min??10;return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.category)}</td><td>${esc(x.hsn)}</td><td>${esc(x.unit)}</td><td class="${x.qty<=min?'low':''}">${x.qty} ${x.qty<=min?'⚠️':''}</td><td>${min}</td><td>${money(x.rate)}</td><td>${money(x.saleRate||x.rate)}</td><td>${money(x.qty*x.rate)}</td><td>${x.gst}%</td><td><button class="btn light" onclick="stockForm(${x.id})">Edit</button> <button class="btn success" onclick="stockAdjust(${x.id})">Adjust</button> <button class="btn danger" onclick="delStock(${x.id})">Delete</button></td></tr>`}).join('')||'<tr><td colspan="10">No items found.</td></tr>'}
-function stockForm(id=null){let x=id?db.stock.find(z=>z.id===id):{};modal(`<h3>${id?'Edit':'Add'} Stock Item</h3><div class="grid2"><div class="field"><label>Item Name</label><input id="sn" value="${esc(x.name||'')}"></div><div class="field"><label>Category</label><select id="sc"><option ${x.category==='Plywood'?'selected':''}>Plywood</option><option ${x.category==='Hardware'?'selected':''}>Hardware</option><option ${x.category==='Laminate'?'selected':''}>Laminate</option><option ${x.category==='Doors'?'selected':''}>Doors</option><option ${!x.category||x.category==='Others'?'selected':''}>Others</option></select></div><div class="field"><label>HSN</label><input id="sh" value="${esc(x.hsn||'')}"></div><div class="field"><label>Unit</label><select id="su"><option ${x.unit==='Nos'?'selected':''}>Nos</option><option ${x.unit==='Sheet'?'selected':''}>Sheet</option><option ${x.unit==='Mtr'?'selected':''}>Mtr</option><option ${x.unit==='Sq.ft'?'selected':''}>Sq.ft</option><option ${x.unit==='Box'?'selected':''}>Box</option></select></div><div class="field"><label>Current Qty</label><input id="sq" type="number" min="0" value="${x.qty??0}"></div><div class="field"><label>Minimum Stock</label><input id="sm" type="number" min="0" value="${x.min??10}"></div><div class="field"><label>Purchase Rate</label><input id="sr" type="number" min="0" step="0.01" value="${x.rate??0}"></div><div class="field"><label>Sell Rate</label><input id="ssr" type="number" min="0" step="0.01" value="${x.saleRate??x.rate??0}"></div><div class="field"><label>GST %</label><input id="sg" type="number" min="0" value="${x.gst??18}"></div></div><button class="btn success" onclick="saveStock(${id||0})">Save Item</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
+function stockForm(id=null){let x=id?db.stock.find(z=>z.id===id):{};modal(`<h3>${id?'Edit':'Add'} Stock Item</h3><div class="grid2"><div class="field"><label>Item Name</label><input id="sn" value="${esc(x.name||'')}"></div><div class="field"><label>Category</label><select id="sc"><option ${x.category==='Plywood'?'selected':''}>Plywood</option><option ${x.category==='Hardware'?'selected':''}>Hardware</option><option ${x.category==='Laminate'?'selected':''}>Laminate</option><option ${x.category==='Doors'?'selected':''}>Doors</option><option ${x.category==='Furniture'?'selected':''}>Furniture</option><option ${x.category==='Door Material'?'selected':''}>Door Material</option><option ${!x.category||x.category==='Others'?'selected':''}>Others</option></select></div><div class="field"><label>HSN</label><input id="sh" value="${esc(x.hsn||'')}"></div><div class="field"><label>Unit</label><select id="su"><option ${x.unit==='Nos'?'selected':''}>Nos</option><option ${x.unit==='Sheet'?'selected':''}>Sheet</option><option ${x.unit==='Mtr'?'selected':''}>Mtr</option><option ${x.unit==='Sq.ft'?'selected':''}>Sq.ft</option><option ${x.unit==='Box'?'selected':''}>Box</option></select></div><div class="field"><label>Current Qty</label><input id="sq" type="number" min="0" value="${x.qty??0}"></div><div class="field"><label>Minimum Stock</label><input id="sm" type="number" min="0" value="${x.min??10}"></div><div class="field"><label>Purchase Rate</label><input id="sr" type="number" min="0" step="0.01" value="${x.rate??0}"></div><div class="field"><label>Sell Rate</label><input id="ssr" type="number" min="0" step="0.01" value="${x.saleRate??x.rate??0}"></div><div class="field"><label>GST %</label><input id="sg" type="number" min="0" value="${x.gst??18}"></div></div><button class="btn success" onclick="saveStock(${id||0})">Save Item</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
 function saveStock(id){let old=id?db.stock.find(z=>z.id===id):null,x={id:id||Date.now(),name:document.getElementById('sn').value.trim(),category:document.getElementById('sc').value,hsn:document.getElementById('sh').value.trim(),unit:document.getElementById('su').value,qty:+document.getElementById('sq').value||0,min:+document.getElementById('sm').value||0,rate:+document.getElementById('sr').value||0,saleRate:+document.getElementById('ssr').value||0,gst:+document.getElementById('sg').value||0};if(!x.name)return toast('Enter item name');let i=db.stock.findIndex(z=>z.id===id);if(i<0)db.stock.push(x);else db.stock[i]=x;if(old&&old.qty!==x.qty)db.transactions.push({date:dateIN(),particular:'Stock correction - '+x.name,type:x.qty>old.qty?'Credit':'Debit',amount:Math.abs(x.qty-old.qty)*x.rate});save();closeModal();stock();toast('Stock item saved')}
 function stockAdjust(id=null){let x=id?db.stock.find(z=>z.id===id):db.stock[0];if(!x)return toast('Add a stock item first');modal(`<h3>↕ Stock In / Out</h3><div class="field"><label>Item</label><select id="ai">${db.stock.map(z=>`<option value="${z.id}" ${z.id===x.id?'selected':''}>${esc(z.name)} — ${z.qty} ${esc(z.unit)}</option>`).join('')}</select></div><div class="grid2"><div class="field"><label>Type</label><select id="at"><option value="in">Stock In (+)</option><option value="out">Stock Out (-)</option></select></div><div class="field"><label>Quantity</label><input id="aq" type="number" min="0.01" step="0.01"></div></div><div class="field"><label>Reason / Reference</label><input id="ar" placeholder="Purchase, damage, opening stock..."></div><button class="btn success" onclick="saveAdjust()">Update Stock</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
 function saveAdjust(){let id=+document.getElementById('ai').value,x=db.stock.find(z=>z.id===id),q=+document.getElementById('aq').value||0,t=document.getElementById('at').value,reason=document.getElementById('ar').value.trim()||'Stock adjustment';if(!x||q<=0)return toast('Select item and quantity');if(t==='out'&&q>x.qty)return toast('Insufficient stock');x.qty=t==='in'?x.qty+q:x.qty-q;db.transactions.push({date:dateIN(),particular:`${reason} - ${x.name}`,type:t==='in'?'Credit':'Debit',amount:q*x.rate});save();closeModal();stock();toast('Stock updated successfully')}
@@ -855,7 +872,7 @@ function adminDataControl(){
 function adminShowDataset(key){
   const u=getCurrentUser();
   if(u?.role!=='Admin'){toast('⛔ Admin access required');return}
-  const arr=Array.isArray(db[key])?db[key]:[];
+  const arr=key==='users'?users:(Array.isArray(db[key])?db[key]:[]);
   const box=document.getElementById('adminDataset');
   if(!box)return;
   const titles={
@@ -883,7 +900,7 @@ function adminShowDataset(key){
   adminRenderRows(key);
 }
 function adminRenderRows(key){
-  const arr=Array.isArray(db[key])?db[key]:[];
+  const arr=key==='users'?users:(Array.isArray(db[key])?db[key]:[]);
   const q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
   const rows=arr.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));
   const table=document.querySelector('#adminRows')?.closest('table');
