@@ -447,13 +447,41 @@ function deleteTodaySummary(){
 
 function billing(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing</h2>
-<div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Customer</label><select id="bc"><option value="">Walk-in Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
+<div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Select Existing Customer</label><select id="bc" onchange="fillBillingCustomer()"><option value="">Walk-in / New Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}${x.phone?' — '+esc(x.phone):''}</option>`).join('')}</select></div><div class="field"><label>Customer Name</label><input id="bcname" placeholder="Enter customer name" oninput="billingCustomerTyping()"></div><div class="field"><label>Mobile Number</label><input id="bcphone" type="tel" inputmode="numeric" maxlength="15" placeholder="Enter mobile number" oninput="billingCustomerTyping()"></div><div class="field"><label>Customer Address</label><textarea id="bcaddress" rows="1" placeholder="Enter address" oninput="billingCustomerTyping()"></textarea></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
 <div id="billModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Bill: GST will be calculated</div><div class="actions"><button class="btn primary" onclick="addBillRow()">+ Item</button><button class="btn light" onclick="openPage('Customers')">+ Customer</button><button class="btn bluebtn" onclick="shareBill()">WhatsApp</button><button class="btn light" onclick="printDraft()">Print/PDF</button></div>
 <div class="table-wrap"><table><thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th class="gstcol">GST%</th><th>Taxable</th><th class="gstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="billrows"></tbody></table></div>
 <div class="total"><div>Taxable <b id="taxable">₹0.00</b></div><div class="gstcol">CGST <b id="cgst">₹0.00</b></div><div class="gstcol">SGST <b id="sgst">₹0.00</b></div><div class="gstcol">IGST <b id="igst">₹0.00</b></div><div>Grand Total <b id="grand">₹0.00</b></div></div>
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
 <div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td><span class="badge ${x.status==='Paid'?'paid':'unpaid'}">${x.status}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="6">No invoices.</td></tr>'}</table></div></section>`;
 addBillRow();toggleBillType()
+}
+function fillBillingCustomer(){
+ let id=document.getElementById('bc')?.value,cu=db.customers.find(x=>x.id==id);
+ if(!cu){['bcname','bcphone','bcaddress'].forEach(id=>{let e=document.getElementById(id);if(e)e.value=''});return}
+ let n=document.getElementById('bcname'),p=document.getElementById('bcphone'),a=document.getElementById('bcaddress');
+ if(n)n.value=cu.name||''; if(p)p.value=cu.phone||''; if(a)a.value=cu.address||'';
+}
+function billingCustomerTyping(){
+ let sel=document.getElementById('bc');
+ if(sel&&sel.value){
+   let cu=db.customers.find(x=>x.id==sel.value),n=document.getElementById('bcname')?.value.trim()||'',p=document.getElementById('bcphone')?.value.trim()||'';
+   if(cu&&(n!==cu.name||p!==cu.phone))sel.value='';
+ }
+}
+function getBillingCustomer(){
+ let selectedId=document.getElementById('bc')?.value;
+ let name=document.getElementById('bcname')?.value.trim()||'',phone=document.getElementById('bcphone')?.value.trim()||'',address=document.getElementById('bcaddress')?.value.trim()||'';
+ let selected=selectedId?db.customers.find(x=>x.id==selectedId):null;
+ if(name&&phone&&address){
+   let norm=phone.replace(/\D/g,'');
+   let existing=db.customers.find(x=>x.phone&&x.phone.replace(/\D/g,'')===norm);
+   if(existing){existing.name=name;existing.phone=phone;existing.address=address;selected=existing}
+   else{selected={id:Date.now(),name,phone,address,gstin:''};db.customers.push(selected)}
+   return selected;
+ }
+ if(selected)return selected;
+ if(name){selected={id:Date.now(),name,phone,address,gstin:''};db.customers.push(selected);return selected}
+ return null;
 }
 function toggleBillType(){
 let non=document.getElementById('billtype')?.value==='nongst';
@@ -492,16 +520,18 @@ return{items:a,taxable:tx,gst:gs,grand:tx+gs,inter,billType:non?'nongst':'gst'}
 }
 function saveBill(){
 let d=calcBill();if(!d.items.length||d.grand<=0)return toast('Add item and amount');
-let c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0'),bt=document.getElementById('billtype')?.value||'gst',inv={no,date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,status:document.getElementById('bstatus').value,inter:d.inter,billType:bt};
-db.invoices.push(inv);d.items.forEach(i=>{let s=db.stock.find(x=>x.id==i.stockId);if(s)s.qty=Math.max(0,s.qty-i.qty)});db.transactions.push({date:dateIN(),particular:'Invoice '+no+' - '+inv.customer,type:'Credit',amount:d.grand});save();toast('Invoice saved successfully');billing()
+let cu=getBillingCustomer();
+if(!cu&&(document.getElementById('bcname')?.value.trim()||document.getElementById('bcphone')?.value.trim()||document.getElementById('bcaddress')?.value.trim()))return toast('Customer Name, Mobile Number and Address fill करा');
+let no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0'),bt=document.getElementById('billtype')?.value||'gst',inv={no,date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',customerId:cu?.id||'',customerPhone:cu?.phone||'',customerAddress:cu?.address||'',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,status:document.getElementById('bstatus').value,inter:d.inter,billType:bt};
+db.invoices.push(inv);d.items.forEach(i=>{let s=db.stock.find(x=>x.id==i.stockId);if(s)s.qty=Math.max(0,s.qty-i.qty)});db.transactions.push({date:dateIN(),particular:'Invoice '+no+' - '+inv.customer,type:'Credit',amount:d.grand});save();toast(cu?'Invoice saved & customer updated successfully':'Invoice saved successfully');billing()
 }
 function invoiceHTML(x){
 let cg=x.inter?0:x.gst/2,ig=x.inter?x.gst:0,non=x.billType==='nongst';
 return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p></body></html>`;
 }
 function printSaved(i){let w=open('','_blank');w.document.write(invoiceHTML(db.invoices[i]));w.document.close();w.print()}
-function printDraft(){let d=calcBill(),c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),x={no:'DRAFT',date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,inter:d.inter,billType:document.getElementById('billtype')?.value||'gst'};let w=open('','_blank');w.document.write(invoiceHTML(x));w.document.close();w.print()}
-function shareBill(){let d=calcBill(),c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),txt=`Ganesh Plywood ${document.getElementById('billtype')?.value==='nongst'?'Non-GST Bill':'GST Invoice'}\nCustomer: ${cu?.name||'Walk-in Customer'}\nTaxable: ${money(d.taxable)}\nGST: ${money(d.gst)}\nTotal: ${money(d.grand)}`;open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
+function printDraft(){let d=calcBill(),cu=getBillingCustomer(),x={no:'DRAFT',date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',customerPhone:cu?.phone||'',customerAddress:cu?.address||'',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,inter:d.inter,billType:document.getElementById('billtype')?.value||'gst'};let w=open('','_blank');w.document.write(invoiceHTML(x));w.document.close();w.print()}
+function shareBill(){let d=calcBill(),cu=getBillingCustomer(),txt=`Ganesh Plywood ${document.getElementById('billtype')?.value==='nongst'?'Non-GST Bill':'GST Invoice'}\nCustomer: ${cu?.name||'Walk-in Customer'}\nMobile: ${cu?.phone||'-'}\nAddress: ${cu?.address||'-'}\nTaxable: ${money(d.taxable)}\nGST: ${money(d.gst)}\nTotal: ${money(d.grand)}`;open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
 
 function stock(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>📦 Stock Management</h2>
