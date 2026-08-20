@@ -152,7 +152,7 @@ function rateChecklist(){
  <div class="card"><div class="title green">Sell Rate Value</div><div class="value">${money(db.stock.reduce((a,x)=>a+x.qty*(x.saleRate||x.rate||0),0))}</div><div class="sub">Current stock sale value</div></div>
  <div class="card"><div class="title blue">Expected Profit</div><div class="value">${money(db.stock.reduce((a,x)=>a+x.qty*((x.saleRate||x.rate||0)-(x.rate||0)),0))}</div><div class="sub">If all stock sold</div></div>
  </div>
- <div class="actions"><input class="search" id="rateSearch" placeholder="Search material..." oninput="renderRateChecklist()"><button class="btn bluebtn" onclick="window.print()">🖨️ Print Rate List</button><button class="btn primary" onclick="openPage('Stock')">✏️ Edit Rates</button></div>
+ <div class="actions"><input class="search" id="rateSearch" placeholder="Search material..." oninput="renderRateChecklist()"><button class="btn bluebtn" onclick="window.print()">🖨️ Print Rate List</button><button class="btn primary" onclick="openPage('Stock')">✏️ Edit Rates</button><button class="btn success" onclick="openPage('Stock')">💰 Change Rate</button></div>
  <div class="panel table-wrap"><table><thead><tr><th>Material</th><th>Category</th><th>Unit</th><th>Purchase Rate</th><th>Sell Rate</th><th>Profit ₹</th><th>Profit %</th></tr></thead><tbody id="rateTable"></tbody></table></div>
  </section>`;
  renderRateChecklist();
@@ -205,7 +205,38 @@ function reports(){
 let sales=db.invoices.reduce((a,x)=>a+x.grand,0),pur=db.purchases.reduce((a,x)=>a+x.total,0),gst=db.invoices.reduce((a,x)=>a+x.gst,0);
 document.getElementById('app').innerHTML=`<section class="page"><h2>📊 Reports</h2><div class="cards">${card('Sales',money(sales),'Gross sales','green')}${card('Purchase',money(pur),'Gross purchase','orange')}${card('GST Collected',money(gst),'Invoice GST','blue')}${card('Difference',money(sales-pur),'Sales - Purchase','purple')}</div><div class="section-title">Invoice Report</div><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Taxable</th><th>GST</th><th>Total</th></tr>${db.invoices.map(x=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.taxable)}</td><td>${money(x.gst)}</td><td>${money(x.grand)}</td></tr>`).join('')||'<tr><td colspan="6">No data.</td></tr>'}</table></div><div class="actions"><button class="btn primary" onclick="window.print()">Print Report</button></div></section>`
 }
-function transactions(){document.getElementById('app').innerHTML=`<section class="page"><h2>💼 Transactions</h2><div class="panel table-wrap"><table><tr><th>Date</th><th>Particular</th><th>Type</th><th>Amount</th></tr>${db.transactions.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.particular)}</td><td>${x.type}</td><td>${money(x.amount)}</td></tr>`).join('')||'<tr><td colspan="4">No transactions.</td></tr>'}</table></div></section>`}
+function transactions(){
+ document.getElementById('app').innerHTML=`<section class="page"><h2>💼 Recent Transactions</h2>
+ <div class="actions"><input class="search" id="txnSearch" placeholder="Search transaction..." oninput="renderTransactions()"><button class="btn primary" onclick="openPage('Dashboard')">← Dashboard</button></div>
+ <div class="panel table-wrap"><table><thead><tr><th>Date</th><th>Particular</th><th>Type</th><th>Amount</th><th>Action</th></tr></thead><tbody id="txntable"></tbody></table></div>
+ </section>`;renderTransactions()
+}
+function renderTransactions(){
+ const q=(document.getElementById('txnSearch')?.value||'').toLowerCase();
+ const arr=db.transactions.map((x,i)=>({...x,_i:i})).filter(x=>(String(x.date)+' '+String(x.particular)+' '+String(x.type)+' '+String(x.amount)).toLowerCase().includes(q)).reverse();
+ document.getElementById('txntable').innerHTML=arr.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.particular)}</td><td>${esc(x.type)}</td><td>${money(x.amount)}</td><td><button class="btn light" onclick="editTransaction(${x._i})">✏️ Edit</button> <button class="btn danger" onclick="deleteTransaction(${x._i})">🗑️ Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No transactions.</td></tr>'
+}
+function editTransaction(i){
+ const x=db.transactions[i];if(!x)return;
+ modal(`<h3>✏️ Edit Transaction</h3>
+ <div class="grid2"><div class="field"><label>Date</label><input id="etd" value="${esc(x.date)}"></div>
+ <div class="field"><label>Type</label><select id="ett"><option ${x.type==='Credit'?'selected':''}>Credit</option><option ${x.type==='Debit'?'selected':''}>Debit</option></select></div></div>
+ <div class="field"><label>Particular</label><input id="etp" value="${esc(x.particular)}"></div>
+ <div class="field"><label>Amount</label><input id="eta" type="number" min="0" step="0.01" value="${x.amount||0}"></div>
+ <button class="btn success" onclick="saveTransactionEdit(${i})">Save Update</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)
+}
+function saveTransactionEdit(i){
+ let x=db.transactions[i];if(!x)return;
+ x.date=document.getElementById('etd').value||x.date;
+ x.particular=document.getElementById('etp').value.trim()||x.particular;
+ x.type=document.getElementById('ett').value;
+ x.amount=+document.getElementById('eta').value||0;
+ save();closeModal();renderTransactions();toast('Transaction updated')
+}
+function deleteTransaction(i){
+ if(confirm('Delete this transaction?')){db.transactions.splice(i,1);save();renderTransactions();toast('Transaction deleted')}
+}
+
 function settings(){document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change PIN</button></div></section>`}
 function saveSettings(){Object.assign(db.settings,{company:setc.value,gstin:setg.value,address:seta.value,phone:setp.value,prefix:setpre.value,defaultGST:+setgst.value||18});save();toast('Settings saved')}
 function changePin(){let p=prompt('Enter new 4-6 digit PIN');if(p&&/^\\d{4,6}$/.test(p)){localStorage.setItem('GP_PIN',p);toast('PIN changed')}else toast('Invalid PIN')}
