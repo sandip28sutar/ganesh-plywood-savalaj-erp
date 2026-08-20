@@ -82,6 +82,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
  .erp-document{padding:12px}.erp-document-meta{grid-template-columns:1fr 1fr}.erp-toolbar{flex-wrap:wrap}
  .erp-data-table{min-width:1000px}.table-wrap{overflow-x:auto}.erp-document-title{font-size:20px}
 }
+
+<style>
+.payment-panel{border:1px solid #ead8c7;background:#fffaf4}
+.payment-panel h3{margin:0 0 12px;color:#5a2b0b}
+.payment-summary{margin-top:10px;padding:10px;border-radius:8px;background:#f4eadf;font-weight:600}
+</style>
 </style>
 </style>
 </style>
@@ -110,7 +116,45 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="login" id="login"><div class="loginbox"><h2>🔐 Ganesh Plywood</h2><p>Multi User Login</p><div class="field"><label>User ID</label><input id="loginUser" autocomplete="username" placeholder="Enter User ID"></div><div class="field"><label>Password / PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="12" autocomplete="current-password" placeholder="Enter Password"></div><button class="btn primary" style="width:100%" onclick="checkPin()">Login</button><div class="login-users"><button onclick="quickUser('admin')">Admin</button><button onclick="quickUser('manager')">Manager</button><button onclick="quickUser('staff')">Staff</button><button onclick="firebaseLogin()">☁️ Firebase</button></div><small>Default Admin: admin / 2828</small><small style="display:block;margin-top:6px">☁️ Firebase: Email + Password Login</small></div></div>
 
 
-<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js">
+// Billing payment tracking: Cash / UPI / Bank / Credit / Mixed.
+function getBillGrandTotal(){
+  const ids=['grandTotal','invoiceGrandTotal','billGrandTotal','totalAmount','netTotal'];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el){
+      const n=Number(String(el.value??el.textContent??'').replace(/[^0-9.-]/g,''));
+      if(Number.isFinite(n)) return n;
+    }
+  }
+  // Fallback: use common ERP invoice total variables if present.
+  try{
+    if(typeof invoiceTotal!=='undefined' && Number(invoiceTotal)) return Number(invoiceTotal);
+    if(typeof grandTotal!=='undefined' && Number(grandTotal)) return Number(grandTotal);
+  }catch(e){}
+  return 0;
+}
+function updateBillPayment(){
+  const total=getBillGrandTotal();
+  const received=Number(document.getElementById('billReceivedAmount')?.value||0);
+  const outstanding=Math.max(0,total-received);
+  const out=document.getElementById('billOutstandingAmount');
+  if(out) out.value=outstanding.toFixed(2);
+  const s=document.getElementById('billPaymentSummary');
+  if(s) s.innerHTML=`Received: <b>₹${received.toFixed(2)}</b> &nbsp; | &nbsp; Outstanding: <b>₹${outstanding.toFixed(2)}</b>`;
+  return {total,received,outstanding};
+}
+function applyBillPaymentToInvoice(invoice){
+  const p=updateBillPayment();
+  invoice.paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
+  invoice.receivedAmount=p.received;
+  invoice.outstandingAmount=p.outstanding;
+  invoice.paymentNote=document.getElementById('billPaymentNote')?.value||'';
+  invoice.paymentStatus=p.outstanding<=0 ? 'Paid' : (p.received>0 ? 'Part Paid' : 'Outstanding');
+  return invoice;
+}
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
 <script>
@@ -519,6 +563,7 @@ document.querySelectorAll('#billrows tr').forEach((r,i)=>{
 return{items:a,taxable:tx,gst:gs,grand:tx+gs,inter,billType:non?'nongst':'gst'}
 }
 function saveBill(){
+  if(typeof invoice!=="undefined") applyBillPaymentToInvoice(invoice);
 let d=calcBill();if(!d.items.length||d.grand<=0)return toast('Add item and amount');
 let cu=getBillingCustomer();
 if(!cu&&(document.getElementById('bcname')?.value.trim()||document.getElementById('bcphone')?.value.trim()||document.getElementById('bcaddress')?.value.trim()))return toast('Customer Name, Mobile Number and Address fill करा');
@@ -568,7 +613,32 @@ function renderRateChecklist(){
   return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.category)}</td><td>${esc(x.unit)}</td><td>${money(pr)}</td><td>${money(sr)}</td><td class="${profit>=0?'green':'red'}">${money(profit)}</td><td class="${profit>=0?'green':'red'}">${pct.toFixed(2)}%</td></tr>`;
  }).join('')||'<tr><td colspan="7">No materials found.</td></tr>';
 }
-function saleReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↩️ Sales Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Customer</label><select id="srCustomer"><option value="">Select customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="srDate" type="date" value="${iso()}"></div><div class="field"><label>Invoice Ref.</label><input id="srRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('sale')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Sell Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div><div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('sale')">Save Sales Return</button></div></section>`;addReturnRow('sale')}
+function saleReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↩️ Sales Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Customer</label><select id="srCustomer"><option value="">Select customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="srDate" type="date" value="${iso()}"></div><div class="field"><label>Invoice Ref.</label><input id="srRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('sale')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Sell Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div>
+<div class="panel payment-panel" style="margin-top:12px">
+  <h3>💳 Payment Details</h3>
+  <div class="grid4">
+    <div class="field"><label>Payment Mode</label>
+      <select id="billPaymentMode">
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="Bank">Bank Transfer</option>
+        <option value="Credit">Credit / Outstanding</option>
+        <option value="Mixed">Mixed</option>
+      </select>
+    </div>
+    <div class="field"><label>Received Amount</label>
+      <input id="billReceivedAmount" type="number" min="0" step="0.01" placeholder="₹ 0.00" oninput="updateBillPayment()">
+    </div>
+    <div class="field"><label>Outstanding Amount</label>
+      <input id="billOutstandingAmount" type="number" readonly value="0">
+    </div>
+    <div class="field"><label>Payment Note</label>
+      <input id="billPaymentNote" placeholder="Cash / UPI reference / note">
+    </div>
+  </div>
+  <div class="payment-summary" id="billPaymentSummary">Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00</div>
+</div>
+<div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('sale')">Save Sales Return</button></div></section>`;addReturnRow('sale')}
 function purchaseReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↪️ Purchase Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Supplier</label><select id="prSupplier"><option value="">Select supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="prDate" type="date" value="${iso()}"></div><div class="field"><label>Bill Ref.</label><input id="prRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('purchase')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Purchase Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div><div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('purchase')">Save Purchase Return</button></div></section>`;addReturnRow('purchase')}
 function addReturnRow(type){let tb=document.getElementById('returnRows'),r=document.createElement('tr');r.innerHTML=`<td><select class="ri">${itemOptions()}</select></td><td><input class="rq" type="number" min=".001" value="1"></td><td><input class="rr" type="number" min="0" value="0"></td><td class="ra">₹0.00</td><td><button class="btn danger" onclick="this.closest('tr').remove();calcReturn()">×</button></td>`;tb.appendChild(r);const sync=()=>{let x=db.stock.find(z=>z.id==r.querySelector('.ri').value);r.querySelector('.rr').value=type==='sale'?(x?.saleRate||x?.rate||0):(x?.rate||0);calcReturn()};r.querySelector('.ri').onchange=sync;r.querySelector('.rq').oninput=calcReturn;r.querySelector('.rr').oninput=calcReturn;sync()}
 function calcReturn(){let total=0;document.querySelectorAll('#returnRows tr').forEach(r=>{let a=(+r.querySelector('.rq').value||0)*(+r.querySelector('.rr').value||0);total+=a;r.querySelector('.ra').textContent=money(a)});if(document.getElementById('returnTotal'))document.getElementById('returnTotal').textContent=money(total);return total}
