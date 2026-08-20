@@ -786,10 +786,23 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>🛒 Materia
 <div class="grid4"><div class="field"><label>Supplier</label><select id="ps"><option value="">Select Supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Purchase Date</label><input id="pd" type="date" value="${iso()}"></div><div class="field"><label>Supplier Bill No.</label><input id="pref" placeholder="Bill No."></div><div class="field"><label>Bill Type</label><select id="ptype" onchange="togglePurchaseType()"><option value="gst">GST Purchase</option><option value="nongst">Non-GST Purchase</option></select></div></div>
 <div class="actions"><button class="btn primary" onclick="addPurchaseRow()">+ Add Material</button><button class="btn light" onclick="openPage('Suppliers')">+ Supplier</button></div>
 <div class="table-wrap"><table><thead><tr><th>Material</th><th>Qty</th><th>Unit</th><th>Purchase Rate</th><th class="pgstcol">GST%</th><th>Taxable</th><th class="pgstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="prows"></tbody></table></div>
-<div class="grid2"><div class="field"><label>Payment Status</label><select id="pstat"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div><div class="field"><label>Notes</label><input id="pnote"></div></div>
+<div class="panel" style="margin-top:12px;border:2px solid #6b2d08;padding:14px;background:#fffaf5">
+<h3 style="margin:0 0 12px;color:#6b2d08">💳 Purchase Payment / Payment Details</h3>
+<div class="grid4">
+<div class="field"><label>Payment Type</label><select id="pPaymentMode" onchange="updatePurchasePayment()"><option value="Cash">💵 Cash</option><option value="UPI">📱 UPI</option><option value="Bank">🏦 Bank Transfer</option><option value="Credit">🧾 Outstanding / Credit</option><option value="Mixed">🔄 Cash + UPI / Mixed</option></select></div>
+<div class="field"><label>Cash Paid</label><input id="pCashAmount" type="number" min="0" step=".01" value="0" oninput="updatePurchasePayment()"></div>
+<div class="field"><label>UPI Paid</label><input id="pUpiAmount" type="number" min="0" step=".01" value="0" oninput="updatePurchasePayment()"></div>
+<div class="field"><label>Total Paid</label><input id="pReceivedAmount" type="number" value="0" readonly></div>
+<div class="field"><label>Outstanding Amount</label><input id="pOutstandingAmount" type="number" value="0" readonly></div>
+<div class="field"><label>UPI / Payment Reference</label><input id="pPaymentNote" placeholder="UPI Ref / Note"></div>
+<div class="field"><label>Payment Status</label><select id="pstat"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option><option value="Partial">Partial</option></select></div>
+<div class="field"><label>Purchase Notes</label><input id="pnote"></div>
+</div>
+<div id="pPaymentSummary" style="margin-top:10px;padding:11px;background:#f7eee5;border-radius:8px;font-weight:700">Paid: ₹0.00 | Outstanding: ₹0.00</div>
+</div>
 <div class="total"><div>Taxable <b id="ptax">₹ 0.00</b></div><div class="pgstcol">GST <b id="pgst">₹ 0.00</b></div><div>Grand Total <b id="pgrand">₹ 0.00</b></div></div>
 <div class="actions"><button class="btn success" onclick="savePurchase()">💾 Save Purchase</button><button class="btn light" onclick="purchase()">🆕 New</button></div></div>
-<div class="section-title">Purchase Register</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Bill No.</th><th>Supplier</th><th>Type</th><th>Total</th><th>Status</th><th>Action</th></tr>${db.purchases.slice().reverse().map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.ref)}</td><td>${esc(x.supplier)}</td><td>${x.type==='gst'?'GST':'Non-GST'}</td><td>${money(x.total)}</td><td>${x.status}</td><td><button class="btn light" onclick="printPurchase(${db.purchases.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="7">No purchases.</td></tr>'}</table></div></section>`;
+<div class="section-title">Purchase Register</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Bill No.</th><th>Supplier</th><th>Type</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Mode</th><th>Status</th><th>Action</th></tr>${db.purchases.slice().reverse().map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.ref)}</td><td>${esc(x.supplier)}</td><td>${x.type==='gst'?'GST':'Non-GST'}</td><td>${money(x.total)}</td><td>${money(x.paidAmount||x.receivedAmount||0)}</td><td>${money(x.outstandingAmount||0)}</td><td>${esc(x.paymentMode||'-')}</td><td>${x.paymentStatus||x.status||'-'}</td><td><button class="btn light" onclick="printPurchase(${db.purchases.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="10">No purchases.</td></tr>'}</table></div></section>`;
 addPurchaseRow()
 }
 function togglePurchaseType(){
@@ -800,8 +813,40 @@ calcPurchase();
 }
 function addPurchaseRow(){let t=document.getElementById('prows'),r=document.createElement('tr');r.innerHTML=`<td><select class="pi">${itemOptions()}</select></td><td><input class="pq" type="number" min=".001" step=".001" value="1"></td><td class="pu"></td><td><input class="pr" type="number" min="0" step=".01" value="0"></td><td><input class="pgp pgstcol" type="number" min="0" step=".01" value="${db.settings.defaultGST}"></td><td class="ptx">0</td><td class="pgi pgstcol">0</td><td class="pto">0</td><td><button class="btn danger" onclick="this.closest('tr').remove();calcPurchase()">×</button></td>`;t.appendChild(r);function sync(){let x=db.stock.find(z=>z.id==r.querySelector('.pi').value);if(x){r.querySelector('.pu').textContent=x.unit;r.querySelector('.pr').value=x.rate;r.querySelector('.pgp').value=x.gst}calcPurchase()}r.querySelector('.pi').onchange=sync;r.querySelectorAll('input').forEach(x=>x.oninput=calcPurchase);sync()}
 function calcPurchase(){let a=[];document.querySelectorAll('#prows tr').forEach(r=>{let x=db.stock.find(z=>z.id==r.querySelector('.pi').value),q=+r.querySelector('.pq').value||0,rate=+r.querySelector('.pr').value||0,g=+r.querySelector('.pgp').value||0,tx=q*rate,gst=document.getElementById('ptype')?.value==='nongst'?0:tx*g/100;a.push({stockId:x?.id,name:x?.name||'',unit:x?.unit||'',qty:q,rate,gstRate:g,taxable:tx,gst,total:tx+gst});});let tx=a.reduce((s,x)=>s+x.taxable,0),gst=a.reduce((s,x)=>s+x.gst,0);document.getElementById('ptax').textContent=money(tx);document.getElementById('pgst').textContent=money(gst);document.getElementById('pgrand').textContent=money(tx+gst);document.querySelectorAll('#prows tr').forEach((r,i)=>{let x=a[i];if(x){r.querySelector('.ptx').textContent=money(x.taxable);r.querySelector('.pgi').textContent=money(x.gst);r.querySelector('.pto').textContent=money(x.total)}});return{items:a,taxable:tx,gst,grand:tx+gst}}
-function savePurchase(){let s=db.suppliers.find(x=>x.id==document.getElementById('ps').value),d=calcPurchase();if(!s)return toast('Select supplier');if(!d.items.length||d.grand<=0)return toast('Add material and amount');let p={date:document.getElementById('pd').value,ref:document.getElementById('pref').value||'N/A',supplier:s.name,supplierId:s.id,type:document.getElementById('ptype').value,items:d.items,taxable:d.taxable,gst:d.gst,total:d.grand,status:document.getElementById('pstat').value,note:document.getElementById('pnote').value};db.purchases.push(p);d.items.forEach(i=>{let st=db.stock.find(x=>x.id===i.stockId);if(st)st.qty+=i.qty});db.transactions.push({date:dateIN(),particular:'Material Purchase - '+s.name,type:'Debit',amount:d.grand});save();toast('Purchase saved and stock updated');purchase()}
-function printPurchase(i){let x=db.purchases[i],w=open('','_blank');w.document.write(`<html><head><title>Purchase</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}</style></head><body><h1>${esc(db.settings.company)}</h1><h2>Material Purchase</h2><p><b>Supplier:</b> ${esc(x.supplier)}<br><b>Bill No:</b> ${esc(x.ref)}<br><b>Date:</b> ${x.date}<br><b>Type:</b> ${x.type==='gst'?'GST Purchase':'Non-GST Purchase'}</p><table><tr><th>Material</th><th>Qty</th><th>Rate</th><th>GST</th><th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} ${i.unit}</td><td>${money(i.rate)}</td><td>${i.gstRate}%</td><td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}<br>GST: ${money(x.gst)}<br><b>Grand Total: ${money(x.total)}</b></p></body></html>`);w.document.close();w.print()}
+function updatePurchasePayment(){
+  const total=Number((document.getElementById('pgrand')?.textContent||'').replace(/[^0-9.-]/g,''))||0;
+  let cash=Math.max(0,Number(document.getElementById('pCashAmount')?.value||0));
+  let upi=Math.max(0,Number(document.getElementById('pUpiAmount')?.value||0));
+  let paid=cash+upi;
+  if(paid>total){paid=total; if(cash>total){cash=total;upi=0}else upi=total-cash;}
+  const r=document.getElementById('pReceivedAmount'),o=document.getElementById('pOutstandingAmount');
+  if(r)r.value=paid.toFixed(2); if(o)o.value=Math.max(0,total-paid).toFixed(2);
+  const st=document.getElementById('pstat');
+  if(st)st.value=paid>=total&&total>0?'Paid':paid>0?'Partial':'Unpaid';
+  const s=document.getElementById('pPaymentSummary');
+  if(s)s.innerHTML=`Cash: <b>₹${cash.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; UPI: <b>₹${upi.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Paid: <b>₹${paid.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${Math.max(0,total-paid).toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
+  return {total,cash,upi,paid,outstanding:Math.max(0,total-paid)};
+}
+function savePurchase(){
+let s=db.suppliers.find(x=>x.id==document.getElementById('ps').value),d=calcPurchase();
+if(!s)return toast('Select supplier');
+if(!d.items.length||d.grand<=0)return toast('Add material and amount');
+const pay=updatePurchasePayment();
+let p={
+id:'PUR-'+Date.now(),date:document.getElementById('pd').value,ref:document.getElementById('pref').value||'N/A',
+supplier:s.name,supplierId:s.id,type:document.getElementById('ptype').value,items:d.items,taxable:d.taxable,gst:d.gst,total:d.grand,
+paymentMode:document.getElementById('pPaymentMode')?.value||'Cash',cashPaid:pay.cash,upiPaid:pay.upi,
+paidAmount:pay.paid,receivedAmount:pay.paid,outstandingAmount:pay.outstanding,
+paymentStatus:pay.outstanding<=0?'Paid':(pay.paid>0?'Partial':'Unpaid'),
+status:pay.outstanding<=0?'Paid':(pay.paid>0?'Partial':'Unpaid'),
+paymentNote:document.getElementById('pPaymentNote')?.value||'',note:document.getElementById('pnote').value
+};
+db.purchases.push(p);
+d.items.forEach(i=>{let st=db.stock.find(x=>x.id===i.stockId);if(st)st.qty+=i.qty});
+db.transactions.push({date:dateIN(),particular:'Material Purchase - '+s.name,type:'Debit',amount:d.grand,paymentMode:p.paymentMode,cashPaid:p.cashPaid,upiPaid:p.upiPaid,paidAmount:p.paidAmount,outstandingAmount:p.outstandingAmount,status:p.paymentStatus});
+save();toast('Purchase saved with payment details');purchase()
+}
+function printPurchase(i){let x=db.purchases[i],w=open('','_blank');w.document.write(`<html><head><title>Purchase</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}</style></head><body><h1>${esc(db.settings.company)}</h1><h2>Material Purchase</h2><p><b>Supplier:</b> ${esc(x.supplier)}<br><b>Bill No:</b> ${esc(x.ref)}<br><b>Date:</b> ${x.date}<br><b>Type:</b> ${x.type==='gst'?'GST Purchase':'Non-GST Purchase'}<br><b>Payment Mode:</b> ${esc(x.paymentMode||'Cash')}<br><b>Paid:</b> ${money(x.paidAmount||x.receivedAmount||0)} &nbsp; <b>Outstanding:</b> ${money(x.outstandingAmount||0)}</p><table><tr><th>Material</th><th>Qty</th><th>Rate</th><th>GST</th><th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} ${i.unit}</td><td>${money(i.rate)}</td><td>${i.gstRate}%</td><td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}<br>GST: ${money(x.gst)}<br><b>Grand Total: ${money(x.total)}</b></p></body></html>`);w.document.close();w.print()}
 function sales(){billing()}
 function receivable(){let a=db.invoices.filter(x=>x.status!=='Paid');document.getElementById('app').innerHTML=`<section class="page"><h2>💰 Receivable</h2><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>${a.map(x=>`<tr><td>${x.no}</td><td>${esc(x.customer)}</td><td>${x.date}</td><td>${money(x.grand)}</td><td>${x.status}</td><td><button class="btn success" onclick="markInvoicePaid('${x.no}')">Mark Paid</button></td></tr>`).join('')||'<tr><td colspan="6">No receivables.</td></tr>'}</table></div></section>`}
 function markInvoicePaid(no){let x=db.invoices.find(x=>x.no===no);if(x){x.status='Paid';db.transactions.push({date:dateIN(),particular:'Receipt for '+no,type:'Credit',amount:x.grand});save();receivable();toast('Marked Paid')}}
