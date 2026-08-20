@@ -102,7 +102,7 @@ window.GP_FIREBASE={enabled:false,app:null,auth:null,fs:null,user:null};
 
 <script>
 const DBKEY='GP_ERP_ADVANCED_V1';
-const NAV=[['Dashboard','🏠'],['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚'],['Reports','📊'],['Transactions','💼'],['Settings','⚙️'],['Backup','💾']];
+const NAV=[['Dashboard','🏠'],['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚'],['Reports','📊'],['Transactions','💼'],['Settings','⚙️'],['Data Control','🛠️'],['Backup','💾']];
 const blank={settings:{company:'Ganesh Plywood',address:'Savalaj, Maharashtra',gstin:'',phone:'',prefix:'GP',defaultGST:18},customers:[],suppliers:[],stock:[],invoices:[],purchases:[],transactions:[],payments:[],salesReturns:[],purchaseReturns:[]};
 let db=JSON.parse(localStorage.getItem(DBKEY)||'null')||blank;
 const ROLE_PERMS={Admin:NAV.map(x=>x[0]),Manager:['Dashboard','GST Billing','Stock','Purchase','Rate Checklist','Purchase Return','Sales','Sales Return','Receivable','Payable','Customers','Suppliers','Reports','Transactions'],Staff:['Dashboard','GST Billing','Stock','Sales','Sales Return','Receivable','Customers','Reports']};
@@ -154,7 +154,7 @@ function toast(s){let x=document.getElementById('toast');x.textContent=s;x.style
 function toggleMenu(){document.getElementById('sidebar').classList.toggle('show')}
 function nav(){const u=getCurrentUser();const allowed=ROLE_PERMS[u?.role||'Admin']||NAV.map(x=>x[0]);document.getElementById('nav').innerHTML=NAV.filter(x=>allowed.includes(x[0])).map(x=>`<button data-p="${x[0]}" onclick="openPage('${x[0]}')">${x[1]} ${x[0]}</button>`).join('')+'<button onclick="logout()">↪ Logout</button>'}
 function active(p){document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.p===p));if(innerWidth<700)document.getElementById('sidebar').classList.remove('show')}
-function openPage(p){const u=getCurrentUser();const allowed=ROLE_PERMS[u?.role||'Admin']||[];if(!allowed.includes(p)){toast('Access denied for '+(u?.role||'User'));return}active(p);({Dashboard:dashboard,'GST Billing':billing,Stock:stock,Purchase:purchase,'Rate Checklist':rateChecklist,'Purchase Return':purchaseReturn,Sales:sales,'Sales Return':saleReturn,Receivable:receivable,Payable:payable,Customers:customers,Suppliers:suppliers,Reports:reports,Transactions:transactions,Settings:settings,Backup:backup}[p]||dashboard)()}
+function openPage(p){const u=getCurrentUser();const allowed=ROLE_PERMS[u?.role||'Admin']||[];if(!allowed.includes(p)){toast('Access denied for '+(u?.role||'User'));return}active(p);({Dashboard:dashboard,'GST Billing':billing,Stock:stock,Purchase:purchase,'Rate Checklist':rateChecklist,'Purchase Return':purchaseReturn,Sales:sales,'Sales Return':saleReturn,Receivable:receivable,Payable:payable,Customers:customers,Suppliers:suppliers,Reports:reports,Transactions:transactions,Settings:settings,'Data Control':adminDataControl,Backup:backup}[p]||dashboard)()}
 function card(t,v,s,c){return `<div class="card"><div class="title ${c}">${t}</div><div class="value">${v}</div><div class="sub">${s}</div></div>`}
 function dashboard(){
 const sales=db.invoices.reduce((a,x)=>a+Number(x.grand||0),0);
@@ -482,6 +482,70 @@ async function firebaseLogin(){
 async function doFirebaseLogin(){try{await window.GP_FIREBASE.auth.signInWithEmailAndPassword(femail.value.trim(),fpass.value);closeModal();toast("☁️ Firebase login successful");}catch(e){toast(e.message||"Login failed");}}
 async function doFirebaseSignup(){try{await window.GP_FIREBASE.auth.createUserWithEmailAndPassword(femail.value.trim(),fpass.value);closeModal();toast("☁️ Account created");}catch(e){toast(e.message||"Signup failed");}}
 async function firebaseLogout(){try{if(window.GP_FIREBASE&&window.GP_FIREBASE.auth)await window.GP_FIREBASE.auth.signOut();toast("Cloud logout successful");settings();}catch(e){toast("Cloud logout failed");}}
+
+
+function adminDataControl(){
+  const u=getCurrentUser();
+  if(u?.role!=='Admin'){toast('⛔ Admin access required');return}
+  const keys=[
+    ['customers','Customers','👥'],['suppliers','Suppliers','🚚'],['stock','Stock','📦'],
+    ['invoices','Sales / Invoices','🧾'],['purchases','Purchases','🛒'],
+    ['salesReturns','Sales Returns','↩️'],['purchaseReturns','Purchase Returns','↪️'],
+    ['transactions','Transactions','💼'],['users','Login Users','🔐']
+  ];
+  document.getElementById('app').innerHTML=`<section class="page">
+    <h2>🛠️ Admin Data Control</h2>
+    <div class="panel permission-note"><b>Admin Only:</b> येथे सर्व ERP data चे Edit आणि Delete करता येईल. Delete करण्यापूर्वी backup घ्या.</div>
+    <div class="actions">
+      <button class="btn primary" onclick="downloadBackup()">💾 Backup Before Changes</button>
+      <button class="btn danger" onclick="adminDeleteAllData()">🗑️ Delete All ERP Data</button>
+    </div>
+    <div class="grid4">${keys.map(k=>`<button class="quick" style="padding:12px" onclick="adminShowDataset('${k[0]}')"><i>${k[2]}</i>${k[1]}<br><small>${Array.isArray(db[k[0]])?db[k[0]].length:0} records</small></button>`).join('')}</div>
+    <div id="adminDataset" style="margin-top:18px"></div>
+  </section>`;
+}
+function adminShowDataset(key){
+  const u=getCurrentUser(); if(u?.role!=='Admin') return toast('⛔ Admin access required');
+  const arr=Array.isArray(db[key])?db[key]:[];
+  const box=document.getElementById('adminDataset');
+  if(!box)return;
+  box.innerHTML=`<div class="panel"><div class="actions"><h3 style="margin:0">${esc(key)}</h3><input class="search" id="adminSearch" placeholder="Search records..." oninput="adminRenderRows('${key}')"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Preview</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div></div>`;
+  adminRenderRows(key);
+}
+function adminRenderRows(key){
+  const arr=Array.isArray(db[key])?db[key]:[], q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
+  const tbody=document.getElementById('adminRows'); if(!tbody)return;
+  const rows=arr.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));
+  tbody.innerHTML=rows.map(o=>`<tr><td>${o.i+1}</td><td><pre style="white-space:pre-wrap;margin:0;max-width:900px">${esc(JSON.stringify(o.x,null,2))}</pre></td><td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`).join('')||'<tr><td colspan="3">No records.</td></tr>';
+}
+function adminEditRecord(key,i){
+  const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
+  const arr=db[key]; if(!arr||!arr[i])return;
+  modal(`<h3>✏️ Admin Edit — ${esc(key)}</h3>
+    <div class="permission-note">Edit the complete record as valid JSON. Keep field names unchanged unless you know the structure.</div>
+    <textarea id="adminJson" style="width:100%;min-height:360px;font-family:monospace">${esc(JSON.stringify(arr[i],null,2))}</textarea>
+    <div class="actions"><button class="btn success" onclick="adminSaveRecord('${key}',${i})">💾 Save Changes</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`);
+}
+function adminSaveRecord(key,i){
+  const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
+  try{
+    const value=JSON.parse(document.getElementById('adminJson').value);
+    if(value===null || typeof value!=='object') throw new Error();
+    db[key][i]=value; save(); closeModal(); adminShowDataset(key); toast('✅ Data updated');
+  }catch(e){toast('Invalid JSON — changes not saved')}
+}
+function adminDeleteRecord(key,i){
+  const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
+  if(!confirm(`Delete this ${key} record permanently?`))return;
+  db[key].splice(i,1); save(); adminShowDataset(key); toast('🗑️ Record deleted');
+}
+function adminDeleteAllData(){
+  const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
+  if(!confirm('DELETE ALL ERP DATA? First download a backup. This cannot be undone.'))return;
+  if(!confirm('Final confirmation: permanently clear customers, suppliers, stock, invoices, purchases, returns and transactions?'))return;
+  db.customers=[];db.suppliers=[];db.stock=[];db.invoices=[];db.purchases=[];db.salesReturns=[];db.purchaseReturns=[];db.transactions=[];
+  save(); adminDataControl(); toast('🗑️ All ERP transactional data deleted');
+}
 
 function settings(){const u=getCurrentUser();if(u?.role!=='Admin'){toast('Admin access required');return}document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change Admin Password</button></div><div class="section-title">👥 Multi Login Users</div><div class="panel"><div class="permission-note"><b>Roles:</b> Admin = full access • Manager = business operations • Staff = sales/stock/customer access. Passwords are device-local; for multi-device secure access use Firebase Login.</div><div class="actions"><button class="btn primary" onclick="userForm()">+ Add User</button></div><div class="table-wrap"><table class="user-table"><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${users.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.username)}</td><td><span class="role-badge">${esc(x.role)}</span></td><td>${x.active?'Active':'Disabled'}</td><td><button class="btn light" onclick="userForm('${x.id}')">Edit</button> <button class="btn ${x.active?'danger':'success'}" onclick="toggleUser('${x.id}')">${x.active?'Disable':'Enable'}</button></td></tr>`).join('')}</tbody></table></div></div></section>`}
 function saveSettings(){Object.assign(db.settings,{company:setc.value,gstin:setg.value,address:seta.value,phone:setp.value,prefix:setpre.value,defaultGST:+setgst.value||18});save();toast('Settings saved')}
