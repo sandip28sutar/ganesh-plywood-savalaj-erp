@@ -239,7 +239,11 @@ applyAdminSummaryControls();
 }
 
 function summaryOverrideKey(key){return 'GP_TODAY_SUMMARY_'+key.toUpperCase();}
-function isAdminUser(){const role=window.GP_CURRENT_ROLE||window.currentRole||localStorage.getItem('GP_ROLE')||'';return String(role).toLowerCase()==='admin';}
+function isAdminUser(){
+  const u=(typeof getCurrentUser==='function')?getCurrentUser():null;
+  const role=u?.role||window.GP_CURRENT_ROLE||window.currentRole||localStorage.getItem('GP_ROLE')||'';
+  return String(role).trim().toLowerCase()==='admin';
+}
 function summaryCalculatedValues(){
   const todayISO=iso(), todayIN=dateIN(), isToday=d=>String(d||'').slice(0,10)===todayISO||d===todayIN;
   const todayTx=db.transactions.filter(x=>isToday(x.date));
