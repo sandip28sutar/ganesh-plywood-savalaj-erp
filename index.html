@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ganesh Plywood ERP System</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#f5f5f5;color:#222}
+.top-banner{height:170px;background:linear-gradient(90deg,#f3e2c5,#fff7e8,#f2dfbd);border-bottom:3px solid #5a2b0b;display:flex;align-items:center;overflow:hidden}
+.logo-box{width:165px;height:100%;background:linear-gradient(180deg,#2b1608,#120a04);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo-circle{width:75px;height:75px;border:3px solid #e7a735;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#e7a735;font-size:42px;margin-bottom:8px}
+.logo-box b{font-size:16px}.logo-box span{font-size:13px;margin-top:5px}
+.banner-content{flex:1;text-align:center}.banner-content .small{font-size:15px;font-weight:bold;margin-bottom:5px}
+.company-name{font-size:62px;font-weight:900;color:#d71919;text-shadow:3px 3px 0 #fff,5px 5px 0 #9d170d;letter-spacing:2px}
+.menu-text{font-size:21px;font-weight:bold;margin-top:5px}.menu-text span{color:#5b2b0b;margin:0 8px}
+.app{display:flex;min-height:calc(100vh - 170px)}
+.sidebar{width:220px;background:#fff;border-right:1px solid #ddd;transition:.3s}
+.side-title{padding:15px;background:#5a2b0b;color:#fff;font-size:18px;font-weight:bold}
+.nav-item{padding:15px 18px;display:flex;align-items:center;gap:13px;border-bottom:1px solid #eee;cursor:pointer;font-size:15px;transition:.2s}
+.nav-item:hover{background:#f4e8dc;color:#6d3107}.nav-item.active{background:#a95013;color:#fff;border-radius:0 8px 8px 0}
+.icon{width:22px;text-align:center;font-size:19px}.logout{color:#c40000;font-weight:bold}
+.content{flex:1;overflow:hidden}.topbar{height:52px;background:#4d250c;color:#fff;display:flex;align-items:center;padding:0 25px;gap:25px}
+.menu-btn{font-size:25px;cursor:pointer}.user{font-weight:bold}.date{margin-left:auto}
+.dashboard{padding:25px}.page-title{font-size:21px;font-weight:bold;margin-bottom:25px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #eee;min-height:125px}
+.card-title{font-size:14px;font-weight:bold;margin-bottom:12px}.card-value{font-size:23px;font-weight:bold}.card-sub{margin-top:10px;font-size:13px;color:#555}
+.green{color:#159447}.orange{color:#dc6c11}.blue{color:#1269d8}.red{color:#d71920}.purple{color:#6524c9}.brown{color:#6a2d09}
+.section-title{font-size:18px;font-weight:bold;margin:28px 0 15px}.quick-actions{display:grid;grid-template-columns:repeat(8,1fr);gap:12px}
+.quick{background:#fff;padding:17px 8px;border:1px solid #ddd;border-radius:10px;text-align:center;cursor:pointer;transition:.2s}
+.quick:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,.12)}.quick-icon{font-size:27px;margin-bottom:9px}.quick-name{font-size:12px;font-weight:bold}
+.lower{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:18px;margin-top:20px}.panel{background:#fff;border:1px solid #ddd;border-radius:10px;padding:15px;box-shadow:0 2px 7px rgba(0,0,0,.05)}
+.panel h3{font-size:16px;margin-bottom:14px}table{width:100%;border-collapse:collapse}th,td{padding:10px 7px;border-bottom:1px solid #eee;font-size:12px;text-align:left}
+th{background:#5a2b0b;color:#fff}.success,.credit{color:#159447;font-weight:bold}.debit{color:#d71920;font-weight:bold}
+.chart{width:190px;height:190px;border-radius:50%;margin:15px auto;background:conic-gradient(#166bd8 0 20%,#f1b700 20% 38%,#6524c9 38% 54%,#19b87a 54% 73%,#999 73% 100%);position:relative}
+.chart:after{content:"6430\A Total Items";white-space:pre;position:absolute;width:105px;height:105px;background:#fff;border-radius:50%;left:42px;top:42px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;font-size:16px}
+.legend{display:grid;gap:7px;font-size:12px}.legend div{display:flex;justify-content:space-between}.view-btn{width:100%;padding:10px;margin-top:12px;border:none;background:#5a2b0b;color:#fff;border-radius:6px;cursor:pointer}
+.footer{background:#3c1b08;color:#fff;padding:13px 20px;margin-top:20px;display:flex;justify-content:space-between;font-size:13px}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.quick-actions{grid-template-columns:repeat(4,1fr)}.lower{grid-template-columns:1fr}.company-name{font-size:42px}}
+@media(max-width:700px){.top-banner{height:100px}.logo-box{width:95px}.logo-circle{width:45px;height:45px;font-size:25px}.logo-box b{font-size:10px}.logo-box span{font-size:8px}.company-name{font-size:27px}.menu-text{font-size:10px}.sidebar{position:fixed;left:-230px;top:100px;bottom:0;z-index:1000}.sidebar.show{left:0}.cards{grid-template-columns:1fr}.quick-actions{grid-template-columns:repeat(2,1fr)}.dashboard{padding:15px}.date{display:none}.lower{grid-template-columns:1fr}.panel{overflow-x:auto}table{min-width:600px}}
+</style>
+</head>
+<body>
+<div class="top-banner">
+  <div class="logo-box"><div class="logo-circle">ॐ</div><b>Ganesh Plywood</b><span>ERP System</span></div>
+  <div class="banner-content">
+    <div class="small">॥ श्री गणेशाय नमः ॥</div>
+    <div class="company-name">गणेश प्लायवूड</div>
+    <div class="menu-text"><span>▶ प्लायवूड</span><span>▶ हार्डवेअर</span><span>▶ सनमाईका</span><span>▶ डोअर</span></div>
+  </div>
+</div>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="side-title">🏠 Ganesh Plywood ERP</div>
+  <div class="nav-item active" onclick="openPage('Dashboard')"><span class="icon">🏠</span>Dashboard</div>
+  <div class="nav-item" onclick="openPage('GST Billing')"><span class="icon">🧾</span>GST Billing<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Stock')"><span class="icon">📦</span>Stock<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Purchase')"><span class="icon">🛒</span>Purchase<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Sales')"><span class="icon">🛍️</span>Sales<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Receivable')"><span class="icon">💰</span>Receivable<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Payable')"><span class="icon">💳</span>Payable<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Customers')"><span class="icon">👥</span>Customers<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Suppliers')"><span class="icon">🚚</span>Suppliers<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Reports')"><span class="icon">📊</span>Reports<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Transactions')"><span class="icon">💼</span>Transactions<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Settings')"><span class="icon">⚙️</span>Settings<span style="margin-left:auto">›</span></div>
+  <div class="nav-item" onclick="openPage('Backup')"><span class="icon">💾</span>Backup<span style="margin-left:auto">›</span></div>
+  <div class="nav-item logout" onclick="logout()"><span class="icon">↪</span>Logout</div>
+</aside>
+<main class="content">
+  <div class="topbar"><div class="menu-btn" onclick="toggleMenu()">☰</div><div class="user">👤 User : SANDIP28</div><div>|</div><div>📅 Date : <span id="today"></span></div><div class="date">🔔</div></div>
+  <section class="dashboard">
+    <div class="page-title">Dashboard</div>
+    <div class="cards">
+      <div class="card"><div class="card-title green">Total Sales</div><div class="card-value">₹ 12,45,680</div><div class="card-sub">This Month</div></div>
+      <div class="card"><div class="card-title orange">Total Purchase</div><div class="card-value">₹ 8,75,350</div><div class="card-sub">This Month</div></div>
+      <div class="card"><div class="card-title blue">Total Receivable</div><div class="card-value">₹ 1,25,430</div><div class="card-sub">Pending Amount</div></div>
+      <div class="card"><div class="card-title red">Total Payable</div><div class="card-value">₹ 85,260</div><div class="card-sub">Pending Amount</div></div>
+      <div class="card"><div class="card-title purple">Total Stock Value</div><div class="card-value">₹ 15,68,320</div><div class="card-sub">Current Value</div></div>
+      <div class="card"><div class="card-title green">Cash in Hand</div><div class="card-value">₹ 45,680</div><div class="card-sub">In Hand</div></div>
+      <div class="card"><div class="card-title brown">Total Customers</div><div class="card-value">36</div><div class="card-sub">Customers</div></div>
+      <div class="card"><div class="card-title brown">Total Suppliers</div><div class="card-value">15</div><div class="card-sub">Suppliers</div></div>
+    </div>
+    <div class="section-title">Quick Actions</div>
+    <div class="quick-actions">
+      <div class="quick" onclick="openPage('GST Billing')"><div class="quick-icon">🧾</div><div class="quick-name">GST Billing</div></div>
+      <div class="quick" onclick="openPage('Stock')"><div class="quick-icon">📦</div><div class="quick-name">Stock</div></div>
+      <div class="quick" onclick="openPage('Purchase')"><div class="quick-icon">🛒</div><div class="quick-name">Purchase Order</div></div>
+      <div class="quick" onclick="openPage('Sales')"><div class="quick-icon">🛍️</div><div class="quick-name">Sales Order</div></div>
+      <div class="quick" onclick="openPage('Receivable')"><div class="quick-icon">💰</div><div class="quick-name">Receivable</div></div>
+      <div class="quick" onclick="openPage('Payable')"><div class="quick-icon">💳</div><div class="quick-name">Payable</div></div>
+      <div class="quick" onclick="openPage('Customers')"><div class="quick-icon">👥</div><div class="quick-name">Customers</div></div>
+      <div class="quick" onclick="openPage('Suppliers')"><div class="quick-icon">🚚</div><div class="quick-name">Suppliers</div></div>
+    </div>
+    <div class="lower">
+      <div class="panel"><h3>Recent Transactions</h3><table>
+        <tr><th>Date</th><th>Particulars</th><th>Type</th><th>Amount</th><th>Status</th></tr>
+        <tr><td>20/08/2026</td><td>Sales to Rajesh Patil</td><td class="credit">Credit</td><td>₹30,503</td><td class="success">Success</td></tr>
+        <tr><td>20/08/2026</td><td>Purchase from Greenply</td><td class="debit">Debit</td><td>₹15,850</td><td class="success">Success</td></tr>
+        <tr><td>20/08/2026</td><td>Payment Received</td><td class="credit">Credit</td><td>₹10,000</td><td class="success">Success</td></tr>
+        <tr><td>19/08/2026</td><td>Payment to Greenply</td><td class="debit">Debit</td><td>₹5,000</td><td class="success">Success</td></tr>
+        <tr><td>19/08/2026</td><td>Cash in Hand</td><td class="credit">Credit</td><td>₹2,500</td><td class="success">Success</td></tr>
+      </table></div>
+      <div class="panel"><h3>Stock Overview</h3><div class="chart"></div><div class="legend">
+        <div><span>🔵 Plywood</span><b>1,250</b></div><div><span>🔵 Hardware</span><b>950</b></div><div><span>🟢 Laminates</span><b>1,100</b></div><div><span>🟣 Doors</span><b>720</b></div><div><span>⚫ Others</span><b>2,410</b></div>
+      </div></div>
+      <div class="panel"><h3>Low Stock Items</h3><table>
+        <tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>
+        <tr><td>Marine Plywood 12mm</td><td>15</td><td>Sheet</td></tr>
+        <tr><td>Commercial Plywood 12mm</td><td>18</td><td>Sheet</td></tr>
+        <tr><td>Laminates Sheet</td><td>20</td><td>Sheet</td></tr>
+        <tr><td>Edge Band 22mm</td><td>25</td><td>Mtr</td></tr>
+        <tr><td>Flush Door</td><td>8</td><td>Nos</td></tr>
+      </table><button class="view-btn" onclick="openPage('Stock')">View All</button></div>
+    </div>
+    <div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div>
+  </section>
+</main>
+</div>
+<script>
+const now=new Date();
+document.getElementById("today").innerText=String(now.getDate()).padStart(2,'0')+"/"+String(now.getMonth()+1).padStart(2,'0')+"/"+now.getFullYear();
+function toggleMenu(){document.getElementById("sidebar").classList.toggle("show")}
+function openPage(page){alert(page+" module selected.\n\nNext step: "+page+" module can be connected with database.")}
+function logout(){if(confirm("Are you sure you want to logout?"))alert("Logged out successfully.")}
+</script>
+</body>
+</html>
