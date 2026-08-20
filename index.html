@@ -135,23 +135,33 @@ function getBillGrandTotal(){
 }
 function updateBillPayment(){
   const total=getBillGrandTotal();
-  let received=Number(document.getElementById('billReceivedAmount')?.value||0);
-  if(received<0) received=0;
-  if(received>total) received=total;
-  const out=Math.max(0,total-received);
-  const oe=document.getElementById('billOutstandingAmount'); if(oe) oe.value=out.toFixed(2);
+  let cash=Number(document.getElementById('billCashAmount')?.value||0);
+  let upi=Number(document.getElementById('billUpiAmount')?.value||0);
+  if(cash<0) cash=0; if(upi<0) upi=0;
+  let received=cash+upi;
+  if(received>total){
+    received=total;
+    if(cash>total) cash=total;
+    upi=Math.max(0,received-cash);
+  }
+  const re=document.getElementById('billReceivedAmount');
+  const oe=document.getElementById('billOutstandingAmount');
+  if(re) re.value=received.toFixed(2);
+  if(oe) oe.value=Math.max(0,total-received).toFixed(2);
   const s=document.getElementById('billPaymentSummary');
-  if(s)s.innerHTML=`Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${out.toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
-  return {total,received,outstanding:out};
+  if(s)s.innerHTML=`Cash: <b>₹${cash.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; UPI: <b>₹${upi.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${Math.max(0,total-received).toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
+  return {total,received,outstanding:Math.max(0,total-received),cash,upi};
 }
 function resetBillPayment(){
-  const m=document.getElementById('billPaymentMode'),r=document.getElementById('billReceivedAmount'),n=document.getElementById('billPaymentNote');
-  if(m)m.value='Cash'; if(r)r.value='0'; if(n)n.value=''; updateBillPayment();
+  const m=document.getElementById('billPaymentMode'),c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount'),r=document.getElementById('billReceivedAmount'),n=document.getElementById('billPaymentNote');
+  if(m)m.value='Cash'; if(c)c.value='0'; if(u)u.value='0'; if(r)r.value='0'; if(n)n.value=''; updateBillPayment();
 }
 function restoreInvoicePayment(invoice){
   if(!invoice)return;
-  const m=document.getElementById('billPaymentMode'),r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount'),n=document.getElementById('billPaymentNote');
+  const m=document.getElementById('billPaymentMode'),c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount'),r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount'),n=document.getElementById('billPaymentNote');
   if(m)m.value=invoice.paymentMode||'Cash';
+  if(c)c.value=Number(invoice.cashReceived||0);
+  if(u)u.value=Number(invoice.upiReceived||0);
   if(r)r.value=Number(invoice.receivedAmount||0);
   if(o)o.value=Number(invoice.outstandingAmount||0).toFixed(2);
   if(n)n.value=invoice.paymentNote||'';
@@ -498,21 +508,29 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing
 <div id="billModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Bill: GST will be calculated</div><div class="actions"><button class="btn primary" onclick="addBillRow()">+ Item</button><button class="btn light" onclick="openPage('Customers')">+ Customer</button><button class="btn bluebtn" onclick="shareBill()">WhatsApp</button><button class="btn light" onclick="printDraft()">Print/PDF</button></div>
 <div class="table-wrap"><table><thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th class="gstcol">GST%</th><th>Taxable</th><th class="gstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="billrows"></tbody></table></div>
 <div class="total"><div>Taxable <b id="taxable">₹0.00</b></div><div class="gstcol">CGST <b id="cgst">₹0.00</b></div><div class="gstcol">SGST <b id="sgst">₹0.00</b></div><div class="gstcol">IGST <b id="igst">₹0.00</b></div><div>Grand Total <b id="grand">₹0.00</b></div></div>
-<div class="panel payment-panel" style="margin-top:12px">
-<h3>💳 Payment Details</h3>
+<div class="panel payment-panel" style="margin-top:12px;border:2px solid #6b2d08;padding:14px;background:#fffaf5">
+<h3 style="margin:0 0 12px;color:#6b2d08">💳 Payment / Receipt Details</h3>
 <div class="grid4">
-<div><label>Payment Mode</label><select id="billPaymentMode" onchange="updateBillPayment()">
-<option value="Cash">💵 Cash</option><option value="UPI">📱 UPI</option><option value="Bank">🏦 Bank Transfer</option><option value="Credit">🧾 Outstanding / Credit</option><option value="Mixed">🔄 Mixed</option>
+<div><label>Payment Type</label><select id="billPaymentMode" onchange="updateBillPayment()">
+<option value="Cash">💵 Cash</option>
+<option value="UPI">📱 UPI</option>
+<option value="Bank">🏦 Bank Transfer</option>
+<option value="Credit">🧾 Outstanding / Credit</option>
+<option value="Mixed">🔄 Cash + UPI / Mixed</option>
 </select></div>
-<div><label>Received Amount</label><input id="billReceivedAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
+<div><label>Cash Received</label><input id="billCashAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
+<div><label>UPI Received</label><input id="billUpiAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
+<div><label>Total Received</label><input id="billReceivedAmount" type="number" min="0" step="0.01" value="0" readonly></div>
 <div><label>Outstanding Amount</label><input id="billOutstandingAmount" type="number" value="0" readonly></div>
-<div><label>UPI / Payment Reference</label><input id="billPaymentNote" placeholder="Reference / note"></div>
+<div><label>UPI / Payment Reference</label><input id="billPaymentNote" placeholder="UPI Ref / Note"></div>
 </div>
-<div id="billPaymentSummary" style="margin-top:10px;padding:10px;background:#f7eee5;border-radius:8px;font-weight:600">Received: ₹0.00 | Outstanding: ₹0.00</div>
+<div id="billPaymentSummary" style="margin-top:10px;padding:11px;background:#f7eee5;border-radius:8px;font-weight:700">
+Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00
+</div>
 </div>
 
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
-<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="9">No invoices.</td></tr>'}</table></div></section>`;
+<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
 addBillRow();toggleBillType();resetBillPayment()
 }
 function fillBillingCustomer(){
@@ -592,6 +610,8 @@ if(pay.received>pay.total)return toast('Received amount cannot exceed Grand Tota
 let no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0');
 let bt=document.getElementById('billtype')?.value||'gst';
 let paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
+let cashReceived=Number(document.getElementById('billCashAmount')?.value||0);
+let upiReceived=Number(document.getElementById('billUpiAmount')?.value||0);
 let paymentNote=document.getElementById('billPaymentNote')?.value.trim()||'';
 
 let paymentStatus=pay.outstanding<=0?'Paid':(pay.received>0?'Part Paid':'Outstanding');
@@ -613,6 +633,8 @@ status:paymentStatus,
 inter:d.inter,
 billType:bt,
 paymentMode,
+cashReceived,
+upiReceived,
 receivedAmount:pay.received,
 outstandingAmount:pay.outstanding,
 paymentStatus,
@@ -633,6 +655,8 @@ particular:'Invoice '+no+' - '+inv.customer,
 type:'Credit',
 amount:d.grand,
 paymentMode,
+cashReceived,
+upiReceived,
 receivedAmount:pay.received,
 outstandingAmount:pay.outstanding,
 status:paymentStatus
@@ -648,6 +672,8 @@ function invoiceHTML(x){
 let cg=x.inter?0:x.gst/2,ig=x.inter?x.gst:0,non=x.billType==='nongst';
 let payment=`<div style="margin-top:18px;border:1px solid #999;padding:10px"><b>Payment Details</b><br>
 Mode: ${esc(x.paymentMode||'Cash')} &nbsp; | &nbsp;
+Cash: ${money(x.cashReceived||0)} &nbsp; | &nbsp;
+UPI: ${money(x.upiReceived||0)} &nbsp; | &nbsp;
 Received: ${money(x.receivedAmount||0)} &nbsp; | &nbsp;
 Outstanding: ${money(x.outstandingAmount||0)} &nbsp; | &nbsp;
 Status: ${esc(x.paymentStatus||x.status||'Outstanding')}
