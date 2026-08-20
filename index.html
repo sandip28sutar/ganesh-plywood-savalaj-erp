@@ -216,7 +216,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="chart-box"><h3 style="margin:0 0 12px">Low Stock Items</h3><table class="low-list"><tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>${low.map(x=>`<tr><td>${esc(x.name)}</td><td class="low">${x.qty}</td><td>${esc(x.unit)}</td></tr>`).join('')||'<tr><td colspan="3">No low stock items.</td></tr>'}</table><button class="btn primary" style="width:100%;margin-top:12px" onclick="openPage('Stock')">View All Stock</button></div></div>
 </div>
 <aside class="today-summary"><h3>Today's Summary</h3>
-<div class="actions no-print" style="margin:0 0 8px">
+<div id="todaySummaryAdminControls" class="actions no-print" style="margin:0 0 8px;display:none">
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit</button>
 <button class="btn success" onclick="updateTodaySummary()">💾 Update</button>
 </div>
@@ -238,6 +238,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 }
 
 function editTodaySummary(){
+  if(!isAdminUser()){toast('⛔ Admin access only');return;}
   const today=new Date().toLocaleDateString('en-GB');
   const todayTx=db.transactions.filter(x=>x.date===today);
   const sales=todayTx.filter(x=>x.type==='Credit'&&/Invoice|Sales/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
@@ -263,6 +264,7 @@ function editTodaySummary(){
   document.getElementById('modal').classList.add('show');
 }
 function updateTodaySummary(){
+  if(!isAdminUser()){toast('⛔ Admin access only');return;}
   const vals={
     sales:document.getElementById('etsales')?.value,
     purchase:document.getElementById('etpurchase')?.value,
@@ -473,7 +475,17 @@ function backup(){document.getElementById('app').innerHTML=`<section class="page
 function downloadBackup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='ganesh-plywood-erp-backup-'+Date.now()+'.json';a.click()}
 function restore(e){let f=e.target.files[0],r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();toast('Restored');openPage('Dashboard')}catch{toast('Invalid JSON')}};r.readAsText(f)}
 function resetAll(){if(confirm('Delete all ERP data on this device?')){localStorage.removeItem(DBKEY);location.reload()}}
-function modal(h){document.getElementById('modalbox').innerHTML=h;document.getElementById('modal').classList.add('show')}function closeModal(){document.getElementById('modal').classList.remove('show')}
+function modal(h){document.getElementById('modalbox').innerHTML=h;document.getElementById('modal').classList.add('show')}
+function isAdminUser(){
+  const role = window.GP_CURRENT_ROLE || window.currentRole || localStorage.getItem('GP_ROLE') || '';
+  return String(role).toLowerCase()==='admin';
+}
+function applyAdminSummaryControls(){
+  const el=document.getElementById('todaySummaryAdminControls');
+  if(el) el.style.display=isAdminUser()?'flex':'none';
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('show')}
 function logout(){localStorage.removeItem(SESSION_KEY);document.getElementById('loginUser').value='';document.getElementById('pin').value='';document.getElementById('login').style.display='flex';nav()}
 function checkPin(){let username=document.getElementById('loginUser').value.trim().toLowerCase(),pin=document.getElementById('pin').value,u=users.find(x=>x.username===username&&x.active);if(!u)return toast('Invalid or disabled User ID');if(pin===u.password){setCurrentUser(u);document.getElementById('login').style.display='none';document.getElementById('pin').value='';openPage('Dashboard')}else toast('Wrong password')}
 document.getElementById('today').textContent=dateIN();document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
