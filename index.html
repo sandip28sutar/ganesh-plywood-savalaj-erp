@@ -101,7 +101,15 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .payment-panel{border:1px solid #e7d4c2;background:#fffaf5}
 .payment-panel label{display:block;font-weight:600;margin-bottom:5px}
 .payment-panel input,.payment-panel select{width:100%;box-sizing:border-box}
-</style></head>
+</style>
+<style id="sss-clean-fix">
+html,body{overflow-x:hidden}
+#app{overflow-x:hidden}
+.table-wrap{max-width:100%;overflow-x:auto}
+.table-wrap table{min-width:900px}
+@media(max-width:700px){.table-wrap{overflow-x:auto}.table-wrap table{min-width:900px}}
+</style>
+</head>
 <body>
 
 <div class="top-banner">
@@ -128,7 +136,15 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
+
+
+
+
+
+
+
 <script>
+
 // Billing payment helpers - loaded as executable JavaScript (not inside a src script tag).
 function getBillGrandTotal(){
   const el=document.getElementById('grand');
@@ -182,9 +198,9 @@ function restoreInvoicePayment(invoice){
   const m=document.getElementById('billPaymentMode'),c=document.getElementById('billCashAmount'),u=document.getElementById('billUpiAmount'),r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount'),n=document.getElementById('billPaymentNote');
   if(m)m.value=invoice.paymentMode||'Cash';if(c)c.value=Number(invoice.cashReceived||0);if(u)u.value=Number(invoice.upiReceived||0);if(r)r.value=Number(invoice.receivedAmount||0);if(o)o.value=Number(invoice.outstandingAmount||0).toFixed(2);if(n)n.value=invoice.paymentNote||'';updateBillPayment();
 }
-</script>
 
-<script>
+
+
 // Ganesh Plywood Firebase configuration
 window.GANESH_FIREBASE_CONFIG = {
   apiKey: "AIzaSyD5fJ27GlP_uNgb2uxpPfIFvSrxgGI0xwc",
@@ -194,8 +210,9 @@ window.GANESH_FIREBASE_CONFIG = {
   messagingSenderId: "601577954725",
   appId: "1:601577954725:web:f00cb33d523a2abf761c4c"
 };
-</script>
-<script>
+
+
+
 window.GP_FIREBASE={enabled:false,app:null,auth:null,fs:null,user:null};
 (function(){
   try{
@@ -211,9 +228,9 @@ window.GP_FIREBASE={enabled:false,app:null,auth:null,fs:null,user:null};
     });
   }catch(e){console.warn("Firebase disabled:",e);}
 })();
-</script>
 
-<script>
+
+
 const DBKEY='GP_ERP_ADVANCED_V1';
 const NAV=[['Dashboard','🏠'],['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚'],['Reports','📊'],['Transactions','💼'],['Settings','⚙️'],['Data Control','🛠️'],['Backup','💾']];
 const blank={settings:{company:'Ganesh Plywood',address:'Savalaj, Maharashtra',gstin:'',phone:'',prefix:'GP',defaultGST:18},customers:[],suppliers:[],stock:[],invoices:[],purchases:[],transactions:[],payments:[],salesReturns:[],purchaseReturns:[]};
@@ -839,8 +856,8 @@ return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:
     saveDB();setTimeout(sssRefreshAdvanced,500);
   });
 })();
-</script>
 
+</script>
 </body></html>`;
 }
 function printSaved(i){let w=open('','_blank');w.document.write(invoiceHTML(db.invoices[i]));w.document.close();w.print()}
