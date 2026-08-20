@@ -66,6 +66,23 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .inventory-document .inventory-table td{border:1px solid #777;padding:9px}
 .inventory-document .inventory-table tfoot td{background:#fafafa}
 @media(max-width:700px){.inventory-document{padding:12px}.inventory-document .info-grid{grid-template-columns:1fr}}
+
+<style>
+.erp-document{background:#fff;border:1px solid #d8d8d8;border-radius:16px;padding:20px;margin-top:18px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.erp-document-title{text-align:center;font-size:24px;font-weight:700;color:#4e2509;padding:8px 0 16px;border-bottom:2px solid #eadfd2}
+.erp-document-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.erp-document-meta>div{border:1px solid #ddd;border-radius:10px;padding:10px;background:#fffdf9;line-height:1.5}
+.erp-toolbar{display:flex;gap:10px;align-items:center;margin:12px 0}
+.erp-data-table{width:100%;border-collapse:collapse;min-width:1000px;background:#fff}
+.erp-data-table th{background:#f1e9df;color:#3b2618;border:1px solid #777;padding:10px;text-align:left;white-space:nowrap}
+.erp-data-table td{border:1px solid #aaa;padding:9px;vertical-align:middle}
+.erp-data-table tr:nth-child(even){background:#fcfaf7}
+.erp-document-footer{display:flex;justify-content:space-between;margin-top:14px;padding-top:10px;border-top:1px solid #ddd;color:#777;font-size:12px}
+@media(max-width:700px){
+ .erp-document{padding:12px}.erp-document-meta{grid-template-columns:1fr 1fr}.erp-toolbar{flex-wrap:wrap}
+ .erp-data-table{min-width:1000px}.table-wrap{overflow-x:auto}.erp-document-title{font-size:20px}
+}
+</style>
 </style>
 </style>
 </style>
@@ -630,59 +647,100 @@ function adminDataControl(){
   </section>`;
 }
 function adminShowDataset(key){
-  const u=getCurrentUser(); if(u?.role!=='Admin') return toast('⛔ Admin access required');
+  const u=getCurrentUser();
+  if(u?.role!=='Admin'){toast('⛔ Admin access required');return}
   const arr=Array.isArray(db[key])?db[key]:[];
   const box=document.getElementById('adminDataset');
   if(!box)return;
-  box.innerHTML=key==='stock'
-?`<div class="inventory-document">
-  <div class="doc-title">Inventory Stock Register</div>
-  <div class="info-grid">
-    <div class="info-box"><h4>Store</h4><div>Ganesh Plywood</div><small>Furniture • Plywood • Hardware • Doors</small></div>
-    <div class="info-box"><h4>Document</h4><div>Stock Register</div><small>Current inventory details</small></div>
-    <div class="info-box"><h4>Search / Filter</h4><input class="search" id="adminSearch" placeholder="Search item, category, HSN..." oninput="adminRenderRows('${key}')" style="width:100%"></div>
-  </div>
-  <div class="table-wrap"><table class="inventory-table"><thead><tr><th>SKU Code</th><th>Description</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Purchase Rate</th><th>Sales Rate</th><th>Total Value</th><th>GST</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div>
-</div>`
-:`<div class="panel"><div class="actions"><h3 style="margin:0">${esc(key)}</h3><input class="search" id="adminSearch" placeholder="Search records..." oninput="adminRenderRows('${key}')"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Preview</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div></div>`;
+  const titles={
+    customers:'Customer Master Register',suppliers:'Supplier Master Register',
+    stock:'Inventory Stock Register',invoices:'Sales Invoice Register',purchases:'Purchase Register',
+    salesReturns:'Sales Return Register',purchaseReturns:'Purchase Return Register',
+    transactions:'Transaction Register',users:'User & Login Register'
+  };
+  const title=titles[key]||'ERP Data Register';
+  box.innerHTML=`<div class="erp-document">
+    <div class="erp-document-title">${title}</div>
+    <div class="erp-document-meta">
+      <div><b>Business</b><br>Ganesh Plywood</div>
+      <div><b>Document</b><br>${title}</div>
+      <div><b>Records</b><br>${arr.length}</div>
+      <div><b>Date</b><br>${dateIN()}</div>
+    </div>
+    <div class="erp-toolbar">
+      <input class="search" id="adminSearch" placeholder="Search ${key}..." oninput="adminRenderRows('${key}')">
+      <button class="btn light" onclick="adminShowDataset('${key}')">↻ Refresh</button>
+    </div>
+    <div class="table-wrap"><table class="erp-data-table"><thead></thead><tbody id="adminRows"></tbody></table></div>
+    <div class="erp-document-footer"><span>Ganesh Plywood ERP System</span><span>Admin Controlled Data</span></div>
+  </div>`;
   adminRenderRows(key);
 }
 function adminRenderRows(key){
-  const arr=Array.isArray(db[key])?db[key]:[], q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
-  const tbody=document.getElementById('adminRows'); if(!tbody)return;
+  const arr=Array.isArray(db[key])?db[key]:[];
+  const q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
   const rows=arr.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));
+  const table=document.querySelector('#adminRows')?.closest('table');
+  const tbody=document.getElementById('adminRows');
+  if(!tbody||!table)return;
 
-  const table=tbody.closest('table');
+  const configs={
+    customers:[
+      ['Customer Code',x=>x.code||x.id||'-'],['Customer Name',x=>x.name||x.customerName||'-'],
+      ['Mobile',x=>x.mobile||x.phone||'-'],['GSTIN',x=>x.gstin||x.gst||'-'],
+      ['Address',x=>x.address||'-'],['Balance',x=>money(Number(x.balance||x.due||0))]
+    ],
+    suppliers:[
+      ['Supplier Code',x=>x.code||x.id||'-'],['Supplier Name',x=>x.name||x.supplierName||'-'],
+      ['Mobile',x=>x.mobile||x.phone||'-'],['GSTIN',x=>x.gstin||x.gst||'-'],
+      ['Address',x=>x.address||'-'],['Balance',x=>money(Number(x.balance||x.due||0))]
+    ],
+    invoices:[
+      ['Invoice No',x=>x.invoiceNo||x.number||x.id||'-'],['Date',x=>x.date||'-'],
+      ['Customer',x=>x.customerName||x.customer||'-'],['Amount',x=>money(Number(x.total||x.amount||0))],
+      ['GST',x=>money(Number(x.gstAmount||x.gst||0))],['Status',x=>x.status||'-']
+    ],
+    purchases:[
+      ['Purchase No',x=>x.purchaseNo||x.number||x.id||'-'],['Date',x=>x.date||'-'],
+      ['Supplier',x=>x.supplierName||x.supplier||'-'],['Amount',x=>money(Number(x.total||x.amount||0))],
+      ['GST',x=>money(Number(x.gstAmount||x.gst||0))],['Status',x=>x.status||'-']
+    ],
+    salesReturns:[
+      ['Return No',x=>x.returnNo||x.number||x.id||'-'],['Date',x=>x.date||'-'],
+      ['Customer',x=>x.customerName||x.customer||'-'],['Amount',x=>money(Number(x.total||x.amount||0))],
+      ['Reason',x=>x.reason||'-'],['Status',x=>x.status||'-']
+    ],
+    purchaseReturns:[
+      ['Return No',x=>x.returnNo||x.number||x.id||'-'],['Date',x=>x.date||'-'],
+      ['Supplier',x=>x.supplierName||x.supplier||'-'],['Amount',x=>money(Number(x.total||x.amount||0))],
+      ['Reason',x=>x.reason||'-'],['Status',x=>x.status||'-']
+    ],
+    transactions:[
+      ['Date',x=>x.date||'-'],['Particulars',x=>x.particular||x.description||'-'],
+      ['Type',x=>x.type||'-'],['Amount',x=>money(Number(x.amount||0))],['Status',x=>x.status||'Success']
+    ],
+    users:[
+      ['User',x=>x.name||x.username||x.email||'-'],['Role',x=>x.role||'-'],
+      ['Mobile/Email',x=>x.email||x.mobile||'-'],['Status',x=>x.status||'Active']
+    ]
+  };
+
   if(key==='stock'){
+    table.className='inventory-table';
     table.querySelector('thead').innerHTML='<tr><th>SKU Code</th><th>Description</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Purchase Rate</th><th>Sales Rate</th><th>Total Value</th><th>GST</th><th>Action</th></tr>';
-    const total=rows.reduce((s,o)=>s+(Number(o.x.qty||0)*Number(o.x.rate||0)),0);
     tbody.innerHTML=rows.map(o=>{
       const x=o.x, sku=x.sku||x.code||('GP-'+String(x.id).padStart(4,'0'));
-      return `<tr>
-        <td><b>${esc(sku)}</b></td>
-        <td><b>${esc(x.name||'')}</b><br><small>HSN: ${esc(x.hsn||'-')}</small></td>
-        <td>${esc(x.category||'')}</td>
-        <td>${x.qty??0}</td>
-        <td>${esc(x.unit||'')}</td>
-        <td>${money(Number(x.rate||0))}</td>
-        <td>${money(Number(x.saleRate??x.rate??0))}</td>
-        <td><b>${money(Number(x.qty||0)*Number(x.rate||0))}</b></td>
-        <td>${x.gst??0}%</td>
-        <td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td>
-      </tr>`;
-    }).join('') || '<tr><td colspan="10">No stock records.</td></tr>';
-
-    const foot = table.querySelector('tfoot') || table.createTFoot();
-    foot.innerHTML=`<tr><td colspan="7" style="text-align:right"><b>Total Stock Value</b></td><td><b>${money(total)}</b></td><td colspan="2"></td></tr>`;
+      return `<tr><td><b>${esc(sku)}</b></td><td><b>${esc(x.name||'')}</b><br><small>HSN: ${esc(x.hsn||'-')}</small></td><td>${esc(x.category||'-')}</td><td>${x.qty??0}</td><td>${esc(x.unit||'-')}</td><td>${money(Number(x.rate||0))}</td><td>${money(Number(x.saleRate??x.rate??0))}</td><td><b>${money(Number(x.qty||0)*Number(x.rate||0))}</b></td><td>${x.gst??0}%</td><td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`;
+    }).join('')||'<tr><td colspan="10">No stock records.</td></tr>';
     return;
   }
 
-  table.querySelector('thead').innerHTML='<tr><th>#</th><th>Details</th><th>Action</th></tr>';
+  const cfg=configs[key]||[];
+  table.className='erp-data-table';
+  table.querySelector('thead').innerHTML='<tr><th>#</th>'+cfg.map(c=>`<th>${c[0]}</th>`).join('')+'<th>Action</th></tr>';
   tbody.innerHTML=rows.map(o=>{
-    const x=o.x;
-    const details=Object.entries(x).map(([k,v])=>`<span class="data-chip"><b>${esc(k)}:</b> ${esc(String(v??''))}</span>`).join('');
-    return `<tr><td>${o.i+1}</td><td>${details}</td><td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`;
-  }).join('')||'<tr><td colspan="3">No records.</td></tr>';
+    return `<tr><td>${o.i+1}</td>${cfg.map(c=>`<td>${esc(String(c[1](o.x)??'-'))}</td>`).join('')}<td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`;
+  }).join('')||`<tr><td colspan="${cfg.length+2}">No records found.</td></tr>`;
 }
 function adminEditRecord(key,i){
   const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
