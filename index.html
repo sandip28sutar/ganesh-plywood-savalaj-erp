@@ -156,8 +156,22 @@ function updateBillPayment(){
   if(summary)summary.innerHTML=`Cash: <b>₹${cash.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; UPI: <b>₹${upi.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${outstanding.toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
   return {total,received,outstanding,cash,upi,mode};
 }
+function updateBillPaymentFromReceived(){
+  const total=getBillGrandTotal();
+  let received=Number(document.getElementById('billReceivedAmount')?.value||0);
+  if(!Number.isFinite(received)||received<0) received=0;
+  if(received>total) received=total;
+  const r=document.getElementById('billReceivedAmount');
+  const o=document.getElementById('billOutstandingAmount');
+  if(r) r.value=received.toFixed(2);
+  if(o) o.value=Math.max(0,total-received).toFixed(2);
+  const mode=document.getElementById('billPaymentMode')?.value||'Cash';
+  const summary=document.getElementById('billPaymentSummary');
+  if(summary) summary.innerHTML=`Payment: <b>${mode}</b> &nbsp; | &nbsp; Total Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${Math.max(0,total-received).toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
+  return {total,received,outstanding:Math.max(0,total-received),cash:Number(document.getElementById('billCashAmount')?.value||0),upi:Number(document.getElementById('billUpiAmount')?.value||0),mode};
+}
 function resetBillPayment(){
-  const ids=['billCashAmount','billUpiAmount','billReceivedAmount','billOutstandingAmount','billPaymentNote'];
+  const ids=['billCashAmount','billUpiAmount','billReceivedAmount','billOutstandingAmount'];
   ids.forEach(id=>{const e=document.getElementById(id);if(e)e.value='0';});
   const n=document.getElementById('billPaymentNote');if(n)n.value='';
   const m=document.getElementById('billPaymentMode');if(m)m.value='Cash';
@@ -520,7 +534,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing
 </select></div>
 <div><label>Cash Received</label><input id="billCashAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
 <div><label>UPI Received</label><input id="billUpiAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
-<div><label>Total Received</label><input id="billReceivedAmount" type="number" min="0" step="0.01" value="0" readonly></div>
+<div><label>Total Received</label><input id="billReceivedAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPaymentFromReceived()"></div>
 <div><label>Outstanding Amount</label><input id="billOutstandingAmount" type="number" value="0" readonly></div>
 <div><label>UPI / Payment Reference</label><input id="billPaymentNote" placeholder="UPI Ref / Note"></div>
 </div>
@@ -530,7 +544,7 @@ Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00
 </div>
 
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
-<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button> ${isAdminUser()?`<button class="btn light" onclick="editSavedInvoice(${db.invoices.length-1-i})">✏️ Edit</button><button class="btn danger" onclick="deleteSavedInvoice(${db.invoices.length-1-i})">🗑️ Delete</button>`:''}</td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
+<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(Number(x.receivedAmount??0))}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button> ${isAdminUser()?`<button class="btn light" onclick="editSavedInvoice(${db.invoices.length-1-i})">✏️ Edit</button><button class="btn danger" onclick="deleteSavedInvoice(${db.invoices.length-1-i})">🗑️ Delete</button>`:''}</td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
 addBillRow();toggleBillType();resetBillPayment()
 }
 function fillBillingCustomer(){
@@ -604,7 +618,7 @@ let cu=getBillingCustomer();
 if(!cu&&(document.getElementById('bcname')?.value.trim()||document.getElementById('bcphone')?.value.trim()||document.getElementById('bcaddress')?.value.trim()))
 return toast('Customer Name, Mobile Number and Address fill करा');
 
-let pay=updateBillPayment();
+let pay=updateBillPaymentFromReceived();
 if(pay.received>pay.total)return toast('Received amount cannot exceed Grand Total');
 
 let no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0');
@@ -666,7 +680,7 @@ status:paymentStatus
 save();
 if(window.GP_FIREBASE?.enabled && window.GP_FIREBASE?.user && window.cloudSave) { try { await window.cloudSave(); } catch(e) {} }
 
-toast(cu?'Invoice saved & customer/payment updated successfully':'Invoice saved with payment details successfully');
+toast(`Invoice saved: Received ₹${pay.received.toFixed(2)} | Outstanding ₹${pay.outstanding.toFixed(2)}`);
 billing();
 }
 function editSavedInvoice(index){
