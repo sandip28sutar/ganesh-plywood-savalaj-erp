@@ -412,19 +412,19 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit All</button>
 <button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete All Edits</button>
 </div>
-<div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales</span><b class="green">${money(todaySales)}</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase</span><b class="orange">${money(todayPurchase)}</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales Return</span><b class="red">${money(todaySalesReturn)}</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase Return</span><b class="blue">${money(todayPurchaseReturn)}</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
-<div class="summary-row"><span>Receipt Today</span><b class="green">${money(todayReceipts)}</b><span class="summary-actions no-print" data-key="receipts"><button class="btn light" onclick="editSummaryField('receipts')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receipts')">🗑️</button></span></div>
-<div class="summary-row"><span>Payment Today</span><b class="red">${money(todayPayments)}</b><span class="summary-actions no-print" data-key="payments"><button class="btn light" onclick="editSummaryField('payments')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payments')">🗑️</button></span></div>
-<div class="summary-row"><span>Closing Stock</span><b class="purple">${money(closingValue)}</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
-<div class="summary-row"><span>Stock Change</span><b class="${stockChange>=0?'green':'red'}">${money(stockChange)}</b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
-<div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(rec)}</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
-<div class="summary-row"><span>Pending Payable</span><b class="red">${money(pay)}</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
-<div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
-<div class="summary-row"><span>Expected Profit</span><b class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b><span class="summary-actions no-print" data-key="profit"><button class="btn light" onclick="editSummaryField('profit')">✏️</button><button class="btn danger" onclick="deleteSummaryField('profit')">🗑️</button></span></div>
+<div class="summary-row"><span>Opening Stock</span><b class="orange">${money(getSummaryValue("opening",openingValue))}</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales</span><b class="green">${money(getSummaryValue("sales",todaySales))}</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase</span><b class="orange">${money(getSummaryValue("purchase",todayPurchase))}</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales Return</span><b class="red">${money(getSummaryValue("salesReturn",todaySalesReturn))}</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase Return</span><b class="blue">${money(getSummaryValue("purchaseReturn",todayPurchaseReturn))}</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Receipt Today</span><b class="green">${money(getSummaryValue("receipts",todayReceipts))}</b><span class="summary-actions no-print" data-key="receipts"><button class="btn light" onclick="editSummaryField('receipts')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receipts')">🗑️</button></span></div>
+<div class="summary-row"><span>Payment Today</span><b class="red">${money(getSummaryValue("payments",todayPayments))}</b><span class="summary-actions no-print" data-key="payments"><button class="btn light" onclick="editSummaryField('payments')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payments')">🗑️</button></span></div>
+<div class="summary-row"><span>Closing Stock</span><b class="purple">${money(getSummaryValue("closing",closingValue))}</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Change</span><b class="${getSummaryValue("stockChange",stockChange)>=0?'green':'red'}">${money(getSummaryValue("stockChange",stockChange))}</b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(getSummaryValue("receivable",rec))}</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Payable</span><b class="red">${money(getSummaryValue("payable",pay))}</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(getSummaryValue("stockSale",closingSaleValue))}</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
+<div class="summary-row"><span>Expected Profit</span><b class="${getSummaryValue("profit",profitValue)>=0?'green':'red'}">${money(getSummaryValue("profit",profitValue))}</b><span class="summary-actions no-print" data-key="profit"><button class="btn light" onclick="editSummaryField('profit')">✏️</button><button class="btn danger" onclick="deleteSummaryField('profit')">🗑️</button></span></div>
 </aside>
 </div>
 <div class="panel">
@@ -548,9 +548,25 @@ function summaryCalculatedValues(){
   const payments=todayTx.filter(x=>x.type==='Debit'&&/Payment to|Payment Made/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
   const rec=db.invoices.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.grand||0),0);
   const pay=db.purchases.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.total||0),0);
+  const purchasedToday={}, soldToday={}, salesReturnedToday={}, purchaseReturnedToday={};
+  const addMove=(map,item,qtyKey='qty')=>{const id=item?.stockId??item?.id;if(id==null)return;map[id]=(map[id]||0)+Number(item?.[qtyKey]||0);};
+  (db.invoices||[]).filter(x=>isToday(x.date)).forEach(inv=>(inv.items||[]).forEach(i=>addMove(soldToday,i)));
+  (db.purchases||[]).filter(x=>isToday(x.date)).forEach(p=>(p.items||[]).forEach(i=>addMove(purchasedToday,i)));
+  (db.salesReturns||[]).filter(x=>isToday(x.date)).forEach(r=>(r.items||[]).forEach(i=>addMove(salesReturnedToday,i)));
+  (db.purchaseReturns||[]).filter(x=>isToday(x.date)).forEach(r=>(r.items||[]).forEach(i=>addMove(purchaseReturnedToday,i)));
+  let openingQty=0,openingValue=0;
+  (db.stock||[]).forEach(x=>{
+    const q=Number(x.qty||0), id=x.id;
+    const opening=Math.max(0,q-(purchasedToday[id]||0)-(salesReturnedToday[id]||0)+(soldToday[id]||0)+(purchaseReturnedToday[id]||0));
+    openingQty+=opening;
+    openingValue+=opening*Number(x.rate||0);
+  });
+  const closingQty=(db.stock||[]).reduce((a,x)=>a+Number(x.qty||0),0);
   const purchaseValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.rate)||0),0);
   const saleValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
-  return {opening:0,sales,purchase,salesReturn,purchaseReturn,receipts,payments,closing:purchaseValue,stockChange:0,receivable:rec,payable:pay,stockSale:saleValue,profit:saleValue-purchaseValue};
+  const stockChange=purchaseValue-openingValue;
+  const profit=saleValue-purchaseValue;
+  return {opening:openingValue,sales,purchase,salesReturn,purchaseReturn,receipts,payments,closing:purchaseValue,stockChange,receivable:rec,payable:pay,stockSale:saleValue,profit};
 }
 function getSummaryValue(key, calculated){const v=localStorage.getItem(summaryOverrideKey(key));return v===null?calculated:Number(v);}
 function editSummaryField(key){
