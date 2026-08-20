@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5a2b0b">
+<link rel="manifest" href="manifest.json">
+<title>Ganesh Plywood ERP — Advanced</title>
+<style>
+:root{--brown:#5a2b0b;--brown2:#7a3b0c;--bg:#f4f4f4;--card:#fff;--line:#e3e3e3;--green:#159447;--red:#c62828;--blue:#1269d8;--orange:#dc6c11}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:#222}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.top-banner{height:145px;background:linear-gradient(90deg,#f3e2c5,#fff7e8,#f2dfbd);border-bottom:3px solid var(--brown);display:flex}
+.logo-box{width:150px;background:#1b0d05;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.logo-circle{width:65px;height:65px;border:3px solid #e7a735;border-radius:50%;display:grid;place-items:center;color:#e7a735;font-size:36px}.logo-box b{margin-top:6px;font-size:14px}.logo-box small{opacity:.8}
+.banner-content{flex:1;text-align:center;padding:18px}.banner-content small{font-weight:bold}.company{font-size:44px;font-weight:900;color:#d71919;text-shadow:2px 2px #fff}.menu-text{font-weight:bold;color:var(--brown)}
+.app{display:flex;min-height:calc(100vh - 145px)}.sidebar{width:235px;background:#fff;border-right:1px solid #ddd;flex-shrink:0}.side-title{padding:16px;background:var(--brown);color:#fff;font-weight:bold}.nav{padding:0}.nav button{display:flex;width:100%;align-items:center;gap:12px;padding:13px 15px;border:0;background:#fff;border-bottom:1px solid #eee;text-align:left}.nav button.active{background:#a95013;color:#fff}.nav button:hover{background:#f4e8dc}.content{flex:1;min-width:0}.topbar{height:55px;background:#4d250c;color:#fff;display:flex;align-items:center;gap:18px;padding:0 18px}.menu-btn{font-size:25px}.topbar .right{margin-left:auto}.page{padding:20px;max-width:1400px;margin:auto}.page h2{margin:0 0 16px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px #00000010}.card .title{font-weight:bold}.value{font-size:24px;font-weight:800;margin-top:8px}.sub{font-size:12px;color:#666;margin-top:6px}.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.orange{color:var(--orange)}.purple{color:#6524c9}.section-title{font-size:18px;font-weight:bold;margin:24px 0 12px}.quick{display:grid;grid-template-columns:repeat(8,1fr);gap:10px}.quick button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px 7px}.quick button:hover{box-shadow:0 4px 12px #0002;transform:translateY(-1px)}.quick i{font-size:25px;display:block;margin-bottom:7px;font-style:normal}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field{margin-bottom:11px}.field label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:9px;border:1px solid #ccc;border-radius:6px;background:#fff}.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.btn{border:0;border-radius:6px;padding:9px 13px}.primary{background:var(--brown);color:#fff}.success{background:var(--green);color:#fff}.danger{background:var(--red);color:#fff}.bluebtn{background:var(--blue);color:#fff}.light{background:#eee}.search{padding:9px;border:1px solid #ccc;border-radius:6px;min-width:210px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:9px;border-bottom:1px solid #eee;text-align:left;font-size:12px;white-space:nowrap}th{background:var(--brown);color:#fff}.right{text-align:right}.low{color:var(--red);font-weight:bold}.badge{padding:4px 7px;border-radius:20px;background:#eee;font-size:11px}.paid{background:#d9f3e2;color:#11723a}.unpaid{background:#ffe1e1;color:#a00}
+.total{max-width:430px;margin-left:auto}.total div{display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #eee}.total .grand{font-size:19px;font-weight:bold}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:3000;align-items:center;justify-content:center}.modal.show{display:flex}.modalbox{width:min(650px,94%);max-height:90vh;overflow:auto;background:#fff;border-radius:12px;padding:18px}.toast{position:fixed;right:15px;bottom:15px;background:#222;color:#fff;padding:11px 15px;border-radius:7px;display:none;z-index:4000}.footer{background:#3c1b08;color:#fff;padding:13px 18px;margin-top:20px;display:flex;justify-content:space-between}
+.login{position:fixed;inset:0;background:linear-gradient(135deg,#2b1608,#8a450d);display:none;align-items:center;justify-content:center;z-index:5000}.loginbox{background:#fff;width:min(380px,92%);padding:25px;border-radius:15px;text-align:center}.loginbox h2{color:var(--brown)}.loginbox input{width:100%;padding:12px;margin:10px 0;border:1px solid #ccc;border-radius:7px}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:repeat(4,1fr)}.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.top-banner{height:100px}.logo-box{width:95px}.logo-circle{width:43px;height:43px;font-size:25px}.logo-box b{font-size:9px}.company{font-size:25px}.menu-text{font-size:9px}.sidebar{position:fixed;left:-240px;top:100px;bottom:0;z-index:2500;transition:.2s;box-shadow:4px 0 18px #0003}.sidebar.show{left:0}.cards{grid-template-columns:1fr}.quick{grid-template-columns:1fr 1fr}.grid2,.grid3,.grid4{grid-template-columns:1fr}.page{padding:11px}.topbar .date{display:none}.footer{font-size:10px}.dashboard-grid{grid-template-columns:1fr!important}.today-summary{order:-1}.dash-card{min-height:110px}.chart-box{min-height:330px}.table-wrap table{min-width:680px}}
+@media print{.no-print,.sidebar,.topbar,.top-banner{display:none!important}.page{padding:0}.print-only{display:block!important}}
+.print-only{display:none}
+
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}
+.dash-card{position:relative;overflow:hidden}
+.dash-card:after{content:'₹';position:absolute;right:14px;bottom:-18px;font-size:70px;font-weight:900;opacity:.05}
+.today-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px #00000010}
+.today-summary h3{margin:0 0 12px;color:var(--brown)}
+.summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}
+.summary-row b{font-size:14px}
+.chart-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;min-height:300px}
+.donut{width:190px;height:190px;border-radius:50%;margin:10px auto 15px;position:relative;background:conic-gradient(#1269d8 0 20%,#f2b600 20% 37%,#6d28d9 37% 53%,#18b879 53% 74%,#8b8b8b 74% 100%)}
+.donut:after{content:'';position:absolute;inset:48px;background:#fff;border-radius:50%}
+.donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;z-index:1;font-size:22px;font-weight:800}
+.legend{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:13px}
+.low-list{width:100%;border-collapse:collapse}
+.low-list th{background:var(--brown);color:#fff}
+.rate-profit{font-weight:800}
+@media(max-width:1100px){.dashboard-grid{grid-template-columns:1fr}.today-summary{order:-1}}
+</style>
+</head>
+<body>
+
+<div class="top-banner">
+<div class="logo-box"><div class="logo-circle">ॐ</div><b>Ganesh Plywood</b><small>ERP System</small></div>
+<div class="banner-content"><small>॥ श्री गणेशाय नमः ॥</small><div class="company">गणेश प्लायवूड</div><div class="menu-text">▶ प्लायवूड　 ▶ हार्डवेअर　 ▶ सनमाईका　 ▶ डोअर</div><div style="margin-top:6px;font-weight:bold;color:var(--brown)" id="bannerPhone"></div></div>
+</div>
+
+<div class="app">
+<aside class="sidebar" id="sidebar">
+<div class="side-title">🏠 Ganesh Plywood ERP</div>
+<div class="nav" id="nav"></div>
+</aside>
+<main class="content">
+<div class="topbar"><button class="menu-btn" onclick="toggleMenu()">☰</button><b>👤 SANDIP28</b><span>|</span><span>📅 <span id="today"></span></span><span id="cloudStatus" style="font-size:12px">☁️ Cloud</span><span class="right">🔔</span></div>
+<div id="app"></div>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox" id="modalbox"></div></div>
+<div class="toast" id="toast"></div>
+<div class="login" id="login"><div class="loginbox"><h2>🔐 Ganesh Plywood</h2><p>ERP PIN</p><input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="Enter PIN"><button class="btn primary" style="width:100%" onclick="checkPin()">Login</button><small>Default PIN: 2828</small></div></div>
+
+
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
+<script>
+window.GP_FIREBASE={enabled:false,app:null,auth:null,fs:null,user:null};
+(function(){
+  try{
+    const cfg=window.GANESH_FIREBASE_CONFIG||{};
+    if(!cfg.apiKey || String(cfg.apiKey).includes("PASTE_")) return;
+    const app=firebase.initializeApp(cfg), auth=firebase.auth(app), fs=firebase.firestore(app);
+    window.GP_FIREBASE={enabled:true,app,auth,fs,user:null};
+    auth.onAuthStateChanged(async user=>{
+      window.GP_FIREBASE.user=user||null;
+      const s=document.getElementById('cloudStatus');
+      if(s)s.textContent=user?'☁️ Cloud: Connected':'☁️ Cloud: Login required';
+      if(user&&window.GP_LOAD_CLOUD) await window.GP_LOAD_CLOUD();
+    });
+  }catch(e){console.warn("Firebase disabled:",e);}
+})();
+</script>
+
+<script>
+const DBKEY='GP_ERP_ADVANCED_V1';
+const NAV=[['Dashboard','🏠'],['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚'],['Reports','📊'],['Transactions','💼'],['Settings','⚙️'],['Backup','💾']];
+const blank={settings:{company:'Ganesh Plywood',address:'Savalaj, Maharashtra',gstin:'',phone:'',prefix:'GP',defaultGST:18},customers:[],suppliers:[],stock:[],invoices:[],purchases:[],transactions:[],payments:[],salesReturns:[],purchaseReturns:[]};
+let db=JSON.parse(localStorage.getItem(DBKEY)||'null')||blank; db.stock=(db.stock||[]); db.stock.forEach(x=>{if(x.saleRate==null)x.saleRate=x.rate||0});
+if(!db.stock.length)db.stock=[
+{id:1,name:'Marine Plywood 12mm',category:'Plywood',unit:'Sheet',qty:15,rate:3200,saleRate:3800,gst:18,hsn:'4412'},
+{id:2,name:'Commercial Plywood 12mm',category:'Plywood',unit:'Sheet',qty:18,rate:2500,saleRate:3000,gst:18,hsn:'4412'},
+{id:3,name:'Laminates Sheet',category:'Laminate',unit:'Sheet',qty:20,rate:1800,saleRate:2200,gst:18,hsn:'3921'},
+{id:4,name:'Edge Band 22mm',category:'Hardware',unit:'Mtr',qty:25,rate:35,saleRate:50,gst:18,hsn:'3920'},
+{id:5,name:'Flush Door',category:'Doors',unit:'Nos',qty:8,rate:4500,saleRate:5200,gst:18,hsn:'4418'}];
+function save(){
+  localStorage.setItem(DBKEY,JSON.stringify(db));
+  cloudSave();
+}
+async function cloudSave(){
+  try{
+    const g=window.GP_FIREBASE;
+    if(!g||!g.enabled||!g.user)return;
+    await g.fs.collection("users").doc(g.user.uid).collection("erp").doc("main").set(
+      Object.assign({},db,{updatedAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:false});
+    const s=document.getElementById("cloudStatus");if(s)s.textContent="☁️ Cloud: Synced";
+  }catch(e){console.warn("Cloud save failed:",e);}
+}
+window.GP_LOAD_CLOUD=async function(){
+  try{
+    const g=window.GP_FIREBASE;if(!g||!g.enabled||!g.user)return;
+    const snap=await g.fs.collection("users").doc(g.user.uid).collection("erp").doc("main").get();
+    if(snap.exists){
+      const data=snap.data();delete data.updatedAt;
+      db=Object.assign({},blank,data);
+      db.settings=Object.assign({},blank.settings,data.settings||{});
+      ["customers","suppliers","stock","invoices","purchases","transactions","payments","salesReturns","purchaseReturns"].forEach(k=>db[k]=db[k]||[]);
+      localStorage.setItem(DBKEY,JSON.stringify(db));openPage("Dashboard");toast("☁️ Cloud data loaded");
+    }else{await cloudSave();toast("☁️ Cloud backup created");}
+  }catch(e){console.warn("Cloud load failed:",e);}
+};
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function money(n){return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function dateIN(){return new Date().toLocaleDateString('en-GB')}
+function iso(){return new Date().toISOString().slice(0,10)}
+function toast(s){let x=document.getElementById('toast');x.textContent=s;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function toggleMenu(){document.getElementById('sidebar').classList.toggle('show')}
+function nav(){document.getElementById('nav').innerHTML=NAV.map(x=>`<button data-p="${x[0]}" onclick="openPage('${x[0]}')">${x[1]} ${x[0]}</button>`).join('')+'<button onclick="logout()">↪ Logout</button>'}
+function active(p){document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x.dataset.p===p));if(innerWidth<700)document.getElementById('sidebar').classList.remove('show')}
+function openPage(p){active(p);({Dashboard:dashboard,'GST Billing':billing,Stock:stock,Purchase:purchase,'Rate Checklist':rateChecklist,'Purchase Return':purchaseReturn,Sales:sales,'Sales Return':saleReturn,Receivable:receivable,Payable:payable,Customers:customers,Suppliers:suppliers,Reports:reports,Transactions:transactions,Settings:settings,Backup:backup}[p]||dashboard)()}
+function card(t,v,s,c){return `<div class="card"><div class="title ${c}">${t}</div><div class="value">${v}</div><div class="sub">${s}</div></div>`}
+function dashboard(){
+const sales=db.invoices.reduce((a,x)=>a+Number(x.grand||0),0);
+const pur=db.purchases.reduce((a,x)=>a+Number(x.total||0),0);
+const rec=db.invoices.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.grand||0),0);
+const pay=db.purchases.filter(x=>x.status!=='Paid').reduce((a,x)=>a+Number(x.total||0),0);
+const purchaseValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.rate)||0),0);
+const saleValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
+const profitValue=saleValue-purchaseValue;
+const low=db.stock.filter(x=>(Number(x.qty)||0)<=Number(x.min??10)).slice(0,6);
+const recent=db.transactions.slice(-8).reverse();
+const cats=['Plywood','Hardware','Laminate','Doors','Others'];
+const catData=cats.map(c=>({name:c,qty:db.stock.filter(x=>x.category===c).reduce((a,x)=>a+Number(x.qty||0),0)}));
+const totalQty=catData.reduce((a,x)=>a+x.qty,0);
+const todayISO=iso();
+const todayIN=dateIN();
+const isToday=(d)=>String(d||'').slice(0,10)===todayISO || d===todayIN;
+
+// Opening stock = today's closing stock adjusted backward for today's stock movements.
+const soldToday={}; const purchasedToday={}; const salesReturnedToday={}; const purchaseReturnedToday={};
+(db.invoices||[]).filter(x=>isToday(x.date)).forEach(inv=>(inv.items||[]).forEach(i=>{soldToday[i.stockId]=(soldToday[i.stockId]||0)+Number(i.qty||0)}));
+(db.purchases||[]).filter(x=>isToday(x.date)).forEach(p=>(p.items||[]).forEach(i=>{purchasedToday[i.stockId]=(purchasedToday[i.stockId]||0)+Number(i.qty||0)}));
+(db.salesReturns||[]).filter(x=>isToday(x.date)).forEach(r=>(r.items||[]).forEach(i=>{salesReturnedToday[i.stockId]=(salesReturnedToday[i.stockId]||0)+Number(i.qty||0)}));
+(db.purchaseReturns||[]).filter(x=>isToday(x.date)).forEach(r=>(r.items||[]).forEach(i=>{purchaseReturnedToday[i.stockId]=(purchaseReturnedToday[i.stockId]||0)+Number(i.qty||0)}));
+let openingQty=0,openingValue=0,openingSaleValue=0;
+db.stock.forEach(x=>{
+  const q=Number(x.qty||0), id=x.id;
+  const opening=Math.max(0,q-(purchasedToday[id]||0)-(salesReturnedToday[id]||0)+(soldToday[id]||0)+(purchaseReturnedToday[id]||0));
+  openingQty+=opening;
+  openingValue+=opening*Number(x.rate||0);
+  openingSaleValue+=opening*Number((x.saleRate??x.rate)||0);
+});
+const closingQty=totalQty, closingValue=purchaseValue, closingSaleValue=saleValue;
+const stockChange=closingValue-openingValue;
+const todayTx=db.transactions.filter(x=>isToday(x.date));
+const todaySales=(db.invoices||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.grand||0),0);
+const todayPurchase=(db.purchases||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+const todaySalesReturn=(db.salesReturns||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+const todayPurchaseReturn=(db.purchaseReturns||[]).filter(x=>isToday(x.date)).reduce((a,x)=>a+Number(x.total||0),0);
+const todayReceipts=todayTx.filter(x=>x.type==='Credit'&&/Receipt|Payment Received/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+const todayPayments=todayTx.filter(x=>x.type==='Debit'&&/Payment to|Payment Made/i.test(x.particular)).reduce((a,x)=>a+Number(x.amount||0),0);
+
+document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h2>
+<div class="dashboard-grid"><div>
+<div class="cards">
+<div class="card dash-card"><div class="title green">Total Sales</div><div class="value">${money(sales)}</div><div class="sub">All sales invoices</div></div>
+<div class="card dash-card"><div class="title orange">Total Purchase</div><div class="value">${money(pur)}</div><div class="sub">All purchases</div></div>
+<div class="card dash-card"><div class="title blue">Total Receivable</div><div class="value">${money(rec)}</div><div class="sub">Pending sales</div></div>
+<div class="card dash-card"><div class="title red">Total Payable</div><div class="value">${money(pay)}</div><div class="sub">Pending purchases</div></div>
+<div class="card dash-card"><div class="title orange">Opening Stock</div><div class="value">${money(openingValue)}</div><div class="sub">${openingQty.toLocaleString('en-IN')} units • Purchase value</div></div>
+<div class="card dash-card"><div class="title purple">Closing Stock</div><div class="value">${money(closingValue)}</div><div class="sub">${closingQty.toLocaleString('en-IN')} units • Current purchase value</div></div>
+<div class="card dash-card"><div class="title green">Stock Sale Value</div><div class="value">${money(saleValue)}</div><div class="sub">Current sales-rate value</div></div>
+<div class="card dash-card"><div class="title green">Expected Profit</div><div class="value">${money(profitValue)}</div><div class="sub">Sales rate − purchase rate</div></div>
+</div>
+<div class="section-title">Quick Actions</div><div class="quick">${[['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚']].map(x=>`<button onclick="openPage('${x[0]}')"><i>${x[1]}</i>${x[0]}</button>`).join('')}</div>
+<div class="section-title">Recent Transactions</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Particular</th><th>Type</th><th>Amount</th><th>Status</th></tr>${recent.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.particular)}</td><td>${esc(x.type)}</td><td>${money(x.amount)}</td><td><span class="badge paid">Success</span></td></tr>`).join('')||'<tr><td colspan="5">No transactions.</td></tr>'}</table></div>
+<div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-top:14px"><div class="chart-box"><h3 style="margin:0">Stock Overview</h3><div class="donut"><div class="donut-center">${totalQty}<br><small>Total Items</small></div></div><div class="legend">${catData.map(x=>`<span>${esc(x.name)}</span><b>${x.qty.toLocaleString('en-IN')}</b>`).join('')}</div></div>
+<div class="chart-box"><h3 style="margin:0 0 12px">Low Stock Items</h3><table class="low-list"><tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>${low.map(x=>`<tr><td>${esc(x.name)}</td><td class="low">${x.qty}</td><td>${esc(x.unit)}</td></tr>`).join('')||'<tr><td colspan="3">No low stock items.</td></tr>'}</table><button class="btn primary" style="width:100%;margin-top:12px" onclick="openPage('Stock')">View All Stock</button></div></div>
+</div>
+<aside class="today-summary"><h3>Today's Summary</h3>
+<div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b></div>
+<div class="summary-row"><span>Sales</span><b class="green">${money(todaySales)}</b></div>
+<div class="summary-row"><span>Purchase</span><b class="orange">${money(todayPurchase)}</b></div>
+<div class="summary-row"><span>Sales Return</span><b class="red">${money(todaySalesReturn)}</b></div>
+<div class="summary-row"><span>Purchase Return</span><b class="blue">${money(todayPurchaseReturn)}</b></div>
+<div class="summary-row"><span>Receipt Today</span><b class="green">${money(todayReceipts)}</b></div>
+<div class="summary-row"><span>Payment Today</span><b class="red">${money(todayPayments)}</b></div>
+<div class="summary-row"><span>Closing Stock</span><b class="purple">${money(closingValue)}</b></div>
+<div class="summary-row"><span>Stock Change</span><b class="${stockChange>=0?'green':'red'}">${money(stockChange)}</b></div>
+<div class="summary-row"><span>Pending Receivable</span><b class="blue">${money(rec)}</b></div>
+<div class="summary-row"><span>Pending Payable</span><b class="red">${money(pay)}</b></div>
+<div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b></div>
+<div class="summary-row"><span>Expected Profit</span><b class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b></div>
+</aside>
+</div><div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
+}
+function billing(){
+document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing</h2>
+<div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Customer</label><select id="bc"><option value="">Walk-in Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
+<div id="billModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Bill: GST will be calculated</div><div class="actions"><button class="btn primary" onclick="addBillRow()">+ Item</button><button class="btn light" onclick="openPage('Customers')">+ Customer</button><button class="btn bluebtn" onclick="shareBill()">WhatsApp</button><button class="btn light" onclick="printDraft()">Print/PDF</button></div>
+<div class="table-wrap"><table><thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th class="gstcol">GST%</th><th>Taxable</th><th class="gstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="billrows"></tbody></table></div>
+<div class="total"><div>Taxable <b id="taxable">₹0.00</b></div><div class="gstcol">CGST <b id="cgst">₹0.00</b></div><div class="gstcol">SGST <b id="sgst">₹0.00</b></div><div class="gstcol">IGST <b id="igst">₹0.00</b></div><div>Grand Total <b id="grand">₹0.00</b></div></div>
+<div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
+<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td><span class="badge ${x.status==='Paid'?'paid':'unpaid'}">${x.status}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="6">No invoices.</td></tr>'}</table></div></section>`;
+addBillRow();toggleBillType()
+}
+function toggleBillType(){
+let non=document.getElementById('billtype')?.value==='nongst';
+document.querySelectorAll('.gstcol').forEach(x=>x.style.display=non?'none':'');
+let f=document.getElementById('taxmodefield');if(f)f.style.display=non?'none':'';
+document.querySelectorAll('#billrows .bg').forEach(x=>{x.disabled=non;if(non)x.value=0});
+let n=document.getElementById('billModeNote');if(n){n.textContent=non?'Non-GST Bill: GST is not charged':'GST Bill: GST will be calculated';n.style.background=non?'#fff3cd':'#d9f3e2';n.style.color=non?'#7a4b00':'#11723a'}
+calcBill()
+}
+function itemOptions(){return db.stock.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}
+function addBillRow(){
+let t=document.getElementById('billrows'),r=document.createElement('tr');r.innerHTML=`<td><select class="bi">${itemOptions()}</select></td><td class="bhsn"></td><td><input class="bq" type="number" min=".001" step=".001" value="1"></td><td><input class="br" type="number" min="0" step=".01" value="0"></td><td><input class="bdc" type="number" min="0" step=".01" value="0"></td><td><input class="bg" type="number" min="0" step=".01" value="${db.settings.defaultGST}"></td><td class="btx">0</td><td class="bgs">0</td><td class="btt">0</td><td><button class="btn danger" onclick="this.closest('tr').remove();calcBill()">×</button></td>`;t.appendChild(r);
+function sync(){let s=db.stock.find(x=>x.id==r.querySelector('.bi').value);if(s){r.querySelector('.bhsn').textContent=s.hsn||'';r.querySelector('.br').value=s.saleRate||s.rate;r.querySelector('.bg').value=s.gst}calcBill()}
+r.querySelector('.bi').onchange=sync;r.querySelectorAll('input').forEach(x=>x.oninput=calcBill);sync()
+}
+function calcBill(){
+let a=[];let non=document.getElementById('billtype')?.value==='nongst';
+document.querySelectorAll('#billrows tr').forEach(r=>{
+ let s=db.stock.find(x=>x.id==r.querySelector('.bi').value),
+ q=+r.querySelector('.bq').value||0,rate=+r.querySelector('.br').value||0,
+ dis=+r.querySelector('.bdc').value||0,g=non?0:(+r.querySelector('.bg').value||0),
+ tx=Math.max(0,q*rate-dis),gst=tx*g/100;
+ a.push({stockId:s?.id,name:s?.name||'',hsn:s?.hsn||'',qty:q,rate,discount:dis,gstRate:g,taxable:tx,gst,total:tx+gst});
+});
+let tx=a.reduce((s,x)=>s+x.taxable,0),gs=a.reduce((s,x)=>s+x.gst,0),
+inter=!non&&document.getElementById('btaxmode')?.value==='inter';
+document.getElementById('taxable').textContent=money(tx);
+document.getElementById('cgst').textContent=money(inter?0:gs/2);
+document.getElementById('sgst').textContent=money(inter?0:gs/2);
+document.getElementById('igst').textContent=money(inter?gs:0);
+document.getElementById('grand').textContent=money(tx+gs);
+document.querySelectorAll('#billrows tr').forEach((r,i)=>{
+ let x=a[i];if(x){r.querySelector('.btx').textContent=money(x.taxable);r.querySelector('.bgs').textContent=money(x.gst);r.querySelector('.btt').textContent=money(x.total)}
+});
+return{items:a,taxable:tx,gst:gs,grand:tx+gs,inter,billType:non?'nongst':'gst'}
+}
+function saveBill(){
+let d=calcBill();if(!d.items.length||d.grand<=0)return toast('Add item and amount');
+let c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0'),bt=document.getElementById('billtype')?.value||'gst',inv={no,date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,status:document.getElementById('bstatus').value,inter:d.inter,billType:bt};
+db.invoices.push(inv);d.items.forEach(i=>{let s=db.stock.find(x=>x.id==i.stockId);if(s)s.qty=Math.max(0,s.qty-i.qty)});db.transactions.push({date:dateIN(),particular:'Invoice '+no+' - '+inv.customer,type:'Credit',amount:d.grand});save();toast('Invoice saved successfully');billing()
+}
+function invoiceHTML(x){
+let cg=x.inter?0:x.gst/2,ig=x.inter?x.gst:0,non=x.billType==='nongst';
+return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p></body></html>`;
+}
+function printSaved(i){let w=open('','_blank');w.document.write(invoiceHTML(db.invoices[i]));w.document.close();w.print()}
+function printDraft(){let d=calcBill(),c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),x={no:'DRAFT',date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,inter:d.inter,billType:document.getElementById('billtype')?.value||'gst'};let w=open('','_blank');w.document.write(invoiceHTML(x));w.document.close();w.print()}
+function shareBill(){let d=calcBill(),c=document.getElementById('bc').value,cu=db.customers.find(x=>x.id==c),txt=`Ganesh Plywood ${document.getElementById('billtype')?.value==='nongst'?'Non-GST Bill':'GST Invoice'}\nCustomer: ${cu?.name||'Walk-in Customer'}\nTaxable: ${money(d.taxable)}\nGST: ${money(d.gst)}\nTotal: ${money(d.grand)}`;open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
+
+function stock(){
+document.getElementById('app').innerHTML=`<section class="page"><h2>📦 Stock Management</h2>
+<div class="cards mini"><div class="card"><div class="card-title blue">Total Items</div><div class="card-value">${db.stock.length}</div><div class="card-sub">Stock masters</div></div><div class="card"><div class="card-title purple">Stock Value</div><div class="card-value">${money(db.stock.reduce((a,x)=>a+x.qty*x.rate,0))}</div><div class="card-sub">Current value</div></div><div class="card"><div class="card-title red">Low Stock</div><div class="card-value">${db.stock.filter(x=>x.qty<=((x.min??10))).length}</div><div class="card-sub">Below minimum</div></div></div>
+<div class="actions"><input class="search" id="stockSearch" placeholder="Search item, category or HSN..." oninput="renderStockTable()"><select id="stockCat" onchange="renderStockTable()"><option value="">All Categories</option><option>Plywood</option><option>Hardware</option><option>Laminate</option><option>Doors</option><option>Others</option></select><button class="btn primary" onclick="stockForm()">+ Add Stock</button><button class="btn success" onclick="stockAdjust()">↕ Stock In / Out</button><button class="btn light" onclick="exportStockCSV()">Export CSV</button></div>
+<div class="panel table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>HSN</th><th>Unit</th><th>Qty</th><th>Min</th><th>Purchase Rate</th><th>Sell Rate</th><th>Value</th><th>GST</th><th>Action</th></tr></thead><tbody id="stocktable"></tbody></table></div></section>`;renderStockTable()
+}
+function renderStockTable(){let q=(document.getElementById('stockSearch')?.value||'').toLowerCase(),cat=document.getElementById('stockCat')?.value||'',a=db.stock.filter(x=>(x.name+' '+x.category+' '+x.hsn).toLowerCase().includes(q)&&( !cat||x.category===cat));document.getElementById('stocktable').innerHTML=a.map(x=>{let min=x.min??10;return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.category)}</td><td>${esc(x.hsn)}</td><td>${esc(x.unit)}</td><td class="${x.qty<=min?'low':''}">${x.qty} ${x.qty<=min?'⚠️':''}</td><td>${min}</td><td>${money(x.rate)}</td><td>${money(x.saleRate||x.rate)}</td><td>${money(x.qty*x.rate)}</td><td>${x.gst}%</td><td><button class="btn light" onclick="stockForm(${x.id})">Edit</button> <button class="btn success" onclick="stockAdjust(${x.id})">Adjust</button> <button class="btn danger" onclick="delStock(${x.id})">Delete</button></td></tr>`}).join('')||'<tr><td colspan="10">No items found.</td></tr>'}
+function stockForm(id=null){let x=id?db.stock.find(z=>z.id===id):{};modal(`<h3>${id?'Edit':'Add'} Stock Item</h3><div class="grid2"><div class="field"><label>Item Name</label><input id="sn" value="${esc(x.name||'')}"></div><div class="field"><label>Category</label><select id="sc"><option ${x.category==='Plywood'?'selected':''}>Plywood</option><option ${x.category==='Hardware'?'selected':''}>Hardware</option><option ${x.category==='Laminate'?'selected':''}>Laminate</option><option ${x.category==='Doors'?'selected':''}>Doors</option><option ${!x.category||x.category==='Others'?'selected':''}>Others</option></select></div><div class="field"><label>HSN</label><input id="sh" value="${esc(x.hsn||'')}"></div><div class="field"><label>Unit</label><select id="su"><option ${x.unit==='Nos'?'selected':''}>Nos</option><option ${x.unit==='Sheet'?'selected':''}>Sheet</option><option ${x.unit==='Mtr'?'selected':''}>Mtr</option><option ${x.unit==='Sq.ft'?'selected':''}>Sq.ft</option><option ${x.unit==='Box'?'selected':''}>Box</option></select></div><div class="field"><label>Current Qty</label><input id="sq" type="number" min="0" value="${x.qty??0}"></div><div class="field"><label>Minimum Stock</label><input id="sm" type="number" min="0" value="${x.min??10}"></div><div class="field"><label>Purchase Rate</label><input id="sr" type="number" min="0" step="0.01" value="${x.rate??0}"></div><div class="field"><label>Sell Rate</label><input id="ssr" type="number" min="0" step="0.01" value="${x.saleRate??x.rate??0}"></div><div class="field"><label>GST %</label><input id="sg" type="number" min="0" value="${x.gst??18}"></div></div><button class="btn success" onclick="saveStock(${id||0})">Save Item</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
+function saveStock(id){let old=id?db.stock.find(z=>z.id===id):null,x={id:id||Date.now(),name:document.getElementById('sn').value.trim(),category:document.getElementById('sc').value,hsn:document.getElementById('sh').value.trim(),unit:document.getElementById('su').value,qty:+document.getElementById('sq').value||0,min:+document.getElementById('sm').value||0,rate:+document.getElementById('sr').value||0,saleRate:+document.getElementById('ssr').value||0,gst:+document.getElementById('sg').value||0};if(!x.name)return toast('Enter item name');let i=db.stock.findIndex(z=>z.id===id);if(i<0)db.stock.push(x);else db.stock[i]=x;if(old&&old.qty!==x.qty)db.transactions.push({date:dateIN(),particular:'Stock correction - '+x.name,type:x.qty>old.qty?'Credit':'Debit',amount:Math.abs(x.qty-old.qty)*x.rate});save();closeModal();stock();toast('Stock item saved')}
+function stockAdjust(id=null){let x=id?db.stock.find(z=>z.id===id):db.stock[0];if(!x)return toast('Add a stock item first');modal(`<h3>↕ Stock In / Out</h3><div class="field"><label>Item</label><select id="ai">${db.stock.map(z=>`<option value="${z.id}" ${z.id===x.id?'selected':''}>${esc(z.name)} — ${z.qty} ${esc(z.unit)}</option>`).join('')}</select></div><div class="grid2"><div class="field"><label>Type</label><select id="at"><option value="in">Stock In (+)</option><option value="out">Stock Out (-)</option></select></div><div class="field"><label>Quantity</label><input id="aq" type="number" min="0.01" step="0.01"></div></div><div class="field"><label>Reason / Reference</label><input id="ar" placeholder="Purchase, damage, opening stock..."></div><button class="btn success" onclick="saveAdjust()">Update Stock</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
+function saveAdjust(){let id=+document.getElementById('ai').value,x=db.stock.find(z=>z.id===id),q=+document.getElementById('aq').value||0,t=document.getElementById('at').value,reason=document.getElementById('ar').value.trim()||'Stock adjustment';if(!x||q<=0)return toast('Select item and quantity');if(t==='out'&&q>x.qty)return toast('Insufficient stock');x.qty=t==='in'?x.qty+q:x.qty-q;db.transactions.push({date:dateIN(),particular:`${reason} - ${x.name}`,type:t==='in'?'Credit':'Debit',amount:q*x.rate});save();closeModal();stock();toast('Stock updated successfully')}
+function delStock(id){if(confirm('Delete stock item?')){db.stock=db.stock.filter(x=>x.id!==id);save();stock();toast('Stock item deleted')}}
+function exportStockCSV(){let rows=[['Item','Category','HSN','Unit','Qty','Minimum','Purchase Rate','Sales Rate','Profit','Purchase Value','Sales Value','GST']];db.stock.forEach(x=>{let pr=+x.rate||0,sr=+(x.saleRate??x.rate)||0;rows.push([x.name,x.category,x.hsn,x.unit,x.qty,x.min??10,pr,sr,(sr-pr).toFixed(2),(x.qty*pr).toFixed(2),(x.qty*sr).toFixed(2),x.gst])});let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ganesh-plywood-stock.csv';a.click();URL.revokeObjectURL(a.href)}
+
+
+function rateChecklist(){
+ document.getElementById('app').innerHTML=`<section class="page"><h2>💹 Rate Checklist</h2>
+ <div class="cards">
+ <div class="card"><div class="title orange">Purchase Rate Value</div><div class="value">${money(db.stock.reduce((a,x)=>a+x.qty*(x.rate||0),0))}</div><div class="sub">Current stock cost</div></div>
+ <div class="card"><div class="title green">Sell Rate Value</div><div class="value">${money(db.stock.reduce((a,x)=>a+x.qty*(x.saleRate||x.rate||0),0))}</div><div class="sub">Current stock sale value</div></div>
+ <div class="card"><div class="title blue">Expected Profit</div><div class="value">${money(db.stock.reduce((a,x)=>a+x.qty*((x.saleRate||x.rate||0)-(x.rate||0)),0))}</div><div class="sub">If all stock sold</div></div>
+ </div>
+ <div class="actions"><input class="search" id="rateSearch" placeholder="Search material..." oninput="renderRateChecklist()"><button class="btn bluebtn" onclick="window.print()">🖨️ Print Rate List</button><button class="btn primary" onclick="openPage('Stock')">✏️ Edit Rates</button><button class="btn success" onclick="openPage('Stock')">💰 Change Rate</button></div>
+ <div class="panel table-wrap"><table><thead><tr><th>Material</th><th>Category</th><th>Unit</th><th>Purchase Rate</th><th>Sell Rate</th><th>Profit ₹</th><th>Profit %</th></tr></thead><tbody id="rateTable"></tbody></table></div>
+ </section>`;
+ renderRateChecklist();
+}
+function renderRateChecklist(){
+ const q=(document.getElementById('rateSearch')?.value||'').toLowerCase();
+ const a=db.stock.filter(x=>(String(x.name)+' '+String(x.category)+' '+String(x.hsn)).toLowerCase().includes(q));
+ document.getElementById('rateTable').innerHTML=a.map(x=>{
+  const pr=+x.rate||0,sr=+(x.saleRate??x.rate)||0,profit=sr-pr,pct=pr?profit/pr*100:0;
+  return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.category)}</td><td>${esc(x.unit)}</td><td>${money(pr)}</td><td>${money(sr)}</td><td class="${profit>=0?'green':'red'}">${money(profit)}</td><td class="${profit>=0?'green':'red'}">${pct.toFixed(2)}%</td></tr>`;
+ }).join('')||'<tr><td colspan="7">No materials found.</td></tr>';
+}
+function saleReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↩️ Sales Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Customer</label><select id="srCustomer"><option value="">Select customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="srDate" type="date" value="${iso()}"></div><div class="field"><label>Invoice Ref.</label><input id="srRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('sale')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Sell Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div><div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('sale')">Save Sales Return</button></div></section>`;addReturnRow('sale')}
+function purchaseReturn(){document.getElementById('app').innerHTML=`<section class="page"><h2>↪️ Purchase Return</h2><div class="panel"><div class="grid3"><div class="field"><label>Supplier</label><select id="prSupplier"><option value="">Select supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Date</label><input id="prDate" type="date" value="${iso()}"></div><div class="field"><label>Bill Ref.</label><input id="prRef"></div></div><div class="actions"><button class="btn primary" onclick="addReturnRow('purchase')">+ Item</button></div><div class="table-wrap"><table><tr><th>Item</th><th>Qty</th><th>Purchase Rate</th><th>Total</th><th></th></tr><tbody id="returnRows"></tbody></table></div><div class="total"><div>Return Total <b id="returnTotal">₹0.00</b></div></div><button class="btn success" onclick="saveReturn('purchase')">Save Purchase Return</button></div></section>`;addReturnRow('purchase')}
+function addReturnRow(type){let tb=document.getElementById('returnRows'),r=document.createElement('tr');r.innerHTML=`<td><select class="ri">${itemOptions()}</select></td><td><input class="rq" type="number" min=".001" value="1"></td><td><input class="rr" type="number" min="0" value="0"></td><td class="ra">₹0.00</td><td><button class="btn danger" onclick="this.closest('tr').remove();calcReturn()">×</button></td>`;tb.appendChild(r);const sync=()=>{let x=db.stock.find(z=>z.id==r.querySelector('.ri').value);r.querySelector('.rr').value=type==='sale'?(x?.saleRate||x?.rate||0):(x?.rate||0);calcReturn()};r.querySelector('.ri').onchange=sync;r.querySelector('.rq').oninput=calcReturn;r.querySelector('.rr').oninput=calcReturn;sync()}
+function calcReturn(){let total=0;document.querySelectorAll('#returnRows tr').forEach(r=>{let a=(+r.querySelector('.rq').value||0)*(+r.querySelector('.rr').value||0);total+=a;r.querySelector('.ra').textContent=money(a)});if(document.getElementById('returnTotal'))document.getElementById('returnTotal').textContent=money(total);return total}
+function saveReturn(type){let total=calcReturn();if(total<=0)return toast('Add return item');let rows=[...document.querySelectorAll('#returnRows tr')].map(r=>({stockId:+r.querySelector('.ri').value,qty:+r.querySelector('.rq').value||0,rate:+r.querySelector('.rr').value||0}));rows.forEach(x=>{let st=db.stock.find(z=>z.id===x.stockId);if(st)st.qty+=type==='sale'?x.qty:-x.qty});let party=type==='sale'?db.customers.find(x=>x.id==document.getElementById('srCustomer')?.value)?.name||'Customer':db.suppliers.find(x=>x.id==document.getElementById('prSupplier')?.value)?.name||'Supplier';db.transactions.push({date:dateIN(),particular:(type==='sale'?'Sales Return - ':'Purchase Return - ')+party,type:type==='sale'?'Debit':'Credit',amount:total});db[type==='sale'?'salesReturns':'purchaseReturns'] ||= [];db[type==='sale'?'salesReturns':'purchaseReturns'].push({date:document.getElementById(type==='sale'?'srDate':'prDate').value,ref:document.getElementById(type==='sale'?'srRef':'prRef').value,party,total,items:rows});save();toast('Return saved');openPage(type==='sale'?'Sales Return':'Purchase Return')}
+
+function purchase(){
+document.getElementById('app').innerHTML=`<section class="page"><h2>🛒 Material Purchase</h2><div id="purchaseModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Purchase: GST will be calculated</div><div class="panel">
+<div class="grid4"><div class="field"><label>Supplier</label><select id="ps"><option value="">Select Supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Purchase Date</label><input id="pd" type="date" value="${iso()}"></div><div class="field"><label>Supplier Bill No.</label><input id="pref" placeholder="Bill No."></div><div class="field"><label>Bill Type</label><select id="ptype" onchange="togglePurchaseType()"><option value="gst">GST Purchase</option><option value="nongst">Non-GST Purchase</option></select></div></div>
+<div class="actions"><button class="btn primary" onclick="addPurchaseRow()">+ Add Material</button><button class="btn light" onclick="openPage('Suppliers')">+ Supplier</button></div>
+<div class="table-wrap"><table><thead><tr><th>Material</th><th>Qty</th><th>Unit</th><th>Purchase Rate</th><th class="pgstcol">GST%</th><th>Taxable</th><th class="pgstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="prows"></tbody></table></div>
+<div class="grid2"><div class="field"><label>Payment Status</label><select id="pstat"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div><div class="field"><label>Notes</label><input id="pnote"></div></div>
+<div class="total"><div>Taxable <b id="ptax">₹ 0.00</b></div><div class="pgstcol">GST <b id="pgst">₹ 0.00</b></div><div>Grand Total <b id="pgrand">₹ 0.00</b></div></div>
+<div class="actions"><button class="btn success" onclick="savePurchase()">💾 Save Purchase</button><button class="btn light" onclick="purchase()">🆕 New</button></div></div>
+<div class="section-title">Purchase Register</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Bill No.</th><th>Supplier</th><th>Type</th><th>Total</th><th>Status</th><th>Action</th></tr>${db.purchases.slice().reverse().map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.ref)}</td><td>${esc(x.supplier)}</td><td>${x.type==='gst'?'GST':'Non-GST'}</td><td>${money(x.total)}</td><td>${x.status}</td><td><button class="btn light" onclick="printPurchase(${db.purchases.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="7">No purchases.</td></tr>'}</table></div></section>`;
+addPurchaseRow()
+}
+function togglePurchaseType(){
+const non=document.getElementById('ptype')?.value==='nongst';
+document.querySelectorAll('.pgstcol').forEach(x=>x.style.display=non?'none':'');
+const n=document.getElementById('purchaseModeNote');if(n){n.textContent=non?'Non-GST Purchase: GST is not charged':'GST Purchase: GST will be calculated';n.style.background=non?'#fff3cd':'#d9f3e2';n.style.color=non?'#7a4b00':'#11723a'}
+calcPurchase();
+}
+function addPurchaseRow(){let t=document.getElementById('prows'),r=document.createElement('tr');r.innerHTML=`<td><select class="pi">${itemOptions()}</select></td><td><input class="pq" type="number" min=".001" step=".001" value="1"></td><td class="pu"></td><td><input class="pr" type="number" min="0" step=".01" value="0"></td><td><input class="pgp pgstcol" type="number" min="0" step=".01" value="${db.settings.defaultGST}"></td><td class="ptx">0</td><td class="pgi pgstcol">0</td><td class="pto">0</td><td><button class="btn danger" onclick="this.closest('tr').remove();calcPurchase()">×</button></td>`;t.appendChild(r);function sync(){let x=db.stock.find(z=>z.id==r.querySelector('.pi').value);if(x){r.querySelector('.pu').textContent=x.unit;r.querySelector('.pr').value=x.rate;r.querySelector('.pgp').value=x.gst}calcPurchase()}r.querySelector('.pi').onchange=sync;r.querySelectorAll('input').forEach(x=>x.oninput=calcPurchase);sync()}
+function calcPurchase(){let a=[];document.querySelectorAll('#prows tr').forEach(r=>{let x=db.stock.find(z=>z.id==r.querySelector('.pi').value),q=+r.querySelector('.pq').value||0,rate=+r.querySelector('.pr').value||0,g=+r.querySelector('.pgp').value||0,tx=q*rate,gst=document.getElementById('ptype')?.value==='nongst'?0:tx*g/100;a.push({stockId:x?.id,name:x?.name||'',unit:x?.unit||'',qty:q,rate,gstRate:g,taxable:tx,gst,total:tx+gst});});let tx=a.reduce((s,x)=>s+x.taxable,0),gst=a.reduce((s,x)=>s+x.gst,0);document.getElementById('ptax').textContent=money(tx);document.getElementById('pgst').textContent=money(gst);document.getElementById('pgrand').textContent=money(tx+gst);document.querySelectorAll('#prows tr').forEach((r,i)=>{let x=a[i];if(x){r.querySelector('.ptx').textContent=money(x.taxable);r.querySelector('.pgi').textContent=money(x.gst);r.querySelector('.pto').textContent=money(x.total)}});return{items:a,taxable:tx,gst,grand:tx+gst}}
+function savePurchase(){let s=db.suppliers.find(x=>x.id==document.getElementById('ps').value),d=calcPurchase();if(!s)return toast('Select supplier');if(!d.items.length||d.grand<=0)return toast('Add material and amount');let p={date:document.getElementById('pd').value,ref:document.getElementById('pref').value||'N/A',supplier:s.name,supplierId:s.id,type:document.getElementById('ptype').value,items:d.items,taxable:d.taxable,gst:d.gst,total:d.grand,status:document.getElementById('pstat').value,note:document.getElementById('pnote').value};db.purchases.push(p);d.items.forEach(i=>{let st=db.stock.find(x=>x.id===i.stockId);if(st)st.qty+=i.qty});db.transactions.push({date:dateIN(),particular:'Material Purchase - '+s.name,type:'Debit',amount:d.grand});save();toast('Purchase saved and stock updated');purchase()}
+function printPurchase(i){let x=db.purchases[i],w=open('','_blank');w.document.write(`<html><head><title>Purchase</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}</style></head><body><h1>${esc(db.settings.company)}</h1><h2>Material Purchase</h2><p><b>Supplier:</b> ${esc(x.supplier)}<br><b>Bill No:</b> ${esc(x.ref)}<br><b>Date:</b> ${x.date}<br><b>Type:</b> ${x.type==='gst'?'GST Purchase':'Non-GST Purchase'}</p><table><tr><th>Material</th><th>Qty</th><th>Rate</th><th>GST</th><th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} ${i.unit}</td><td>${money(i.rate)}</td><td>${i.gstRate}%</td><td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}<br>GST: ${money(x.gst)}<br><b>Grand Total: ${money(x.total)}</b></p></body></html>`);w.document.close();w.print()}
+function sales(){billing()}
+function receivable(){let a=db.invoices.filter(x=>x.status!=='Paid');document.getElementById('app').innerHTML=`<section class="page"><h2>💰 Receivable</h2><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>${a.map(x=>`<tr><td>${x.no}</td><td>${esc(x.customer)}</td><td>${x.date}</td><td>${money(x.grand)}</td><td>${x.status}</td><td><button class="btn success" onclick="markInvoicePaid('${x.no}')">Mark Paid</button></td></tr>`).join('')||'<tr><td colspan="6">No receivables.</td></tr>'}</table></div></section>`}
+function markInvoicePaid(no){let x=db.invoices.find(x=>x.no===no);if(x){x.status='Paid';db.transactions.push({date:dateIN(),particular:'Receipt for '+no,type:'Credit',amount:x.grand});save();receivable();toast('Marked Paid')}}
+function payable(){let a=db.purchases.filter(x=>x.status!=='Paid');document.getElementById('app').innerHTML=`<section class="page"><h2>💳 Payable</h2><div class="panel table-wrap"><table><tr><th>Date</th><th>Supplier</th><th>Total</th><th>Status</th><th>Action</th></tr>${a.map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.supplier)}</td><td>${money(x.total)}</td><td>${x.status}</td><td><button class="btn success" onclick="markPurchasePaid(${db.purchases.indexOf(x)})">Mark Paid</button></td></tr>`).join('')||'<tr><td colspan="5">No payables.</td></tr>'}</table></div></section>`}
+function markPurchasePaid(i){db.purchases[i].status='Paid';db.transactions.push({date:dateIN(),particular:'Payment to '+db.purchases[i].supplier,type:'Debit',amount:db.purchases[i].total});save();payable();toast('Marked Paid')}
+
+function parties(type){
+let arr=type==='customer'?db.customers:db.suppliers,title=type==='customer'?'Customers':'Suppliers';
+document.getElementById('app').innerHTML=`<section class="page"><h2>${type==='customer'?'👥 Customers':'🚚 Suppliers'}</h2><div class="actions"><input class="search" id="pq" placeholder="Search..." oninput="renderParties('${type}')"><button class="btn primary" onclick="partyForm('${type}')">+ Add</button></div><div class="panel table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>GSTIN</th><th>Address</th><th>Action</th></tr></thead><tbody id="partytable"></tbody></table></div></section>`;renderParties(type)}
+function renderParties(type){let q=(document.getElementById('pq')?.value||'').toLowerCase(),arr=(type==='customer'?db.customers:db.suppliers).filter(x=>(x.name+x.phone+x.gstin).toLowerCase().includes(q));document.getElementById('partytable').innerHTML=arr.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.gstin)}</td><td>${esc(x.address)}</td><td><button class="btn light" onclick="partyForm('${type}',${x.id})">Edit</button> <button class="btn danger" onclick="delParty('${type}',${x.id})">Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No records.</td></tr>'}
+function customers(){parties('customer')}function suppliers(){parties('supplier')}
+function partyForm(type,id=null){let arr=type==='customer'?db.customers:db.suppliers,x=id?arr.find(z=>z.id===id):{};modal(`<h3>${id?'Edit':'Add'} ${type}</h3><div class="field"><label>Name</label><input id="pn" value="${esc(x.name||'')}"></div><div class="grid2"><div class="field"><label>Phone</label><input id="pp" value="${esc(x.phone||'')}"></div><div class="field"><label>GSTIN</label><input id="pg" value="${esc(x.gstin||'')}"></div></div><div class="field"><label>Address</label><textarea id="pa2">${esc(x.address||'')}</textarea></div><button class="btn success" onclick="saveParty('${type}',${id||0})">Save</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
+function saveParty(type,id){let arr=type==='customer'?db.customers:db.suppliers,x={id:id||Date.now(),name:document.getElementById('pn').value.trim(),phone:document.getElementById('pp').value.trim(),gstin:document.getElementById('pg').value.trim(),address:document.getElementById('pa2').value.trim()};if(!x.name)return toast('Name required');let i=arr.findIndex(z=>z.id===id);if(i<0)arr.push(x);else arr[i]=x;save();closeModal();parties(type);toast('Saved')}
+function delParty(type,id){if(confirm('Delete this record?')){let arr=type==='customer'?db.customers:db.suppliers;arr.splice(arr.findIndex(x=>x.id===id),1);save();parties(type)}}
+
+function reports(){
+let sales=db.invoices.reduce((a,x)=>a+x.grand,0),pur=db.purchases.reduce((a,x)=>a+x.total,0),gst=db.invoices.reduce((a,x)=>a+x.gst,0);
+document.getElementById('app').innerHTML=`<section class="page"><h2>📊 Reports</h2><div class="cards">${card('Sales',money(sales),'Gross sales','green')}${card('Purchase',money(pur),'Gross purchase','orange')}${card('GST Collected',money(gst),'Invoice GST','blue')}${card('Difference',money(sales-pur),'Sales - Purchase','purple')}</div><div class="section-title">Invoice Report</div><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Taxable</th><th>GST</th><th>Total</th></tr>${db.invoices.map(x=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.taxable)}</td><td>${money(x.gst)}</td><td>${money(x.grand)}</td></tr>`).join('')||'<tr><td colspan="6">No data.</td></tr>'}</table></div><div class="actions"><button class="btn primary" onclick="window.print()">Print Report</button></div></section>`
+}
+function transactions(){
+ document.getElementById('app').innerHTML=`<section class="page"><h2>💼 Recent Transactions</h2>
+ <div class="actions"><input class="search" id="txnSearch" placeholder="Search transaction..." oninput="renderTransactions()"><button class="btn primary" onclick="openPage('Dashboard')">← Dashboard</button></div>
+ <div class="panel table-wrap"><table><thead><tr><th>Date</th><th>Particular</th><th>Type</th><th>Amount</th><th>Action</th></tr></thead><tbody id="txntable"></tbody></table></div>
+ </section>`;renderTransactions()
+}
+function renderTransactions(){
+ const q=(document.getElementById('txnSearch')?.value||'').toLowerCase();
+ const arr=db.transactions.map((x,i)=>({...x,_i:i})).filter(x=>(String(x.date)+' '+String(x.particular)+' '+String(x.type)+' '+String(x.amount)).toLowerCase().includes(q)).reverse();
+ document.getElementById('txntable').innerHTML=arr.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.particular)}</td><td>${esc(x.type)}</td><td>${money(x.amount)}</td><td><button class="btn light" onclick="editTransaction(${x._i})">✏️ Edit</button> <button class="btn danger" onclick="deleteTransaction(${x._i})">🗑️ Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No transactions.</td></tr>'
+}
+function editTransaction(i){
+ const x=db.transactions[i];if(!x)return;
+ modal(`<h3>✏️ Edit Transaction</h3>
+ <div class="grid2"><div class="field"><label>Date</label><input id="etd" value="${esc(x.date)}"></div>
+ <div class="field"><label>Type</label><select id="ett"><option ${x.type==='Credit'?'selected':''}>Credit</option><option ${x.type==='Debit'?'selected':''}>Debit</option></select></div></div>
+ <div class="field"><label>Particular</label><input id="etp" value="${esc(x.particular)}"></div>
+ <div class="field"><label>Amount</label><input id="eta" type="number" min="0" step="0.01" value="${x.amount||0}"></div>
+ <button class="btn success" onclick="saveTransactionEdit(${i})">Save Update</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)
+}
+function saveTransactionEdit(i){
+ let x=db.transactions[i];if(!x)return;
+ x.date=document.getElementById('etd').value||x.date;
+ x.particular=document.getElementById('etp').value.trim()||x.particular;
+ x.type=document.getElementById('ett').value;
+ x.amount=+document.getElementById('eta').value||0;
+ save();closeModal();renderTransactions();toast('Transaction updated')
+}
+function deleteTransaction(i){
+ if(confirm('Delete this transaction?')){db.transactions.splice(i,1);save();renderTransactions();toast('Transaction deleted')}
+}
+
+async function firebaseLogin(){
+  const g=window.GP_FIREBASE;
+  if(!g||!g.enabled)return toast("Firebase config not added");
+  modal(`<h3>☁️ Firebase Login</h3><div class="field"><label>Email</label><input id="femail" type="email"></div><div class="field"><label>Password</label><input id="fpass" type="password"></div><button class="btn success" onclick="doFirebaseLogin()">Sign In</button> <button class="btn bluebtn" onclick="doFirebaseSignup()">Create Account</button> <button class="btn light" onclick="closeModal()">Cancel</button>`);
+}
+async function doFirebaseLogin(){try{await window.GP_FIREBASE.auth.signInWithEmailAndPassword(femail.value.trim(),fpass.value);closeModal();toast("☁️ Firebase login successful");}catch(e){toast(e.message||"Login failed");}}
+async function doFirebaseSignup(){try{await window.GP_FIREBASE.auth.createUserWithEmailAndPassword(femail.value.trim(),fpass.value);closeModal();toast("☁️ Account created");}catch(e){toast(e.message||"Signup failed");}}
+async function firebaseLogout(){try{if(window.GP_FIREBASE&&window.GP_FIREBASE.auth)await window.GP_FIREBASE.auth.signOut();toast("Cloud logout successful");settings();}catch(e){toast("Cloud logout failed");}}
+
+function settings(){document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change PIN</button></div></section>`}
+function saveSettings(){Object.assign(db.settings,{company:setc.value,gstin:setg.value,address:seta.value,phone:setp.value,prefix:setpre.value,defaultGST:+setgst.value||18});save();toast('Settings saved')}
+function changePin(){let p=prompt('Enter new 4-6 digit PIN');if(p&&/^\\d{4,6}$/.test(p)){localStorage.setItem('GP_PIN',p);toast('PIN changed')}else toast('Invalid PIN')}
+function backup(){document.getElementById('app').innerHTML=`<section class="page"><h2>💾 Backup & Restore</h2><div class="panel"><p>Backup all customers, suppliers, stock, invoices, purchases and settings.</p><div class="actions"><button class="btn primary" onclick="downloadBackup()">Download JSON Backup</button><label class="btn light">Restore JSON<input type="file" accept=".json" hidden onchange="restore(event)"></label><button class="btn danger" onclick="resetAll()">Reset Device Data</button></div></div></section>`}
+function downloadBackup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='ganesh-plywood-erp-backup-'+Date.now()+'.json';a.click()}
+function restore(e){let f=e.target.files[0],r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();toast('Restored');openPage('Dashboard')}catch{toast('Invalid JSON')}};r.readAsText(f)}
+function resetAll(){if(confirm('Delete all ERP data on this device?')){localStorage.removeItem(DBKEY);location.reload()}}
+function modal(h){document.getElementById('modalbox').innerHTML=h;document.getElementById('modal').classList.add('show')}function closeModal(){document.getElementById('modal').classList.remove('show')}
+function logout(){document.getElementById('login').style.display='flex'}
+function checkPin(){let pin=document.getElementById('pin').value,good=localStorage.getItem('GP_PIN')||'2828';if(pin===good){document.getElementById('login').style.display='none';document.getElementById('pin').value=''}else toast('Wrong PIN')}
+document.getElementById('today').textContent=dateIN();document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+nav();openPage('Dashboard');
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+</script>
+</body>
+</html>
