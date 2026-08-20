@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1976d2">
+  <title>Ganesh Plywood ERP</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
+    .top{background:linear-gradient(135deg,#1769d1,#0d47a1);color:#fff;padding:34px 20px 38px;border-radius:0 0 38px 38px}
+    .top h1{margin:0;font-size:30px}.top p{margin:8px 0 0;font-size:18px;opacity:.9}
+    .wrap{max-width:1000px;margin:auto;padding:24px 18px}
+    .login-card{max-width:620px;margin:50px auto;background:#fff;padding:32px;border-radius:28px;box-shadow:0 10px 35px #0001}
+    .logo{font-size:54px;text-align:center}.login-card h2{text-align:center;font-size:30px;margin:8px 0}.sub{text-align:center;color:#777;margin-bottom:25px}
+    label{display:block;font-weight:700;margin:14px 0 7px}input,select{width:100%;padding:14px;border:1px solid #d5dbe5;border-radius:12px;font-size:16px}
+    button{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:700;cursor:pointer}
+    .primary{background:#1976d2;color:#fff}.danger{background:#e53935;color:#fff}.light{background:#eef3fa;color:#1b4f91}
+    #loginMsg{margin-top:15px;padding:12px;border-radius:10px;display:none}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:24px}
+    .tile{background:#fff;border-radius:24px;padding:25px;text-align:center;box-shadow:0 7px 25px #0000000d;cursor:pointer;transition:.15s}
+    .tile:active{transform:scale(.98)}.tile .ico{font-size:48px}.tile h3{margin:10px 0 5px;font-size:24px}.tile p{margin:0;color:#777}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .panel{background:#fff;border-radius:20px;padding:20px;margin-top:20px;box-shadow:0 6px 22px #0001}
+    .panel h2{margin-top:0}.row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#eef5ff;padding:18px;border-radius:16px}.stat b{font-size:25px;display:block;margin-top:5px}
+    .hidden{display:none!important}.footer{text-align:center;color:#888;margin:35px 0}
+    table{width:100%;border-collapse:collapse;margin-top:15px}th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    @media(max-width:650px){.grid{grid-template-columns:1fr 1fr}.row,.stats{grid-template-columns:1fr}.tile{padding:20px 10px}.tile .ico{font-size:40px}.tile h3{font-size:21px}}
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="top"><h1>Ganesh Plywood ERP</h1><p>Business Management System</p></div>
+  <div class="wrap">
+    <div class="login-card">
+      <div class="logo">🪵</div>
+      <h2>Ganesh Plywood ERP</h2>
+      <div class="sub">Firebase Email / Password Login</div>
+      <label>Email</label>
+      <input id="email" type="email" placeholder="Enter email">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Enter password">
+      <button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button>
+      <div id="loginMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="top">
+    <div class="bar">
+      <div><h1>Ganesh Plywood ERP</h1><p>Business Management System</p></div>
+      <button class="light" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="bar">
+        <div><b id="welcome">Welcome</b><div style="color:#777;margin-top:5px">ERP Dashboard</div></div>
+        <button class="primary" onclick="loadSummary()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">Products <b id="stockCount">0</b></div>
+      <div class="stat">Customers <b id="customerCount">0</b></div>
+      <div class="stat">Sales <b id="salesCount">0</b></div>
+    </div>
+
+    <div class="grid">
+      <div class="tile" onclick="openModule('Sales')"><div class="ico">🧾</div><h3>Sales</h3><p>Sales & Billing</p></div>
+      <div class="tile" onclick="openModule('Purchase')"><div class="ico">📦</div><h3>Purchase</h3><p>Purchase Entry</p></div>
+      <div class="tile" onclick="openModule('Stock')"><div class="ico">🏭</div><h3>Stock</h3><p>Inventory</p></div>
+      <div class="tile" onclick="openModule('Customers')"><div class="ico">👥</div><h3>Customers</h3><p>Customer Management</p></div>
+      <div class="tile" onclick="openModule('Expenses')"><div class="ico">💰</div><h3>Expenses</h3><p>Business Expenses</p></div>
+      <div class="tile" onclick="openModule('Reports')"><div class="ico">📊</div><h3>Reports</h3><p>Business Reports</p></div>
+    </div>
+
+    <div id="modulePanel" class="panel hidden"></div>
+    <div class="footer">© 2026 Ganesh Plywood ERP</div>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD5fJ27GlP_uNgb2uxpPfIFvSrxgGI0xwc",
+  authDomain: "ganesh-plywood-erp.firebaseapp.com",
+  projectId: "ganesh-plywood-erp",
+  storageBucket: "ganesh-plywood-erp.firebasestorage.app",
+  messagingSenderId: "601577954725",
+  appId: "1:601577954725:web:f00cb33d523a2abf761c4c"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(async user => {
+  if(user){
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('welcome').textContent = 'Welcome, ' + (user.email || 'User');
+    await loadSummary();
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+  }
+});
+
+async function login(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const msg=document.getElementById('loginMsg');
+  msg.style.display='block';
+  if(!email || !password){msg.style.background='#fff3e0';msg.style.color='#b45309';msg.textContent='Email and password required.';return;}
+  try{
+    await auth.signInWithEmailAndPassword(email,password);
+    msg.style.display='none';
+  }catch(e){
+    msg.style.background='#ffebee';msg.style.color='#c62828';
+    msg.textContent = e.code === 'auth/invalid-credential' ? 'Invalid email or password.' : e.message;
+  }
+}
+
+function logout(){auth.signOut();}
+
+async function countCollection(name){
+  try{
+    const snap=await db.collection(name).get();
+    return snap.size;
+  }catch(e){return 0;}
+}
+
+async function loadSummary(){
+  document.getElementById('stockCount').textContent=await countCollection('products');
+  document.getElementById('customerCount').textContent=await countCollection('customers');
+  document.getElementById('salesCount').textContent=await countCollection('sales');
+}
+
+function openModule(name){
+  const p=document.getElementById('modulePanel');
+  p.classList.remove('hidden');
+  p.innerHTML = `
+    <div class="bar"><h2>${name}</h2><button class="light" onclick="document.getElementById('modulePanel').classList.add('hidden')">Close</button></div>
+    <p style="color:#666">${name} module is connected to Firebase. You can add your ERP entry form here.</p>
+    <div class="row">
+      <div><label>Name / Description</label><input id="entryName" placeholder="Enter ${name} details"></div>
+      <div><label>Amount / Quantity</label><input id="entryValue" type="number" placeholder="0"></div>
+    </div>
+    <button class="primary" style="margin-top:16px" onclick="saveEntry('${name}')">Save Entry</button>
+    <div id="saveMsg" style="margin-top:12px"></div>
+  `;
+  window.scrollTo({top:p.offsetTop-20,behavior:'smooth'});
+}
+
+async function saveEntry(module){
+  const name=document.getElementById('entryName').value.trim();
+  const value=Number(document.getElementById('entryValue').value||0);
+  const msg=document.getElementById('saveMsg');
+  if(!name){msg.textContent='Please enter details.';return;}
+  try{
+    const collection = module.toLowerCase();
+    await db.collection(collection).add({
+      name:name,
+      value:value,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy:auth.currentUser.uid
+    });
+    msg.style.color='#188038';
+    msg.textContent='Saved successfully.';
+    await loadSummary();
+  }catch(e){
+    msg.style.color='#c62828';
+    msg.textContent='Save failed: '+e.message;
+  }
+}
+</script>
+</body>
+</html>
