@@ -97,7 +97,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </style>
 </style>
 </style>
-</head>
+<style>
+.payment-panel{border:1px solid #e7d4c2;background:#fffaf5}
+.payment-panel label{display:block;font-weight:600;margin-bottom:5px}
+.payment-panel input,.payment-panel select{width:100%;box-sizing:border-box}
+</style></head>
 <body>
 
 <div class="top-banner">
@@ -123,137 +127,36 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js">
 // Billing payment tracking: Cash / UPI / Bank / Credit / Mixed.
+
 function getBillGrandTotal(){
-  const ids=['grandTotal','invoiceGrandTotal','billGrandTotal','totalAmount','netTotal'];
-  for(const id of ids){
-    const el=document.getElementById(id);
-    if(el){
-      const n=Number(String(el.value??el.textContent??'').replace(/[^0-9.-]/g,''));
-      if(Number.isFinite(n)) return n;
-    }
-  }
-  // Fallback: use common ERP invoice total variables if present.
-  try{
-    if(typeof invoiceTotal!=='undefined' && Number(invoiceTotal)) return Number(invoiceTotal);
-    if(typeof grandTotal!=='undefined' && Number(grandTotal)) return Number(grandTotal);
-  }catch(e){}
-  return 0;
+  const el=document.getElementById('grand');
+  if(!el) return 0;
+  return Number(String(el.textContent||'').replace(/[^0-9.-]/g,''))||0;
 }
 function updateBillPayment(){
   const total=getBillGrandTotal();
-  const received=Number(document.getElementById('billReceivedAmount')?.value||0);
-  const outstanding=Math.max(0,total-received);
-  const out=document.getElementById('billOutstandingAmount');
-  if(out) out.value=outstanding.toFixed(2);
+  let received=Number(document.getElementById('billReceivedAmount')?.value||0);
+  if(received<0) received=0;
+  if(received>total) received=total;
+  const out=Math.max(0,total-received);
+  const oe=document.getElementById('billOutstandingAmount'); if(oe) oe.value=out.toFixed(2);
   const s=document.getElementById('billPaymentSummary');
-  if(s) s.innerHTML=`Received: <b>₹${received.toFixed(2)}</b> &nbsp; | &nbsp; Outstanding: <b>₹${outstanding.toFixed(2)}</b>`;
-  return {total,received,outstanding};
+  if(s)s.innerHTML=`Received: <b>₹${received.toLocaleString('en-IN',{minimumFractionDigits:2})}</b> &nbsp; | &nbsp; Outstanding: <b>₹${out.toLocaleString('en-IN',{minimumFractionDigits:2})}</b>`;
+  return {total,received,outstanding:out};
 }
-function applyBillPaymentToInvoice(invoice){
-  const p=updateBillPayment();
-  invoice.paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
-  invoice.receivedAmount=p.received;
-  invoice.outstandingAmount=p.outstanding;
-  invoice.paymentNote=document.getElementById('billPaymentNote')?.value||'';
-  invoice.paymentStatus=p.outstanding<=0 ? 'Paid' : (p.received>0 ? 'Part Paid' : 'Outstanding');
-  return invoice;
+function resetBillPayment(){
+  const m=document.getElementById('billPaymentMode'),r=document.getElementById('billReceivedAmount'),n=document.getElementById('billPaymentNote');
+  if(m)m.value='Cash'; if(r)r.value='0'; if(n)n.value=''; updateBillPayment();
 }
-
-
-/* === Firebase Payment Persistence === */
-async function saveInvoicePaymentToFirebase(invoice){
-  try{
-    const uid = (typeof firebase!=='undefined' && firebase.auth && firebase.auth().currentUser)
-      ? firebase.auth().currentUser.uid : null;
-
-    // Use an existing Firestore instance if the ERP has one.
-    let fs = null;
-    if(typeof dbFirebase!=='undefined') fs=dbFirebase;
-    else if(typeof firestore!=='undefined') fs=firestore;
-    else if(typeof firebase!=='undefined' && firebase.firestore) fs=firebase.firestore();
-
-    if(!fs) return false;
-
-    const invoiceId = String(invoice.id || invoice.invoiceNo || ('INV-'+Date.now()));
-    const payload = {
-      ...invoice,
-      paymentMode: invoice.paymentMode || 'Cash',
-      receivedAmount: Number(invoice.receivedAmount || 0),
-      outstandingAmount: Number(invoice.outstandingAmount || 0),
-      paymentStatus: invoice.paymentStatus || 'Outstanding',
-      paymentNote: invoice.paymentNote || '',
-      updatedAt: new Date().toISOString(),
-      updatedBy: uid || ''
-    };
-
-    // Prefer the ERP's existing invoices collection.
-    await fs.collection('invoices').doc(invoiceId).set(payload,{merge:true});
-    return true;
-  }catch(err){
-    console.warn('Firebase payment save failed:',err);
-    return false;
-  }
-}
-
-async function savePaymentAndInvoice(invoice){
-  const p=updateBillPayment();
-  invoice.paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
-  invoice.receivedAmount=Number(p.received||0);
-  invoice.outstandingAmount=Number(p.outstanding||0);
-  invoice.paymentNote=document.getElementById('billPaymentNote')?.value||'';
-  invoice.paymentStatus=p.outstanding<=0 ? 'Paid' : (p.received>0 ? 'Part Paid' : 'Outstanding');
-
-  // Local ERP record
-  try{
-    if(Array.isArray(db.invoices)){
-      const id=String(invoice.id||invoice.invoiceNo||'');
-      const idx=db.invoices.findIndex(x=>String(x.id||x.invoiceNo||'')===id);
-      if(idx>=0) db.invoices[idx]={...db.invoices[idx],...invoice};
-      else db.invoices.push(invoice);
-      localStorage.setItem(DBKEY,JSON.stringify(db));
-    }
-  }catch(e){ console.warn('Local invoice save failed:',e); }
-
-  // Firebase record
-  await saveInvoicePaymentToFirebase(invoice);
-  return invoice;
-}
-
 function restoreInvoicePayment(invoice){
   if(!invoice)return;
-  const mode=document.getElementById('billPaymentMode');
-  const rec=document.getElementById('billReceivedAmount');
-  const out=document.getElementById('billOutstandingAmount');
-  const note=document.getElementById('billPaymentNote');
-  if(mode) mode.value=invoice.paymentMode||'Cash';
-  if(rec) rec.value=Number(invoice.receivedAmount||0);
-  if(out) out.value=Number(invoice.outstandingAmount||0).toFixed(2);
-  if(note) note.value=invoice.paymentNote||'';
+  const m=document.getElementById('billPaymentMode'),r=document.getElementById('billReceivedAmount'),o=document.getElementById('billOutstandingAmount'),n=document.getElementById('billPaymentNote');
+  if(m)m.value=invoice.paymentMode||'Cash';
+  if(r)r.value=Number(invoice.receivedAmount||0);
+  if(o)o.value=Number(invoice.outstandingAmount||0).toFixed(2);
+  if(n)n.value=invoice.paymentNote||'';
   updateBillPayment();
 }
-
-
-async function saveCurrentBillPayment(){
-  let invoice = null;
-  try{
-    if(typeof currentInvoice!=='undefined' && currentInvoice) invoice=currentInvoice;
-    else if(window.currentInvoice) invoice=window.currentInvoice;
-  }catch(e){}
-  if(!invoice){
-    invoice={
-      id:'INV-'+Date.now(),
-      invoiceNo:'INV-'+Date.now(),
-      customerName:document.getElementById('customerName')?.value||'',
-      mobile:document.getElementById('customerMobile')?.value||'',
-      address:document.getElementById('customerAddress')?.value||'',
-      total:getBillGrandTotal()
-    };
-  }
-  await savePaymentAndInvoice(invoice);
-  if(typeof toast==='function') toast('✅ Payment saved successfully');
-  else alert('Payment saved successfully');
-}
-
 </script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-compat.js"></script>
@@ -595,9 +498,22 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing
 <div id="billModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Bill: GST will be calculated</div><div class="actions"><button class="btn primary" onclick="addBillRow()">+ Item</button><button class="btn light" onclick="openPage('Customers')">+ Customer</button><button class="btn bluebtn" onclick="shareBill()">WhatsApp</button><button class="btn light" onclick="printDraft()">Print/PDF</button></div>
 <div class="table-wrap"><table><thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th class="gstcol">GST%</th><th>Taxable</th><th class="gstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="billrows"></tbody></table></div>
 <div class="total"><div>Taxable <b id="taxable">₹0.00</b></div><div class="gstcol">CGST <b id="cgst">₹0.00</b></div><div class="gstcol">SGST <b id="sgst">₹0.00</b></div><div class="gstcol">IGST <b id="igst">₹0.00</b></div><div>Grand Total <b id="grand">₹0.00</b></div></div>
+<div class="panel payment-panel" style="margin-top:12px">
+<h3>💳 Payment Details</h3>
+<div class="grid4">
+<div><label>Payment Mode</label><select id="billPaymentMode" onchange="updateBillPayment()">
+<option value="Cash">💵 Cash</option><option value="UPI">📱 UPI</option><option value="Bank">🏦 Bank Transfer</option><option value="Credit">🧾 Outstanding / Credit</option><option value="Mixed">🔄 Mixed</option>
+</select></div>
+<div><label>Received Amount</label><input id="billReceivedAmount" type="number" min="0" step="0.01" value="0" oninput="updateBillPayment()" placeholder="₹ 0.00"></div>
+<div><label>Outstanding Amount</label><input id="billOutstandingAmount" type="number" value="0" readonly></div>
+<div><label>UPI / Payment Reference</label><input id="billPaymentNote" placeholder="Reference / note"></div>
+</div>
+<div id="billPaymentSummary" style="margin-top:10px;padding:10px;background:#f7eee5;border-radius:8px;font-weight:600">Received: ₹0.00 | Outstanding: ₹0.00</div>
+</div>
+
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
-<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td><span class="badge ${x.status==='Paid'?'paid':'unpaid'}">${x.status}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="6">No invoices.</td></tr>'}</table></div></section>`;
-addBillRow();toggleBillType()
+<div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.receivedAmount||0)}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="9">No invoices.</td></tr>'}</table></div></section>`;
+addBillRow();toggleBillType();resetBillPayment()
 }
 function fillBillingCustomer(){
  let id=document.getElementById('bc')?.value,cu=db.customers.find(x=>x.id==id);
@@ -663,16 +579,80 @@ document.querySelectorAll('#billrows tr').forEach((r,i)=>{
 return{items:a,taxable:tx,gst:gs,grand:tx+gs,inter,billType:non?'nongst':'gst'}
 }
 function saveBill(){
-  if(typeof invoice!=="undefined") applyBillPaymentToInvoice(invoice);
-let d=calcBill();if(!d.items.length||d.grand<=0)return toast('Add item and amount');
+let d=calcBill();
+if(!d.items.length||d.grand<=0)return toast('Add item and amount');
+
 let cu=getBillingCustomer();
-if(!cu&&(document.getElementById('bcname')?.value.trim()||document.getElementById('bcphone')?.value.trim()||document.getElementById('bcaddress')?.value.trim()))return toast('Customer Name, Mobile Number and Address fill करा');
-let no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0'),bt=document.getElementById('billtype')?.value||'gst',inv={no,date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',customerId:cu?.id||'',customerPhone:cu?.phone||'',customerAddress:cu?.address||'',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,status:document.getElementById('bstatus').value,inter:d.inter,billType:bt};
-db.invoices.push(inv);d.items.forEach(i=>{let s=db.stock.find(x=>x.id==i.stockId);if(s)s.qty=Math.max(0,s.qty-i.qty)});db.transactions.push({date:dateIN(),particular:'Invoice '+no+' - '+inv.customer,type:'Credit',amount:d.grand});save();toast(cu?'Invoice saved & customer updated successfully':'Invoice saved successfully');billing()
+if(!cu&&(document.getElementById('bcname')?.value.trim()||document.getElementById('bcphone')?.value.trim()||document.getElementById('bcaddress')?.value.trim()))
+return toast('Customer Name, Mobile Number and Address fill करा');
+
+let pay=updateBillPayment();
+if(pay.received>pay.total)return toast('Received amount cannot exceed Grand Total');
+
+let no=(db.settings.prefix||'GP')+'-'+String(db.invoices.length+1).padStart(5,'0');
+let bt=document.getElementById('billtype')?.value||'gst';
+let paymentMode=document.getElementById('billPaymentMode')?.value||'Cash';
+let paymentNote=document.getElementById('billPaymentNote')?.value.trim()||'';
+
+let paymentStatus=pay.outstanding<=0?'Paid':(pay.received>0?'Part Paid':'Outstanding');
+
+let inv={
+id:Date.now(),
+no,
+date:document.getElementById('bd').value,
+customer:cu?.name||'Walk-in Customer',
+customerId:cu?.id||'',
+customerPhone:cu?.phone||'',
+customerAddress:cu?.address||'',
+gstin:cu?.gstin||'',
+items:d.items,
+taxable:d.taxable,
+gst:d.gst,
+grand:d.grand,
+status:paymentStatus,
+inter:d.inter,
+billType:bt,
+paymentMode,
+receivedAmount:pay.received,
+outstandingAmount:pay.outstanding,
+paymentStatus,
+paymentNote,
+paymentUpdatedAt:new Date().toISOString()
+};
+
+db.invoices.push(inv);
+
+d.items.forEach(i=>{
+let s=db.stock.find(x=>x.id==i.stockId);
+if(s)s.qty=Math.max(0,s.qty-i.qty)
+});
+
+db.transactions.push({
+date:dateIN(),
+particular:'Invoice '+no+' - '+inv.customer,
+type:'Credit',
+amount:d.grand,
+paymentMode,
+receivedAmount:pay.received,
+outstandingAmount:pay.outstanding,
+status:paymentStatus
+});
+
+// Customer auto-create/update is already handled by getBillingCustomer().
+save();
+
+toast(cu?'Invoice saved & customer/payment updated successfully':'Invoice saved with payment details successfully');
+billing();
 }
 function invoiceHTML(x){
 let cg=x.inter?0:x.gst/2,ig=x.inter?x.gst:0,non=x.billType==='nongst';
-return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p></body></html>`;
+let payment=`<div style="margin-top:18px;border:1px solid #999;padding:10px"><b>Payment Details</b><br>
+Mode: ${esc(x.paymentMode||'Cash')} &nbsp; | &nbsp;
+Received: ${money(x.receivedAmount||0)} &nbsp; | &nbsp;
+Outstanding: ${money(x.outstandingAmount||0)} &nbsp; | &nbsp;
+Status: ${esc(x.paymentStatus||x.status||'Outstanding')}
+${x.paymentNote?`<br>Reference: ${esc(x.paymentNote)}`:''}</div>`;
+return `<html><head><title>${x.no}</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}.note{padding:8px;background:#fff3cd;border:1px solid #e0c36c}</style></head><body><h1>${esc(db.settings.company)}</h1><p style="text-align:center">${esc(db.settings.address)}<br>${!non&&db.settings.gstin?'GSTIN: '+esc(db.settings.gstin):''}</p><hr><h2>${non?'Non-GST Bill':'Tax Invoice'}</h2><p><b>Invoice:</b> ${x.no}　 <b>Date:</b> ${x.date}<br><b>Customer:</b> ${esc(x.customer)} ${x.gstin?'| GSTIN: '+esc(x.gstin):''}<br><b>Mobile:</b> ${esc(x.customerPhone||'-')}<br><b>Address:</b> ${esc(x.customerAddress||'-')}</p><table><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th>${non?'':'<th>GST%</th>'}<th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.hsn}</td><td>${i.qty}</td><td>${money(i.rate)}</td>${non?'':`<td>${i.gstRate}%</td>`}<td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}${non?'':`<br>CGST: ${money(cg)}<br>SGST: ${money(cg)}<br>IGST: ${money(ig)}`}<br><b>Grand Total: ${money(x.grand)}</b></p>${payment}${non?'<p class="note"><b>Non-GST Bill:</b> GST not charged on this bill.</p>':''}<p>Thank you for your business.</p></body></html>`;
 }
 function printSaved(i){let w=open('','_blank');w.document.write(invoiceHTML(db.invoices[i]));w.document.close();w.print()}
 function printDraft(){let d=calcBill(),cu=getBillingCustomer(),x={no:'DRAFT',date:document.getElementById('bd').value,customer:cu?.name||'Walk-in Customer',customerPhone:cu?.phone||'',customerAddress:cu?.address||'',gstin:cu?.gstin||'',items:d.items,taxable:d.taxable,gst:d.gst,grand:d.grand,inter:d.inter,billType:document.getElementById('billtype')?.value||'gst'};let w=open('','_blank');w.document.write(invoiceHTML(x));w.document.close();w.print()}
