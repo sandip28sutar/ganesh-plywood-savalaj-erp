@@ -43,6 +43,31 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .low-list th{background:var(--brown);color:#fff}
 .rate-profit{font-weight:800}
 @media(max-width:1100px){.dashboard-grid{grid-template-columns:1fr}.today-summary{order:-1}}
+
+<style>
+.data-chip{display:inline-block;background:#faf7f2;border:1px solid #eadfD2;border-radius:6px;padding:4px 7px;margin:2px 4px 2px 0;font-size:12px}
+.table-wrap table{min-width:900px}
+.table-wrap th{white-space:nowrap}
+.table-wrap td{vertical-align:middle}
+.low{font-weight:700;color:#c62828;background:#fff1f1}
+@media(max-width:700px){
+  .table-wrap{overflow-x:auto}
+  .table-wrap table{min-width:1050px}
+}
+
+<style>
+.inventory-document{background:#fff;border:1px solid #ddd;border-radius:18px;padding:22px;margin-top:18px;box-shadow:0 3px 12px rgba(0,0,0,.06)}
+.inventory-document .doc-title{text-align:center;font-size:24px;font-weight:700;margin-bottom:18px}
+.inventory-document .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+.inventory-document .info-box{border:1px solid #ddd;border-radius:12px;padding:12px;background:#fffdf9}
+.inventory-document .info-box h4{margin:0 0 8px;color:#5b2b0b}
+.inventory-document .inventory-table{width:100%;border-collapse:collapse;min-width:1000px}
+.inventory-document .inventory-table th{background:#f5efe7;color:#333;border:1px solid #777;padding:10px}
+.inventory-document .inventory-table td{border:1px solid #777;padding:9px}
+.inventory-document .inventory-table tfoot td{background:#fafafa}
+@media(max-width:700px){.inventory-document{padding:12px}.inventory-document .info-grid{grid-template-columns:1fr}}
+</style>
+</style>
 </style>
 </head>
 <body>
@@ -120,6 +145,68 @@ if(!db.stock.length)db.stock=[
 {id:3,name:'Laminates Sheet',category:'Laminate',unit:'Sheet',qty:20,rate:1800,saleRate:2200,gst:18,hsn:'3921'},
 {id:4,name:'Edge Band 22mm',category:'Hardware',unit:'Mtr',qty:25,rate:35,saleRate:50,gst:18,hsn:'3920'},
 {id:5,name:'Flush Door',category:'Doors',unit:'Nos',qty:8,rate:4500,saleRate:5200,gst:18,hsn:'4418'}];
+
+(function ensureFurnitureDoorCatalog(){
+ const catalog=[
+ ['MDF Board 6mm','Furniture','Sheet',900,1100,18,'4411'],
+ ['MDF Board 12mm','Furniture','Sheet',1450,1750,18,'4411'],
+ ['MDF Board 18mm','Furniture','Sheet',1900,2300,18,'4411'],
+ ['HDHMR Board 18mm','Furniture','Sheet',2400,2900,18,'4411'],
+ ['Particle Board 18mm','Furniture','Sheet',1500,1850,18,'4410'],
+ ['Block Board 19mm','Furniture','Sheet',2500,3000,18,'4412'],
+ ['Acrylic Sheet','Furniture','Sheet',3200,3900,18,'3920'],
+ ['PVC Foam Board','Furniture','Sheet',1800,2200,18,'3921'],
+ ['Veneer Sheet','Furniture','Sheet',900,1200,18,'4408'],
+ ['Edge Band 0.8mm','Furniture','Mtr',12,20,18,'3920'],
+ ['Edge Band 2mm','Furniture','Mtr',22,35,18,'3920'],
+ ['Fevicol SH','Furniture','Kg',180,230,18,'3506'],
+ ['Wood Dowel 8mm','Furniture','Nos',2,4,18,'3926'],
+ ['Minifix Set','Furniture','Set',8,15,18,'8302'],
+ ['Cam Lock','Furniture','Nos',5,10,18,'8302'],
+ ['Drawer Channel 16 inch','Furniture','Pair',180,280,18,'8302'],
+ ['Telescopic Channel 18 inch','Furniture','Pair',260,380,18,'8302'],
+ ['Soft Close Channel 18 inch','Furniture','Pair',450,650,18,'8302'],
+ ['Hinge Soft Close','Furniture','Pair',45,80,18,'8302'],
+ ['Cabinet Handle 6 inch','Furniture','Nos',35,70,18,'8302'],
+ ['Magnetic Catch','Furniture','Nos',5,12,18,'8302'],
+ ['Shelf Support Pin','Furniture','Nos',1,3,18,'8302'],
+ ['Adjustable Furniture Leg','Furniture','Nos',20,40,18,'8302'],
+ ['Aluminium Profile','Furniture','Mtr',120,180,18,'7604'],
+ ['Glass Shelf 5mm','Furniture','Sq.ft',180,280,18,'7007'],
+ ['Flush Door 30mm','Doors','Nos',4500,5200,18,'4418'],
+ ['Flush Door 35mm','Doors','Nos',5200,6200,18,'4418'],
+ ['Moulded Door','Doors','Nos',6000,7500,18,'4418'],
+ ['Membrane Door','Doors','Nos',7000,8500,18,'4418'],
+ ['WPC Door','Doors','Nos',7500,9500,18,'3925'],
+ ['PVC Door','Doors','Nos',4500,6000,18,'3925'],
+ ['Door Skin 3mm','Door Material','Sheet',950,1250,18,'4418'],
+ ['Door Frame Wood','Door Material','Cft',2800,3500,18,'4407'],
+ ['Door Frame WPC','Door Material','Mtr',450,650,18,'3925'],
+ ['Door Architrave','Door Material','Mtr',120,200,18,'4409'],
+ ['Door Beading','Door Material','Mtr',45,80,18,'4409'],
+ ['Door Hinges 4 inch','Door Material','Pair',80,140,18,'8302'],
+ ['Door Lock Mortise','Door Material','Set',450,750,18,'8301'],
+ ['Door Handle Set','Door Material','Set',350,650,18,'8302'],
+ ['Tower Bolt 8 inch','Door Material','Nos',80,140,18,'8302'],
+ ['Door Stopper','Door Material','Nos',45,90,18,'8302'],
+ ['Door Closer','Door Material','Nos',650,950,18,'8302'],
+ ['Door Eye / Viewer','Door Material','Nos',80,150,18,'8302'],
+ ['Door Magnetic Catch','Door Material','Nos',15,30,18,'8302'],
+ ['Door Seal / Rubber','Door Material','Mtr',25,45,18,'4016'],
+ ['Door PVC Edge Band','Door Material','Mtr',20,35,18,'3920'],
+ ['Door Glass 5mm','Door Material','Sq.ft',180,300,18,'7007'],
+ ['Door Aluminium Profile','Door Material','Mtr',180,280,18,'7604']
+ ];
+ const names=new Set((db.stock||[]).map(x=>String(x.name||'').toLowerCase()));
+ let added=0;
+ catalog.forEach(([name,category,unit,rate,saleRate,gst,hsn])=>{
+   if(names.has(name.toLowerCase())) return;
+   db.stock.push({id:Date.now()+added,name,category,unit,qty:0,min:0,rate,saleRate,gst,hsn});
+   names.add(name.toLowerCase()); added++;
+ });
+ if(added) localStorage.setItem(DBKEY,JSON.stringify(db));
+})();
+
 function save(){
   localStorage.setItem(DBKEY,JSON.stringify(db));
   cloudSave();
@@ -166,7 +253,7 @@ const saleValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??
 const profitValue=saleValue-purchaseValue;
 const low=db.stock.filter(x=>(Number(x.qty)||0)<=Number(x.min??10)).slice(0,6);
 const recent=db.transactions.slice(-8).reverse();
-const cats=['Plywood','Hardware','Laminate','Doors','Others'];
+const cats=['Plywood','Hardware','Laminate','Doors','Furniture','Door Material','Others'];
 const catData=cats.map(c=>({name:c,qty:db.stock.filter(x=>x.category===c).reduce((a,x)=>a+Number(x.qty||0),0)}));
 const totalQty=catData.reduce((a,x)=>a+x.qty,0);
 const todayISO=iso();
@@ -234,10 +321,56 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="summary-row"><span>Stock Sale Value</span><b class="green">${money(closingSaleValue)}</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
 <div class="summary-row"><span>Expected Profit</span><b class="${profitValue>=0?'green':'red'}">${money(profitValue)}</b><span class="summary-actions no-print" data-key="profit"><button class="btn light" onclick="editSummaryField('profit')">✏️</button><button class="btn danger" onclick="deleteSummaryField('profit')">🗑️</button></span></div>
 </aside>
-</div><div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
+</div>
+<div class="panel">
+<h3>🪑 Furniture & 🚪 Door Material Stock</h3>
+<div class="cards mini">
+<div class="card"><div class="card-title blue">Furniture Items</div><div class="card-value">${db.stock.filter(x=>x.category==='Furniture').length}</div><div class="card-sub">Modular / furniture work</div></div>
+<div class="card"><div class="card-title orange">Door Items</div><div class="card-value">${db.stock.filter(x=>x.category==='Doors'||x.category==='Door Material').length}</div><div class="card-sub">Doors + door materials</div></div>
+</div></div>
+<div class="panel dashboard-stock-list">
+  <div class="actions" style="justify-content:space-between;align-items:center">
+    <h3 style="margin:0">📦 Stock List</h3>
+    <button class="btn primary" onclick="openPage('Stock')">View All Stock</button>
+  </div>
+  <div class="actions" style="margin-top:10px">
+    <input class="search" id="dashboardStockSearch" placeholder="Search stock item..." oninput="renderDashboardStockList()">
+    <select id="dashboardStockCat" onchange="renderDashboardStockList()">
+      <option value="">All Categories</option>
+      <option>Plywood</option><option>Hardware</option><option>Laminate</option><option>Doors</option><option>Furniture</option><option>Door Material</option><option>Others</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Item</th><th>Category</th><th>Unit</th><th>Qty</th><th>Purchase Rate</th><th>Sales Rate</th><th>Stock Value</th></tr></thead>
+      <tbody id="dashboardStockTable"></tbody>
+    </table>
+  </div>
+</div>
+<div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed with ❤️ for Ganesh Plywood</span></div></section>`;
 applyAdminSummaryControls();
 }
+renderDashboardStockList();
 
+function renderDashboardStockList(){
+  const q=(document.getElementById('dashboardStockSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('dashboardStockCat')?.value||'';
+  const rows=(db.stock||[]).filter(x=>
+    (String(x.name||'')+' '+String(x.category||'')).toLowerCase().includes(q) &&
+    (!cat || x.category===cat)
+  );
+  const el=document.getElementById('dashboardStockTable');
+  if(!el)return;
+  el.innerHTML=rows.map(x=>`<tr>
+    <td><b>${esc(x.name)}</b></td>
+    <td>${esc(x.category||'')}</td>
+    <td>${esc(x.unit||'')}</td>
+    <td class="${Number(x.qty||0)<=Number(x.min??10)?'low':''}">${x.qty||0}${Number(x.qty||0)<=Number(x.min??10)?' ⚠️':''}</td>
+    <td>${money(Number(x.rate||0))}</td>
+    <td>${money(Number(x.saleRate??x.rate??0))}</td>
+    <td>${money(Number(x.qty||0)*Number(x.rate||0))}</td>
+  </tr>`).join('') || '<tr><td colspan="7">No stock items found.</td></tr>';
+}
 function summaryOverrideKey(key){return 'GP_TODAY_SUMMARY_'+key.toUpperCase();}
 function isAdminUser(){
   const u=(typeof getCurrentUser==='function')?getCurrentUser():null;
@@ -356,7 +489,7 @@ function shareBill(){let d=calcBill(),c=document.getElementById('bc').value,cu=d
 function stock(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>📦 Stock Management</h2>
 <div class="cards mini"><div class="card"><div class="card-title blue">Total Items</div><div class="card-value">${db.stock.length}</div><div class="card-sub">Stock masters</div></div><div class="card"><div class="card-title purple">Stock Value</div><div class="card-value">${money(db.stock.reduce((a,x)=>a+x.qty*x.rate,0))}</div><div class="card-sub">Current value</div></div><div class="card"><div class="card-title red">Low Stock</div><div class="card-value">${db.stock.filter(x=>x.qty<=((x.min??10))).length}</div><div class="card-sub">Below minimum</div></div></div>
-<div class="actions"><input class="search" id="stockSearch" placeholder="Search item, category or HSN..." oninput="renderStockTable()"><select id="stockCat" onchange="renderStockTable()"><option value="">All Categories</option><option>Plywood</option><option>Hardware</option><option>Laminate</option><option>Doors</option><option>Others</option></select><button class="btn primary" onclick="stockForm()">+ Add Stock</button><button class="btn success" onclick="stockAdjust()">↕ Stock In / Out</button><button class="btn light" onclick="exportStockCSV()">Export CSV</button></div>
+<div class="actions"><input class="search" id="stockSearch" placeholder="Search item, category or HSN..." oninput="renderStockTable()"><select id="stockCat" onchange="renderStockTable()"><option value="">All Categories</option><option>Plywood</option><option>Hardware</option><option>Laminate</option><option>Doors</option><option>Furniture</option><option>Door Material</option><option>Others</option></select><button class="btn primary" onclick="stockForm()">+ Add Stock</button><button class="btn success" onclick="stockAdjust()">↕ Stock In / Out</button><button class="btn light" onclick="exportStockCSV()">Export CSV</button></div>
 <div class="panel table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>HSN</th><th>Unit</th><th>Qty</th><th>Min</th><th>Purchase Rate</th><th>Sell Rate</th><th>Value</th><th>GST</th><th>Action</th></tr></thead><tbody id="stocktable"></tbody></table></div></section>`;renderStockTable()
 }
 function renderStockTable(){let q=(document.getElementById('stockSearch')?.value||'').toLowerCase(),cat=document.getElementById('stockCat')?.value||'',a=db.stock.filter(x=>(x.name+' '+x.category+' '+x.hsn).toLowerCase().includes(q)&&( !cat||x.category===cat));document.getElementById('stocktable').innerHTML=a.map(x=>{let min=x.min??10;return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.category)}</td><td>${esc(x.hsn)}</td><td>${esc(x.unit)}</td><td class="${x.qty<=min?'low':''}">${x.qty} ${x.qty<=min?'⚠️':''}</td><td>${min}</td><td>${money(x.rate)}</td><td>${money(x.saleRate||x.rate)}</td><td>${money(x.qty*x.rate)}</td><td>${x.gst}%</td><td><button class="btn light" onclick="stockForm(${x.id})">Edit</button> <button class="btn success" onclick="stockAdjust(${x.id})">Adjust</button> <button class="btn danger" onclick="delStock(${x.id})">Delete</button></td></tr>`}).join('')||'<tr><td colspan="10">No items found.</td></tr>'}
@@ -501,14 +634,55 @@ function adminShowDataset(key){
   const arr=Array.isArray(db[key])?db[key]:[];
   const box=document.getElementById('adminDataset');
   if(!box)return;
-  box.innerHTML=`<div class="panel"><div class="actions"><h3 style="margin:0">${esc(key)}</h3><input class="search" id="adminSearch" placeholder="Search records..." oninput="adminRenderRows('${key}')"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Preview</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div></div>`;
+  box.innerHTML=key==='stock'
+?`<div class="inventory-document">
+  <div class="doc-title">Inventory Stock Register</div>
+  <div class="info-grid">
+    <div class="info-box"><h4>Store</h4><div>Ganesh Plywood</div><small>Furniture • Plywood • Hardware • Doors</small></div>
+    <div class="info-box"><h4>Document</h4><div>Stock Register</div><small>Current inventory details</small></div>
+    <div class="info-box"><h4>Search / Filter</h4><input class="search" id="adminSearch" placeholder="Search item, category, HSN..." oninput="adminRenderRows('${key}')" style="width:100%"></div>
+  </div>
+  <div class="table-wrap"><table class="inventory-table"><thead><tr><th>SKU Code</th><th>Description</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Purchase Rate</th><th>Sales Rate</th><th>Total Value</th><th>GST</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+</div>`
+:`<div class="panel"><div class="actions"><h3 style="margin:0">${esc(key)}</h3><input class="search" id="adminSearch" placeholder="Search records..." oninput="adminRenderRows('${key}')"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Preview</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div></div>`;
   adminRenderRows(key);
 }
 function adminRenderRows(key){
   const arr=Array.isArray(db[key])?db[key]:[], q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
   const tbody=document.getElementById('adminRows'); if(!tbody)return;
   const rows=arr.map((x,i)=>({x,i})).filter(o=>JSON.stringify(o.x).toLowerCase().includes(q));
-  tbody.innerHTML=rows.map(o=>`<tr><td>${o.i+1}</td><td><pre style="white-space:pre-wrap;margin:0;max-width:900px">${esc(JSON.stringify(o.x,null,2))}</pre></td><td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`).join('')||'<tr><td colspan="3">No records.</td></tr>';
+
+  const table=tbody.closest('table');
+  if(key==='stock'){
+    table.querySelector('thead').innerHTML='<tr><th>SKU Code</th><th>Description</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Purchase Rate</th><th>Sales Rate</th><th>Total Value</th><th>GST</th><th>Action</th></tr>';
+    const total=rows.reduce((s,o)=>s+(Number(o.x.qty||0)*Number(o.x.rate||0)),0);
+    tbody.innerHTML=rows.map(o=>{
+      const x=o.x, sku=x.sku||x.code||('GP-'+String(x.id).padStart(4,'0'));
+      return `<tr>
+        <td><b>${esc(sku)}</b></td>
+        <td><b>${esc(x.name||'')}</b><br><small>HSN: ${esc(x.hsn||'-')}</small></td>
+        <td>${esc(x.category||'')}</td>
+        <td>${x.qty??0}</td>
+        <td>${esc(x.unit||'')}</td>
+        <td>${money(Number(x.rate||0))}</td>
+        <td>${money(Number(x.saleRate??x.rate??0))}</td>
+        <td><b>${money(Number(x.qty||0)*Number(x.rate||0))}</b></td>
+        <td>${x.gst??0}%</td>
+        <td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="10">No stock records.</td></tr>';
+
+    const foot = table.querySelector('tfoot') || table.createTFoot();
+    foot.innerHTML=`<tr><td colspan="7" style="text-align:right"><b>Total Stock Value</b></td><td><b>${money(total)}</b></td><td colspan="2"></td></tr>`;
+    return;
+  }
+
+  table.querySelector('thead').innerHTML='<tr><th>#</th><th>Details</th><th>Action</th></tr>';
+  tbody.innerHTML=rows.map(o=>{
+    const x=o.x;
+    const details=Object.entries(x).map(([k,v])=>`<span class="data-chip"><b>${esc(k)}:</b> ${esc(String(v??''))}</span>`).join('');
+    return `<tr><td>${o.i+1}</td><td>${details}</td><td><button class="btn light" onclick="adminEditRecord('${key}',${o.i})">✏️ Edit</button> <button class="btn danger" onclick="adminDeleteRecord('${key}',${o.i})">🗑️ Delete</button></td></tr>`;
+  }).join('')||'<tr><td colspan="3">No records.</td></tr>';
 }
 function adminEditRecord(key,i){
   const u=getCurrentUser(); if(u?.role!=='Admin')return toast('⛔ Admin access required');
