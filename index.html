@@ -219,6 +219,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div id="todaySummaryAdminControls" class="actions no-print" style="margin:0 0 8px;display:none">
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit</button>
 <button class="btn success" onclick="updateTodaySummary()">💾 Update</button>
+<button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete</button>
 </div>
 <div class="summary-row"><span>Opening Stock</span><b class="orange">${money(openingValue)}</b></div>
 <div class="summary-row"><span>Sales</span><b id="todaySalesVal" class="green">${money(todaySales)}</b></div>
@@ -263,6 +264,23 @@ function editTodaySummary(){
   <div class="actions"><button class="btn success" onclick="updateTodaySummary()">💾 Update</button><button class="btn light" onclick="closeModal()">Cancel</button></div>`;
   document.getElementById('modal').classList.add('show');
 }
+function deleteTodaySummary(){
+  if(!isAdminUser()){toast('⛔ Admin access only');return;}
+  if(!confirm('Delete today’s manually edited summary values? Dashboard will return to calculated values.')) return;
+  [
+    'GP_TODAY_SALES_OVERRIDE',
+    'GP_TODAY_PURCHASE_OVERRIDE',
+    'GP_TODAY_RECEIVABLE_OVERRIDE',
+    'GP_TODAY_PAYABLE_OVERRIDE',
+    'GP_TODAY_STOCKCOST_OVERRIDE',
+    'GP_TODAY_STOCKSALE_OVERRIDE',
+    'GP_TODAY_PROFIT_OVERRIDE'
+  ].forEach(k=>localStorage.removeItem(k));
+  closeModal();
+  dashboard();
+  toast('🗑️ Today’s Summary overrides deleted');
+}
+
 function updateTodaySummary(){
   if(!isAdminUser()){toast('⛔ Admin access only');return;}
   const vals={
