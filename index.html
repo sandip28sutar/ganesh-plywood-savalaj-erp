@@ -1757,6 +1757,7 @@ document.addEventListener('DOMContentLoaded',function(){
     mobile: '',
     address: '',
     isMain: true,
+    isActive: true,
     createdAt: 'system'
   };
 
@@ -1899,7 +1900,7 @@ document.addEventListener('DOMContentLoaded',function(){
     }else{
       const b={
         id:'BR_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-        name,code,mobile,address,isMain:false,
+        name,code,mobile,address,isMain:false,isActive:true,
         createdAt:new Date().toISOString()
       };
       a.push(b);
@@ -1929,18 +1930,25 @@ document.addEventListener('DOMContentLoaded',function(){
   };
 
   window.sssBranchActivate = function(id){
-    const b=getBranches().find(x=>x.id===id);
+    const a=getBranches();
+    const b=a.find(x=>x.id===id);
     if(!b)return;
-    setActiveId(id);
+    b.isActive = true;
+    setBranches(a);
     sssBranchRefresh();
-
-    // Other ERP modules can listen to this event and filter their data by branchId.
-    window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{
-      branchId:b.id,branchName:b.name,branchCode:b.code
-    }}));
-
-    alert('🟢 Active Branch: '+b.name);
+    window.dispatchEvent(new CustomEvent('sssBranchStatusChanged',{detail:{branchId:b.id,isActive:true}}));
+    alert('🟢 Branch Active: '+b.name+'\nMultiple branches can remain Active.');
   };
+  window.sssBranchDeactivate = function(id){
+    if(id==='MAIN'){alert('🏠 Main Branch कायम Active राहील.');return;}
+    const a=getBranches(), b=a.find(x=>x.id===id);
+    if(!b)return;
+    b.isActive=false;
+    setBranches(a);
+    sssBranchRefresh();
+    window.dispatchEvent(new CustomEvent('sssBranchStatusChanged',{detail:{branchId:b.id,isActive:false}}));
+  };
+
 
   window.sssGetActiveBranch = function(){
     return getBranches().find(x=>x.id===getActiveId())||MAIN;
@@ -2259,18 +2267,23 @@ window.sssEditAnyBranchName=function(id){
 (function(){
   window.sssBranchRefresh=function(){
     const get=window.sssGetBranches;
-    const a=typeof get==='function'?get():[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}];
-    const active=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
+    const a=typeof get==='function'?get():[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
+    const current=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
     const badge=document.getElementById('sssActiveBranchBadge');
-    const b=a.find(x=>x.id===active)||a[0];
-    if(badge)badge.textContent='🟢 '+b.name+' ('+b.code+')';
+    const b=a.find(x=>x.id===current)||a[0];
+    if(badge)badge.textContent='🔵 Working Branch: '+b.name+' ('+b.code+')';
     const tb=document.getElementById('sssBranchRows');if(!tb)return;
     tb.innerHTML=a.map((x,i)=>{
-      const main=x.id==='MAIN'||x.isMain, act=x.id===active;
-      const actions=main
-        ? `<button type="button" class="btn light" onclick="sssEditMainBranchName()">✏️ Edit Name</button><button type="button" class="btn primary" onclick="sssBranchActivate('MAIN')">🟢 Active</button>`
-        : `<button type="button" class="btn light" onclick="sssBranchEdit('${String(x.id).replace(/'/g,"\\'")}')">✏️ Edit</button><button type="button" class="btn primary" onclick="sssBranchActivate('${String(x.id).replace(/'/g,"\\'")}')">🟢 Active</button><button type="button" class="btn danger" onclick="sssBranchDelete('${String(x.id).replace(/'/g,"\\'")}')">🗑️ Delete</button>`;
-      return `<tr class="${act?'sss-mba-main':''}"><td>${i+1}</td><td><b>${x.name}</b>${main?' <span class="sss-main-lock">🏠 Main</span>':''}</td><td>${x.code||''}</td><td>${x.mobile||''}</td><td>${x.address||''}</td><td>${act?'🟢 Active':'Inactive'}</td><td>${actions}</td></tr>`;
+      const main=x.id==='MAIN'||x.isMain, cur=x.id===current, active=x.isActive!==false;
+      const status=active?'<span class="sss-main-lock">🟢 Active</span>':'<span>⚪ Inactive</span>';
+      let statusBtn=main
+        ? '<button type="button" class="btn light" onclick="sssEditMainBranchName()">✏️ Edit Name</button>'
+        : (active
+          ? '<button type="button" class="btn light" onclick="sssBranchDeactivate(\''+String(x.id).replace(/'/g,"\\'")+'\')">⚪ Deactivate</button>'
+          : '<button type="button" class="btn primary" onclick="sssBranchActivate(\''+String(x.id).replace(/'/g,"\\'")+'\')">🟢 Activate</button>');
+      const workBtn='<button type="button" class="btn primary" onclick="sssBranchActivate(\''+String(x.id).replace(/'/g,"\\'")+'\');localStorage.setItem(\'SSS_TECHNOLOGY_ACTIVE_BRANCH_V3\',\''+String(x.id).replace(/'/g,"\\'")+'\');sssBranchRefresh()">'+(cur?'🔵 Current':'Open')+'</button>';
+      const editBtn=main?'':('<button type="button" class="btn light" onclick="sssBranchEdit(\''+String(x.id).replace(/'/g,"\\'")+'\')">✏️ Edit</button><button type="button" class="btn danger" onclick="sssBranchDelete(\''+String(x.id).replace(/'/g,"\\'")+'\')">🗑️ Delete</button>');
+      return '<tr class="'+(cur?'sss-mba-main':'')+'"><td>'+(i+1)+'</td><td><b>'+x.name+'</b>'+(main?' <span class="sss-main-lock">🏠 Main</span>':'')+'</td><td>'+esc(x.code||'')+'</td><td>'+esc(x.mobile||'')+'</td><td>'+esc(x.address||'')+'</td><td>'+status+(cur?' 🔵 Current':'')+'</td><td>'+statusBtn+editBtn+workBtn+'</td></tr>';
     }).join('');
   };
 })();
