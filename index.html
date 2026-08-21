@@ -845,6 +845,122 @@ function printTodaySummary(){
 
 
 
+
+<style id="sss-branch-db-css">
+#sssBranchDataInfo{margin:8px 12px;padding:8px 12px;border-radius:8px;background:#fff8ed;border:1px solid #ead6bf;color:#5a2b0b;font-weight:700}
+</style>
+<div id="sssBranchDataInfo" style="display:none"></div>
+<script id="sss-branch-db-engine">
+(function(){
+'use strict';
+const BKEY='SSS_TECHNOLOGY_BRANCHES_V3';
+const DKEY='SSS_TECHNOLOGY_BRANCH_DB_V1';
+const ACTIVE='SSS_TECHNOLOGY_ACTIVE_BRANCH_V3';
+
+function branches(){
+  try{
+    const a=JSON.parse(localStorage.getItem(BKEY)||'[]');
+    return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
+  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
+}
+function activeId(){return localStorage.getItem(ACTIVE)||'MAIN'}
+function dbKey(id){return DKEY+'_'+id}
+function clone(v){return JSON.parse(JSON.stringify(v))}
+function updateInfo(){
+  const el=document.getElementById('sssBranchDataInfo');
+  if(!el)return;
+  const b=branches().find(x=>x.id===activeId())||branches()[0];
+  el.textContent='🏢 Working Branch: '+b.name+' ('+b.code+') — All Billing, Purchase, Stock, Customers, Suppliers & Reports are branch-wise';
+  el.style.display='block';
+}
+function snapshot(){
+  try{
+    if(typeof db==='undefined')return;
+    localStorage.setItem(dbKey(activeId()),JSON.stringify(db));
+  }catch(e){}
+}
+function loadBranch(id){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(dbKey(id))||'null')}catch(e){}
+  if(saved && typeof saved==='object'){
+    db=saved;
+  }else{
+    // New branch gets an independent clean copy of the standard database,
+    // while the Main Branch keeps the existing ERP data.
+    const base=JSON.parse(localStorage.getItem('GP_ERP_DB')||localStorage.getItem('ganeshPlywoodERP')||'null');
+    if(base && typeof base==='object') db=clone(base);
+    else if(typeof db!=='undefined') db=clone(db);
+    localStorage.setItem(dbKey(id),JSON.stringify(db));
+  }
+  localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
+  updateInfo();
+}
+function switchBranch(id){
+  if(!id)return;
+  snapshot();
+  localStorage.setItem(ACTIVE,id);
+  loadBranch(id);
+  try{if(typeof nav==='function')nav()}catch(e){}
+  try{if(typeof dashboard==='function')dashboard()}catch(e){}
+  try{if(typeof stock==='function')stock()}catch(e){}
+  try{if(typeof billing==='function')billing()}catch(e){}
+  try{if(typeof purchase==='function')purchase()}catch(e){}
+  window.dispatchEvent(new CustomEvent('sssBranchDataLoaded',{detail:{branchId:id}}));
+}
+function branchSave(){
+  try{
+    localStorage.setItem(dbKey(activeId()),JSON.stringify(db));
+    localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
+  }catch(e){}
+}
+window.sssSaveBranchData=branchSave;
+window.sssSwitchWorkingBranch=function(id){switchBranch(id)};
+window.sssGetWorkingBranch=function(){return branches().find(x=>x.id===activeId())||branches()[0]};
+window.sssGetBranchDB=function(id){
+  try{return JSON.parse(localStorage.getItem(dbKey(id))||'null')}catch(e){return null}
+};
+window.sssInitializeBranchData=function(){
+  const a=branches();
+  a.forEach(b=>{
+    const k=dbKey(b.id);
+    if(!localStorage.getItem(k) && b.id===activeId())localStorage.setItem(k,JSON.stringify(db));
+  });
+  loadBranch(activeId());
+};
+
+// Save every normal ERP save into the current branch.
+// Preserve the original function so existing Firebase/local logic still runs.
+window.addEventListener('load',function(){
+  if(typeof window.save==='function' && !window.save.__sssBranchWrapped){
+    const original=window.save;
+    window.save=function(){
+      const r=original.apply(this,arguments);
+      branchSave();
+      return r;
+    };
+    window.save.__sssBranchWrapped=true;
+  }
+  sssInitializeBranchData();
+});
+
+// Also save before leaving/reloading the page.
+window.addEventListener('beforeunload',branchSave);
+
+// New branches must have independent data. Main branch data is never overwritten
+// by another branch.
+window.addEventListener('sssActiveBranchChanged',function(e){
+  if(e.detail?.branchId)switchBranch(e.detail.branchId);
+});
+
+// If the branch UI calls the older activate function, wrap it so that "Open/Current"
+// also changes the working dataset.
+const oldActivate=window.sssBranchActivate;
+window.sssBranchActivate=function(id){
+  if(typeof oldActivate==='function')oldActivate(id);
+  switchBranch(id);
+};
+})();
+</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
