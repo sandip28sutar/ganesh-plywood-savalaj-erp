@@ -120,49 +120,29 @@ html,body{overflow-x:hidden}
 @media(max-width:700px){.rights-grid{grid-template-columns:1fr}}
 </style>
 
-<style id="sss-rights-checkbox-css">
+
+
+<style id="sss-rights-final-css">
+.sss-rights-page{box-sizing:border-box;width:100%;padding:12px}
 .sss-rights-page .sss-rights-checks{
-  display:grid !important;
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:10px !important;
-  margin-top:12px !important;
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:10px!important;width:100%!important;
 }
 .sss-rights-page .sss-rights-checks label{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  min-height:46px !important;
-  padding:10px 12px !important;
-  border:1px solid #d9d9d9 !important;
-  border-radius:9px !important;
-  background:#fff !important;
-  cursor:pointer !important;
-  box-sizing:border-box !important;
+ display:flex!important;align-items:center!important;gap:10px!important;
+ padding:10px!important;border:1px solid #d7d7d7!important;
+ border-radius:8px!important;background:#fff!important;
+ min-height:44px!important;box-sizing:border-box!important;
 }
-.sss-rights-page .sss-rights-checks input[type="checkbox"]{
-  appearance:auto !important;
-  -webkit-appearance:checkbox !important;
-  display:inline-block !important;
-  position:static !important;
-  opacity:1 !important;
-  visibility:visible !important;
-  width:20px !important;
-  height:20px !important;
-  min-width:20px !important;
-  margin:0 !important;
-  cursor:pointer !important;
+.sss-rights-page .sss-rights-checks input[type=checkbox]{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ appearance:auto!important;-webkit-appearance:checkbox!important;
+ position:static!important;float:none!important;width:20px!important;height:20px!important;
+ min-width:20px!important;margin:0!important;
 }
-.sss-rights-page .sss-rights-checks span{
-  display:inline-block !important;
-  color:#222 !important;
-  font-size:14px !important;
-  font-weight:600 !important;
-}
-@media(max-width:700px){
-  .sss-rights-page .sss-rights-checks{grid-template-columns:1fr !important}
-}
-</style>
-</head>
+.sss-rights-page .sss-rights-checks span{display:block!important;color:#222!important;font-weight:600!important}
+@media(max-width:700px){.sss-rights-page .sss-rights-checks{grid-template-columns:1fr!important}}
+</style></head>
 <body>
 
 <div class="top-banner">
@@ -561,14 +541,14 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
   </div>
 </section>
 
+
 <section id="sssRightsSettings" class="page sss-rights-page" style="display:none">
-  <h2>🔐 User Rights Settings</h2><button type="button" class="btn primary" onclick="openSSSUserRights()">🔐 User Rights / Permissions</button>
+  <h2>🔐 User Rights Settings</h2>
   <div class="panel">
-    <h3>👤 Select User / User ID</h3>
     <div class="grid2">
       <div class="field">
         <label>User ID / Email</label>
-        <input id="rightsUserId" placeholder="Enter user ID or email">
+        <input id="rightsUserId" type="text" placeholder="Enter User ID / Email">
       </div>
       <div class="field">
         <label>Role</label>
@@ -585,63 +565,53 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
   </div>
 
   <div class="panel">
-    <h3>☑️ Functions Rights</h3>
-    <div class="rights-grid">
-      <label><input type="checkbox" data-right="dashboard_view"> Dashboard View</label>
-      <label><input type="checkbox" data-right="today_summary_view"> Today's Summary View</label>
-      <label><input type="checkbox" data-right="today_summary_edit"> Today's Summary Edit</label>
-      <label><input type="checkbox" data-right="today_summary_delete"> Today's Summary Delete</label>
-
-      <label><input type="checkbox" data-right="billing_view"> Billing View</label>
-      <label><input type="checkbox" data-right="billing_create"> Create Bill</label>
-      <label><input type="checkbox" data-right="billing_edit"> Edit Bill</label>
-      <label><input type="checkbox" data-right="billing_delete"> Delete Bill</label>
-      <label><input type="checkbox" data-right="billing_payment"> Payment / Received Update</label>
-
-      <label><input type="checkbox" data-right="purchase_view"> Purchase View</label>
-      <label><input type="checkbox" data-right="purchase_create"> Create Purchase</label>
-      <label><input type="checkbox" data-right="purchase_edit"> Edit Purchase</label>
-      <label><input type="checkbox" data-right="purchase_delete"> Delete Purchase</label>
-      <label><input type="checkbox" data-right="purchase_payment"> Purchase Payment Update</label>
-
-      <label><input type="checkbox" data-right="stock_view"> Stock View</label>
-      <label><input type="checkbox" data-right="stock_create"> Add Stock</label>
-      <label><input type="checkbox" data-right="stock_edit"> Edit Stock</label>
-      <label><input type="checkbox" data-right="stock_delete"> Delete Stock</label>
-      <label><input type="checkbox" data-right="stock_adjust"> Stock In / Out</label>
-
-      <label><input type="checkbox" data-right="customer_view"> Customers View</label>
-      <label><input type="checkbox" data-right="customer_create"> Customer Create</label>
-      <label><input type="checkbox" data-right="customer_edit"> Customer Edit</label>
-      <label><input type="checkbox" data-right="customer_delete"> Customer Delete</label>
-
-      <label><input type="checkbox" data-right="supplier_view"> Suppliers View</label>
-      <label><input type="checkbox" data-right="supplier_create"> Supplier Create</label>
-      <label><input type="checkbox" data-right="supplier_edit"> Supplier Edit</label>
-      <label><input type="checkbox" data-right="supplier_delete"> Supplier Delete</label>
-
-      <label><input type="checkbox" data-right="reports_view"> Reports View</label>
-      <label><input type="checkbox" data-right="reports_pdf"> PDF Download</label>
-      <label><input type="checkbox" data-right="excel_export"> Excel / CSV Export</label>
-
-      <label><input type="checkbox" data-right="receivable_view"> Receivable View</label>
-      <label><input type="checkbox" data-right="receivable_edit"> Receivable Update</label>
-      <label><input type="checkbox" data-right="payable_view"> Payable View</label>
-      <label><input type="checkbox" data-right="payable_edit"> Payable Update</label>
-
-      <label><input type="checkbox" data-right="expense_create"> Expense Entry</label>
-      <label><input type="checkbox" data-right="ledger_view"> Ledger View</label>
-      <label><input type="checkbox" data-right="workorder_create"> Furniture / Door Work Order</label>
-
-      <label><input type="checkbox" data-right="settings_view"> Settings View</label>
-      <label><input type="checkbox" data-right="user_rights"> User Rights Management</label>
-      <label><input type="checkbox" data-right="all_data_delete"> All Data Delete</label>
+    <h3>☑️ Select Rights</h3>
+    <div id="sssRightsCheckboxes" class="sss-rights-checks">
+      <label><input type="checkbox" data-right="dashboard_view"><span>Dashboard View</span></label>
+      <label><input type="checkbox" data-right="today_summary_view"><span>Today's Summary View</span></label>
+      <label><input type="checkbox" data-right="today_summary_edit"><span>Today's Summary Edit</span></label>
+      <label><input type="checkbox" data-right="today_summary_delete"><span>Today's Summary Delete</span></label>
+      <label><input type="checkbox" data-right="billing_view"><span>Billing View</span></label>
+      <label><input type="checkbox" data-right="billing_create"><span>Create Bill</span></label>
+      <label><input type="checkbox" data-right="billing_edit"><span>Edit Bill</span></label>
+      <label><input type="checkbox" data-right="billing_delete"><span>Delete Bill</span></label>
+      <label><input type="checkbox" data-right="billing_payment"><span>Payment / Received Update</span></label>
+      <label><input type="checkbox" data-right="purchase_view"><span>Purchase View</span></label>
+      <label><input type="checkbox" data-right="purchase_create"><span>Create Purchase</span></label>
+      <label><input type="checkbox" data-right="purchase_edit"><span>Edit Purchase</span></label>
+      <label><input type="checkbox" data-right="purchase_delete"><span>Delete Purchase</span></label>
+      <label><input type="checkbox" data-right="purchase_payment"><span>Purchase Payment Update</span></label>
+      <label><input type="checkbox" data-right="stock_view"><span>Stock View</span></label>
+      <label><input type="checkbox" data-right="stock_create"><span>Add Stock</span></label>
+      <label><input type="checkbox" data-right="stock_edit"><span>Edit Stock</span></label>
+      <label><input type="checkbox" data-right="stock_delete"><span>Delete Stock</span></label>
+      <label><input type="checkbox" data-right="stock_adjust"><span>Stock In / Out</span></label>
+      <label><input type="checkbox" data-right="customer_view"><span>Customers View</span></label>
+      <label><input type="checkbox" data-right="customer_create"><span>Customer Create</span></label>
+      <label><input type="checkbox" data-right="customer_edit"><span>Customer Edit</span></label>
+      <label><input type="checkbox" data-right="customer_delete"><span>Customer Delete</span></label>
+      <label><input type="checkbox" data-right="supplier_view"><span>Suppliers View</span></label>
+      <label><input type="checkbox" data-right="supplier_create"><span>Supplier Create</span></label>
+      <label><input type="checkbox" data-right="supplier_edit"><span>Supplier Edit</span></label>
+      <label><input type="checkbox" data-right="supplier_delete"><span>Supplier Delete</span></label>
+      <label><input type="checkbox" data-right="reports_view"><span>Reports View</span></label>
+      <label><input type="checkbox" data-right="reports_pdf"><span>PDF Download</span></label>
+      <label><input type="checkbox" data-right="excel_export"><span>Excel / CSV Export</span></label>
+      <label><input type="checkbox" data-right="receivable_view"><span>Receivable View</span></label>
+      <label><input type="checkbox" data-right="receivable_edit"><span>Receivable Update</span></label>
+      <label><input type="checkbox" data-right="payable_view"><span>Payable View</span></label>
+      <label><input type="checkbox" data-right="payable_edit"><span>Payable Update</span></label>
+      <label><input type="checkbox" data-right="expense_create"><span>Expense Entry</span></label>
+      <label><input type="checkbox" data-right="ledger_view"><span>Ledger View</span></label>
+      <label><input type="checkbox" data-right="workorder_create"><span>Furniture / Door Work Order</span></label>
+      <label><input type="checkbox" data-right="settings_view"><span>Settings View</span></label>
+      <label><input type="checkbox" data-right="user_rights"><span>User Rights Management</span></label>
+      <label><input type="checkbox" data-right="all_data_delete"><span>All Data Delete</span></label>
     </div>
-
     <div class="actions">
-      <button class="btn success" onclick="sssSaveUserRights()">💾 Save Rights</button>
-      <button class="btn light" onclick="sssLoadUserRights()">↻ Load Rights</button>
-      <button class="btn danger" onclick="sssClearUserRights()">🗑️ Clear Rights</button>
+      <button type="button" class="btn success" onclick="sssSaveUserRights()">💾 Save Rights</button>
+      <button type="button" class="btn light" onclick="sssLoadUserRights()">↻ Load</button>
+      <button type="button" class="btn danger" onclick="sssClearUserRights()">🗑️ Clear</button>
     </div>
   </div>
 
@@ -649,7 +619,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
     <h3>📋 Saved User Rights</h3>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>User ID</th><th>Role</th><th>Rights Count</th><th>Action</th></tr></thead>
+        <thead><tr><th>User ID</th><th>Role</th><th>Rights</th><th>Action</th></tr></thead>
         <tbody id="sssRightsRows"><tr><td colspan="4">No rights saved.</td></tr></tbody>
       </table>
     </div>
@@ -873,82 +843,82 @@ function printTodaySummary(){
   const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
   const date=new Date().toLocaleDateString('en-IN');
   const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
-<script>
-/* ===== SSS Technology - User Rights Management ===== */
-(function(){
-  const RIGHTS_KEY='SSS_ERP_USER_RIGHTS_V1';
-  const defaultRights = ['dashboard_view','today_summary_view','billing_view','purchase_view','stock_view','customer_view','supplier_view','reports_view'];
 
-  function getAllRights(){
-    try{return JSON.parse(localStorage.getItem(RIGHTS_KEY)||'{}')}catch(e){return {}}
+
+
+
+
+<script id="sss-rights-js">
+(function(){
+  const KEY='SSS_ERP_USER_RIGHTS_V2';
+
+  function all(){
+    try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}
   }
-  function setAllRights(x){localStorage.setItem(RIGHTS_KEY,JSON.stringify(x));}
+  function save(x){localStorage.setItem(KEY,JSON.stringify(x));}
+  function boxes(){return document.querySelectorAll('#sssRightsCheckboxes input[type="checkbox"][data-right]');}
+
+  window.sssOpenUserRights=function(){
+    const p=document.getElementById('sssRightsSettings');
+    if(p){p.style.display='block';p.classList.add('active');}
+    sssRenderRights();
+  };
 
   window.sssSaveUserRights=function(){
     const uid=(document.getElementById('rightsUserId')?.value||'').trim();
     const role=document.getElementById('rightsRole')?.value||'staff';
-    if(!uid){alert('Enter User ID / Email');return;}
+    if(!uid){alert('User ID / Email टाका');return;}
     const rights={};
-    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>rights[cb.dataset.right]=!!cb.checked);
-    const all=getAllRights();
-    all[uid]={userId:uid,role,rights,updatedAt:new Date().toISOString()};
-    setAllRights(all);
+    boxes().forEach(b=>rights[b.dataset.right]=b.checked);
+    const data=all();
+    data[uid]={userId:uid,role,rights,updatedAt:new Date().toISOString()};
+    save(data);
     sssRenderRights();
-    alert('✅ User rights saved for '+uid);
+    alert('✅ Rights saved: '+uid);
   };
 
   window.sssLoadUserRights=function(){
     const uid=(document.getElementById('rightsUserId')?.value||'').trim();
-    if(!uid){alert('Enter User ID / Email');return;}
-    const data=getAllRights()[uid];
-    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>cb.checked=!!(data?.rights?.[cb.dataset.right]));
-    if(data?.role)document.getElementById('rightsRole').value=data.role;
-    if(data) alert('Rights loaded'); else alert('No saved rights for this user');
+    if(!uid){alert('User ID / Email टाका');return;}
+    const x=all()[uid];
+    boxes().forEach(b=>b.checked=!!(x?.rights?.[b.dataset.right]));
+    if(x?.role)document.getElementById('rightsRole').value=x.role;
+    if(!x)alert('या User ID साठी rights सापडले नाहीत.');
   };
 
   window.sssClearUserRights=function(){
     const uid=(document.getElementById('rightsUserId')?.value||'').trim();
     if(!uid)return;
-    if(!confirm('Clear all rights for '+uid+'?'))return;
-    const all=getAllRights();delete all[uid];setAllRights(all);
-    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>cb.checked=false);
+    if(!confirm('या User चे सर्व rights काढायचे?'))return;
+    const data=all();delete data[uid];save(data);
+    boxes().forEach(b=>b.checked=false);
     sssRenderRights();
   };
 
-  window.sssOpenRightsForUser=function(uid){
-    const e=document.getElementById('sssRightsSettings');if(e)e.style.display='block';
-    const input=document.getElementById('rightsUserId');if(input)input.value=uid||'';
+  window.sssEditUserRights=function(uid){
+    sssOpenUserRights();
+    const input=document.getElementById('rightsUserId');if(input)input.value=uid;
     sssLoadUserRights();
   };
 
   window.sssHasRight=function(uid,right){
-    const all=getAllRights(), data=all[uid];
-    if(data?.role==='admin')return true;
-    return !!data?.rights?.[right];
+    const x=all()[uid];
+    if(x?.role==='admin')return true;
+    return !!x?.rights?.[right];
   };
 
   window.sssRenderRights=function(){
     const tb=document.getElementById('sssRightsRows');if(!tb)return;
-    const all=getAllRights(), rows=Object.values(all);
+    const rows=Object.values(all());
     tb.innerHTML=rows.map(x=>{
-      const count=Object.values(x.rights||{}).filter(Boolean).length;
-      return `<tr><td>${typeof esc==='function'?esc(x.userId):x.userId}</td><td>${x.role}</td><td>${count}</td><td><button class="btn light" onclick="sssOpenRightsForUser('${String(x.userId).replace(/'/g,"\\'")}')">✏️ Edit</button></td></tr>`;
+      const n=Object.values(x.rights||{}).filter(Boolean).length;
+      const safe=String(x.userId).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<tr><td>${x.userId}</td><td>${x.role}</td><td>${n}</td><td><button type="button" class="btn light" onclick="sssEditUserRights('${safe}')">✏️ Edit</button></td></tr>`;
     }).join('')||'<tr><td colspan="4">No rights saved.</td></tr>';
   };
 
-  window.addEventListener('load',()=>setTimeout(sssRenderRights,300));
+  document.addEventListener('DOMContentLoaded',function(){sssRenderRights();});
 })();
-</script>
-
-
-<script>
-window.openSSSUserRights = function(){
-  var p=document.getElementById('sssRightsSettings');
-  if(p) p.style.display='block';
-  if(typeof sssRenderRights==='function') sssRenderRights();
-  var first=document.getElementById('rightsUserId');
-  if(first) first.focus();
-};
 </script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
