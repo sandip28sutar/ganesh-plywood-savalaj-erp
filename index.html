@@ -136,6 +136,18 @@ html,body{overflow-x:hidden}
 .sss-adv-result{padding:9px;border-bottom:1px solid #eee}
 @media(max-width:700px){.sss-adv-grid{grid-template-columns:1fr}}
 </style>
+
+<style id="sss-branch-css">
+#sssBranchManagement{padding:12px;box-sizing:border-box}
+#sssBranchManagement .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#sssBranchManagement .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#sssBranchManagement table{width:100%;border-collapse:collapse}
+#sssBranchManagement th,#sssBranchManagement td{padding:9px;border:1px solid #ddd;text-align:left}
+#sssBranchRightsChecks{display:grid;gap:8px}
+.sss-branch-check{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #ddd;border-radius:7px;background:#fff}
+.sss-branch-check input{width:18px;height:18px}
+@media(max-width:700px){#sssBranchManagement .grid2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -753,6 +765,147 @@ function printTodaySummary(){
   const date=new Date().toLocaleDateString('en-IN');
   const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
 
+
+<section id="sssBranchManagement" class="page" style="display:none">
+  <h2>🏢 Multiple Branch Management — SSS Technology</h2>
+
+  <div class="panel">
+    <h3>Current Branch</h3>
+    <div class="grid2">
+      <div class="field">
+        <label>Select Branch</label>
+        <select id="sssBranchSelect" onchange="sssSwitchBranch(this.value)"></select>
+      </div>
+      <div class="field">
+        <label>Active Branch</label>
+        <input id="sssActiveBranchName" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>➕ Add / Edit Branch</h3>
+    <div class="grid2">
+      <div class="field"><label>Branch Name</label><input id="sssBranchName" placeholder="e.g. Sangli Main Branch"></div>
+      <div class="field"><label>Branch Code</label><input id="sssBranchCode" placeholder="e.g. SNG01"></div>
+      <div class="field"><label>Mobile Number</label><input id="sssBranchMobile" inputmode="tel"></div>
+      <div class="field"><label>Address</label><input id="sssBranchAddress"></div>
+    </div>
+    <div class="actions">
+      <button class="btn success" type="button" onclick="sssSaveBranch()">💾 Save Branch</button>
+      <button class="btn light" type="button" onclick="sssClearBranchForm()">Clear</button>
+      <button class="btn danger" type="button" onclick="sssDeleteBranch()">🗑️ Delete Branch</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📋 Branch List</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Branch</th><th>Code</th><th>Mobile</th><th>Address</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="sssBranchRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>🔐 Branch-wise Access</h3>
+    <p>प्रत्येक User ला कोणत्या Branch मध्ये काम करता येईल ते निवडा.</p>
+    <div class="grid2">
+      <div class="field"><label>User ID / Email</label><input id="sssBranchUserId" placeholder="user@example.com"></div>
+      <div class="field"><label>Allowed Branches</label><div id="sssBranchRightsChecks"></div></div>
+    </div>
+    <button class="btn primary" type="button" onclick="sssSaveBranchRights()">💾 Save Branch Rights</button>
+  </div>
+</section>
+
+<script id="sss-branch-js">
+(function(){
+  const BK='SSS_ERP_BRANCHES_V1', BR='SSS_ERP_BRANCH_RIGHTS_V1', ACTIVE='SSS_ERP_ACTIVE_BRANCH_V1';
+  const defaultBranch={id:'MAIN',name:'SSS Technology - Main Branch',code:'MAIN',mobile:'',address:''};
+
+  function read(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}}
+  function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function branches(){let a=read(BK,[]);if(!a.length){a=[defaultBranch];write(BK,a)}return a}
+  function active(){return localStorage.getItem(ACTIVE)||branches()[0].id}
+  function setActive(id){localStorage.setItem(ACTIVE,id)}
+
+  window.sssOpenBranches=function(){
+    const p=document.getElementById('sssBranchManagement');if(p)p.style.display='block';
+    sssRenderBranches();sssLoadBranchRights();
+  };
+
+  window.sssSaveBranch=function(){
+    const name=(document.getElementById('sssBranchName')?.value||'').trim();
+    const code=(document.getElementById('sssBranchCode')?.value||'').trim().toUpperCase();
+    const mobile=(document.getElementById('sssBranchMobile')?.value||'').trim();
+    const address=(document.getElementById('sssBranchAddress')?.value||'').trim();
+    if(!name||!code){alert('Branch Name आणि Branch Code टाका.');return}
+    const a=branches(), id=document.getElementById('sssBranchSelect')?.value||('BR_'+Date.now());
+    const i=a.findIndex(x=>x.id===id);
+    const obj={id,name,code,mobile,address};
+    if(i>=0)a[i]=obj;else a.push(obj);
+    write(BK,a);setActive(id);sssClearBranchForm();sssRenderBranches();alert('✅ Branch saved');
+  };
+
+  window.sssSwitchBranch=function(id){
+    const a=branches(),x=a.find(z=>z.id===id);if(!x)return;
+    setActive(id);
+    const n=document.getElementById('sssActiveBranchName');if(n)n.value=x.name+' ('+x.code+')';
+    sssRenderBranches();sssLoadBranchRights();
+    window.dispatchEvent(new CustomEvent('sssBranchChanged',{detail:x}));
+  };
+
+  window.sssRenderBranches=function(){
+    const a=branches(),sel=document.getElementById('sssBranchSelect'),tb=document.getElementById('sssBranchRows');
+    const aid=active();
+    if(sel)sel.innerHTML=a.map(x=>`<option value="${x.id}" ${x.id===aid?'selected':''}>${x.name} — ${x.code}</option>`).join('');
+    if(tb)tb.innerHTML=a.map(x=>`<tr><td>${x.name}</td><td>${x.code}</td><td>${x.mobile||''}</td><td>${x.address||''}</td><td>${x.id===aid?'🟢 Active':'Inactive'}</td><td><button type="button" class="btn light" onclick="sssEditBranch('${x.id}')">✏️ Edit</button> <button type="button" class="btn primary" onclick="sssSwitchBranch('${x.id}')">Open</button></td></tr>`).join('');
+    sssSwitchBranch(aid);
+  };
+
+  window.sssEditBranch=function(id){
+    const x=branches().find(z=>z.id===id);if(!x)return;
+    document.getElementById('sssBranchSelect').value=id;
+    document.getElementById('sssBranchName').value=x.name;
+    document.getElementById('sssBranchCode').value=x.code;
+    document.getElementById('sssBranchMobile').value=x.mobile||'';
+    document.getElementById('sssBranchAddress').value=x.address||'';
+  };
+
+  window.sssClearBranchForm=function(){
+    ['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+  };
+
+  window.sssDeleteBranch=function(){
+    const id=document.getElementById('sssBranchSelect')?.value;
+    if(!id||id==='MAIN'){alert('Main Branch delete करता येणार नाही.');return}
+    if(!confirm('ही Branch delete करायची?'))return;
+    let a=branches().filter(x=>x.id!==id);write(BK,a);
+    setActive(a[0].id);sssRenderBranches();
+  };
+
+  window.sssSaveBranchRights=function(){
+    const uid=(document.getElementById('sssBranchUserId')?.value||'').trim();
+    if(!uid){alert('User ID / Email टाका.');return}
+    const allowed=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);
+    const all=read(BR,{});all[uid]=allowed;write(BR,all);alert('✅ Branch rights saved');
+  };
+
+  window.sssLoadBranchRights=function(){
+    const uid=(document.getElementById('sssBranchUserId')?.value||'').trim(),box=document.getElementById('sssBranchRightsChecks');if(!box)return;
+    const allowed=read(BR,{})[uid]||[];
+    box.innerHTML=branches().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allowed.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('');
+  };
+
+  window.sssGetActiveBranch=function(){return branches().find(x=>x.id===active())||branches()[0]};
+  window.sssGetUserBranches=function(uid){
+    const ids=read(BR,{})[uid]||[];return branches().filter(x=>ids.includes(x.id));
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){sssRenderBranches()});
+})();
+</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
