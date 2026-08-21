@@ -119,6 +119,49 @@ html,body{overflow-x:hidden}
 .rights-grid input{width:18px;height:18px}
 @media(max-width:700px){.rights-grid{grid-template-columns:1fr}}
 </style>
+
+<style id="sss-rights-checkbox-css">
+.sss-rights-page .sss-rights-checks{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
+  margin-top:12px !important;
+}
+.sss-rights-page .sss-rights-checks label{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  min-height:46px !important;
+  padding:10px 12px !important;
+  border:1px solid #d9d9d9 !important;
+  border-radius:9px !important;
+  background:#fff !important;
+  cursor:pointer !important;
+  box-sizing:border-box !important;
+}
+.sss-rights-page .sss-rights-checks input[type="checkbox"]{
+  appearance:auto !important;
+  -webkit-appearance:checkbox !important;
+  display:inline-block !important;
+  position:static !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  width:20px !important;
+  height:20px !important;
+  min-width:20px !important;
+  margin:0 !important;
+  cursor:pointer !important;
+}
+.sss-rights-page .sss-rights-checks span{
+  display:inline-block !important;
+  color:#222 !important;
+  font-size:14px !important;
+  font-weight:600 !important;
+}
+@media(max-width:700px){
+  .sss-rights-page .sss-rights-checks{grid-template-columns:1fr !important}
+}
+</style>
 </head>
 <body>
 
@@ -518,8 +561,8 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
   </div>
 </section>
 
-<section id="sssRightsSettings" class="page" style="display:none">
-  <h2>🔐 User Rights Settings</h2>
+<section id="sssRightsSettings" class="page sss-rights-page" style="display:none">
+  <h2>🔐 User Rights Settings</h2><button type="button" class="btn primary" onclick="openSSSUserRights()">🔐 User Rights / Permissions</button>
   <div class="panel">
     <h3>👤 Select User / User ID</h3>
     <div class="grid2">
@@ -897,6 +940,16 @@ function printTodaySummary(){
 })();
 </script>
 
+
+<script>
+window.openSSSUserRights = function(){
+  var p=document.getElementById('sssRightsSettings');
+  if(p) p.style.display='block';
+  if(typeof sssRenderRights==='function') sssRenderRights();
+  var first=document.getElementById('rightsUserId');
+  if(first) first.focus();
+};
+</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
