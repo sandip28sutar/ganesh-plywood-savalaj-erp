@@ -407,7 +407,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-top:14px"><div class="chart-box"><h3 style="margin:0">Stock Overview</h3><div class="donut"><div class="donut-center">${totalQty}<br><small>Total Items</small></div></div><div class="legend">${catData.map(x=>`<span>${esc(x.name)}</span><b>${x.qty.toLocaleString('en-IN')}</b>`).join('')}</div></div>
 <div class="chart-box"><h3 style="margin:0 0 12px">Low Stock Items</h3><table class="low-list"><tr><th>Item Name</th><th>Stock</th><th>Unit</th></tr>${low.map(x=>`<tr><td>${esc(x.name)}</td><td class="low">${x.qty}</td><td>${esc(x.unit)}</td></tr>`).join('')||'<tr><td colspan="3">No low stock items.</td></tr>'}</table><button class="btn primary" style="width:100%;margin-top:12px" onclick="openPage('Stock')">View All Stock</button></div></div>
 </div>
-<aside class="today-summary"><h3>Today's Summary</h3>
+<aside class="today-summary"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h3 style="margin:0">Today's Summary</h3><button class="btn light no-print" onclick="printTodaySummary()">🖨️ Report</button></div>
 <div id="todaySummaryAdminControls" class="actions no-print" style="margin:0 0 8px;display:none">
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit All</button>
 <button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete All Edits</button>
@@ -653,7 +653,7 @@ function deleteTodaySummary(){
 
 function billing(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>🧾 Billing</h2>
-<div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Select Existing Customer</label><select id="bc" onchange="fillBillingCustomer()"><option value="">Walk-in / New Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}${x.phone?' — '+esc(x.phone):''}</option>`).join('')}</select></div><div class="field"><label>Customer Name</label><input id="bcname" placeholder="Enter customer name" oninput="billingCustomerTyping()"></div><div class="field"><label>Mobile Number</label><input id="bcphone" type="tel" inputmode="numeric" maxlength="15" placeholder="Enter mobile number" oninput="billingCustomerTyping()"></div><div class="field"><label>Customer Address</label><textarea id="bcaddress" rows="1" placeholder="Enter address" oninput="billingCustomerTyping()"></textarea></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
+<div class="panel"><div class="grid4"><div class="field"><label>Bill Type</label><select id="billtype" onchange="toggleBillType()"><option value="gst">GST Bill</option><option value="nongst">Non-GST Bill</option></select></div><div class="field"><label>Select Existing Customer</label><select id="bc" onchange="fillBillingCustomer()"><option value="">Walk-in / New Customer</option>${db.customers.map(x=>`<option value="${x.id}">${esc(x.name)}${x.phone?' — '+esc(x.phone):''}</option>`).join('')}</select></div><div class="field"><label>Customer Name</label><input id="bcname" placeholder="Enter customer name" oninput="billingCustomerTyping()"></div><div class="field"><label>Mobile Number</label><input id="bcphone" type="tel" inputmode="numeric" maxlength="15" placeholder="Enter mobile number" oninput="billingCustomerPhoneLookup()"></div><div class="field"><label>Customer Address</label><textarea id="bcaddress" rows="1" placeholder="Enter address" oninput="billingCustomerTyping()"></textarea><small id="billCustomerLookupNote" style="color:#11723a;font-weight:700"></small></div><div class="field"><label>Date</label><input id="bd" type="date" value="${iso()}"></div><div class="field" id="taxmodefield"><label>Supply</label><select id="btaxmode" onchange="calcBill()"><option value="intra">Intra-State (CGST+SGST)</option><option value="inter">Inter-State (IGST)</option></select></div><div class="field"><label>Status</label><select id="bstatus"><option>Paid</option><option>Unpaid</option><option>Partial</option></select></div></div>
 <div id="billModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Bill: GST will be calculated</div><div class="actions"><button class="btn primary" onclick="addBillRow()">+ Item</button><button class="btn light" onclick="openPage('Customers')">+ Customer</button><button class="btn bluebtn" onclick="shareBill()">WhatsApp</button><button class="btn light" onclick="printDraft()">Print/PDF</button></div>
 <div class="table-wrap"><table><thead><tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Disc</th><th class="gstcol">GST%</th><th>Taxable</th><th class="gstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="billrows"></tbody></table></div>
 <div class="total"><div>Taxable <b id="taxable">₹0.00</b></div><div class="gstcol">CGST <b id="cgst">₹0.00</b></div><div class="gstcol">SGST <b id="sgst">₹0.00</b></div><div class="gstcol">IGST <b id="igst">₹0.00</b></div><div>Grand Total <b id="grand">₹0.00</b></div></div>
@@ -681,6 +681,50 @@ Received: ₹0.00 &nbsp; | &nbsp; Outstanding: ₹0.00
 <div class="actions"><button class="btn success" onclick="saveBill()">💾 Save Invoice</button><button class="btn light" onclick="billing()">🆕 New Bill</button></div></div>
 <div class="section-title">Invoice Register</div><div class="panel table-wrap"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th>Total</th><th>Mode</th><th>Cash</th><th>UPI</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Action</th></tr>${db.invoices.slice().reverse().map((x,i)=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.grand)}</td><td>${esc(x.paymentMode||'-')}</td><td>${money(x.cashReceived||0)}</td><td>${money(x.upiReceived||0)}</td><td>${money(Number(x.receivedAmount??0))}</td><td>${money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))}</td><td><span class="badge ${x.paymentStatus==='Paid'||x.status==='Paid'?'paid':'unpaid'}">${esc(x.paymentStatus||x.status||'Outstanding')}</span></td><td><button class="btn light" onclick="printSaved(${db.invoices.length-1-i})">Print</button> ${isAdminUser()?`<button class="btn light" onclick="editSavedInvoice(${db.invoices.length-1-i})">✏️ Edit</button><button class="btn danger" onclick="deleteSavedInvoice(${db.invoices.length-1-i})">🗑️ Delete</button>`:''}</td></tr>`).join('')||'<tr><td colspan="11">No invoices.</td></tr>'}</table></div></section>`;
 addBillRow();toggleBillType();resetBillPayment()
+}
+function normalizePhone(v){
+  let d=String(v||'').replace(/\D/g,'');
+  if(d.length>10)d=d.slice(-10);
+  return d;
+}
+function findPartyByPhone(arr,phone){
+  const n=normalizePhone(phone);
+  if(n.length<10)return null;
+  return arr.find(x=>normalizePhone(x.phone)===n)||null;
+}
+function billingCustomerPhoneLookup(){
+  const p=document.getElementById('bcphone')?.value||'';
+  billingCustomerTyping();
+  const cu=findPartyByPhone(db.customers,p);
+  if(!cu)return;
+  const sel=document.getElementById('bc');
+  if(sel)sel.value=String(cu.id);
+  const n=document.getElementById('bcname'),a=document.getElementById('bcaddress');
+  if(n)n.value=cu.name||'';
+  if(a)a.value=cu.address||'';
+  const note=document.getElementById('billCustomerLookupNote');
+  if(note)note.textContent='✅ Existing customer found: '+(cu.name||'');
+  toast('Existing customer auto-filled: '+(cu.name||''));
+}
+function fillPurchaseSupplier(){
+  const id=document.getElementById('ps')?.value,s=db.suppliers.find(x=>x.id==id);
+  const p=document.getElementById('psphone');
+  if(p)p.value=s?.phone||'';
+}
+function purchaseSupplierPhoneLookup(){
+  const p=document.getElementById('psphone')?.value||'',s=findPartyByPhone(db.suppliers,p);
+  if(!s)return;
+  const sel=document.getElementById('ps');
+  if(sel)sel.value=String(s.id);
+  toast('Existing supplier auto-filled: '+(s.name||''));
+}
+function printTodaySummary(){
+  const box=document.querySelector('.today-summary');
+  if(!box)return toast('Today summary not available');
+  const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
+  const date=new Date().toLocaleDateString('en-IN');
+  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div></body></html>`;
+  const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
 function fillBillingCustomer(){
  let id=document.getElementById('bc')?.value,cu=db.customers.find(x=>x.id==id);
@@ -920,7 +964,7 @@ function saveReturn(type){let total=calcReturn();if(total<=0)return toast('Add r
 
 function purchase(){
 document.getElementById('app').innerHTML=`<section class="page"><h2>🛒 Material Purchase</h2><div id="purchaseModeNote" class="badge" style="display:inline-block;margin-bottom:8px">GST Purchase: GST will be calculated</div><div class="panel">
-<div class="grid4"><div class="field"><label>Supplier</label><select id="ps"><option value="">Select Supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></div><div class="field"><label>Purchase Date</label><input id="pd" type="date" value="${iso()}"></div><div class="field"><label>Supplier Bill No.</label><input id="pref" placeholder="Bill No."></div><div class="field"><label>Bill Type</label><select id="ptype" onchange="togglePurchaseType()"><option value="gst">GST Purchase</option><option value="nongst">Non-GST Purchase</option></select></div></div>
+<div class="grid4"><div class="field"><label>Supplier</label><select id="ps" onchange="fillPurchaseSupplier()"><option value="">Select Supplier</option>${db.suppliers.map(x=>`<option value="${x.id}">${esc(x.name)}${x.phone?' — '+esc(x.phone):''}</option>`).join('')}</select></div><div class="field"><label>Supplier Mobile Number</label><input id="psphone" type="tel" inputmode="numeric" maxlength="15" placeholder="Enter supplier mobile" oninput="purchaseSupplierPhoneLookup()"></div><div class="field"><label>Purchase Date</label><input id="pd" type="date" value="${iso()}"></div><div class="field"><label>Supplier Bill No.</label><input id="pref" placeholder="Bill No."></div><div class="field"><label>Bill Type</label><select id="ptype" onchange="togglePurchaseType()"><option value="gst">GST Purchase</option><option value="nongst">Non-GST Purchase</option></select></div></div>
 <div class="actions"><button class="btn primary" onclick="addPurchaseRow()">+ Add Material</button><button class="btn light" onclick="openPage('Suppliers')">+ Supplier</button></div>
 <div class="table-wrap"><table><thead><tr><th>Material</th><th>Qty</th><th>Unit</th><th>Purchase Rate</th><th class="pgstcol">GST%</th><th>Taxable</th><th class="pgstcol">GST</th><th>Total</th><th></th></tr></thead><tbody id="prows"></tbody></table></div>
 <div class="panel" style="margin-top:12px;border:2px solid #6b2d08;padding:14px;background:#fffaf5">
@@ -939,7 +983,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>🛒 Materia
 </div>
 <div class="total"><div>Taxable <b id="ptax">₹ 0.00</b></div><div class="pgstcol">GST <b id="pgst">₹ 0.00</b></div><div>Grand Total <b id="pgrand">₹ 0.00</b></div></div>
 <div class="actions"><button class="btn success" onclick="savePurchase()">💾 Save Purchase</button><button class="btn light" onclick="purchase()">🆕 New</button></div></div>
-<div class="section-title">Purchase Register</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Bill No.</th><th>Supplier</th><th>Type</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Mode</th><th>Status</th><th>Action</th></tr>${db.purchases.slice().reverse().map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.ref)}</td><td>${esc(x.supplier)}</td><td>${x.type==='gst'?'GST':'Non-GST'}</td><td>${money(x.total)}</td><td>${money(x.paidAmount||x.receivedAmount||0)}</td><td>${money(x.outstandingAmount||0)}</td><td>${esc(x.paymentMode||'-')}</td><td>${x.paymentStatus||x.status||'-'}</td><td><button class="btn light" onclick="printPurchase(${db.purchases.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="10">No purchases.</td></tr>'}</table></div></section>`;
+<div class="section-title">Purchase Register</div><div class="panel table-wrap"><table><tr><th>Date</th><th>Bill No.</th><th>Supplier</th><th>Mobile</th><th>Type</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Mode</th><th>Status</th><th>Action</th></tr>${db.purchases.slice().reverse().map((x,i)=>`<tr><td>${x.date}</td><td>${esc(x.ref)}</td><td>${esc(x.supplier)}</td><td>${esc(x.supplierPhone||'-')}</td><td>${x.type==='gst'?'GST':'Non-GST'}</td><td>${money(x.total)}</td><td>${money(x.paidAmount||x.receivedAmount||0)}</td><td>${money(x.outstandingAmount||0)}</td><td>${esc(x.paymentMode||'-')}</td><td>${x.paymentStatus||x.status||'-'}</td><td><button class="btn light" onclick="printPurchase(${db.purchases.length-1-i})">Print</button></td></tr>`).join('')||'<tr><td colspan="11">No purchases.</td></tr>'}</table></div></section>`;
 addPurchaseRow()
 }
 function togglePurchaseType(){
@@ -971,7 +1015,7 @@ if(!d.items.length||d.grand<=0)return toast('Add material and amount');
 const pay=updatePurchasePayment();
 let p={
 id:'PUR-'+Date.now(),date:document.getElementById('pd').value,ref:document.getElementById('pref').value||'N/A',
-supplier:s.name,supplierId:s.id,type:document.getElementById('ptype').value,items:d.items,taxable:d.taxable,gst:d.gst,total:d.grand,
+supplier:s.name,supplierId:s.id,supplierPhone:s.phone||document.getElementById('psphone')?.value.trim()||'',type:document.getElementById('ptype').value,items:d.items,taxable:d.taxable,gst:d.gst,total:d.grand,
 paymentMode:document.getElementById('pPaymentMode')?.value||'Cash',cashPaid:pay.cash,upiPaid:pay.upi,
 paidAmount:pay.paid,receivedAmount:pay.paid,outstandingAmount:pay.outstanding,
 paymentStatus:pay.outstanding<=0?'Paid':(pay.paid>0?'Partial':'Unpaid'),
@@ -983,7 +1027,7 @@ d.items.forEach(i=>{let st=db.stock.find(x=>x.id===i.stockId);if(st)st.qty+=i.qt
 db.transactions.push({date:dateIN(),particular:'Material Purchase - '+s.name,type:'Debit',amount:d.grand,paymentMode:p.paymentMode,cashPaid:p.cashPaid,upiPaid:p.upiPaid,paidAmount:p.paidAmount,outstandingAmount:p.outstandingAmount,status:p.paymentStatus});
 save();toast('Purchase saved with payment details');purchase()
 }
-function printPurchase(i){let x=db.purchases[i],w=open('','_blank');w.document.write(`<html><head><title>Purchase</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}</style></head><body><h1>${esc(db.settings.company)}</h1><h2>Material Purchase</h2><p><b>Supplier:</b> ${esc(x.supplier)}<br><b>Bill No:</b> ${esc(x.ref)}<br><b>Date:</b> ${x.date}<br><b>Type:</b> ${x.type==='gst'?'GST Purchase':'Non-GST Purchase'}<br><b>Payment Mode:</b> ${esc(x.paymentMode||'Cash')}<br><b>Paid:</b> ${money(x.paidAmount||x.receivedAmount||0)} &nbsp; <b>Outstanding:</b> ${money(x.outstandingAmount||0)}</p><table><tr><th>Material</th><th>Qty</th><th>Rate</th><th>GST</th><th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} ${i.unit}</td><td>${money(i.rate)}</td><td>${i.gstRate}%</td><td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}<br>GST: ${money(x.gst)}<br><b>Grand Total: ${money(x.total)}</b></p></body></html>`);w.document.close();w.print()}
+function printPurchase(i){let x=db.purchases[i],w=open('','_blank');w.document.write(`<html><head><title>Purchase</title><style>body{font-family:Arial;padding:25px}h1{text-align:center;color:#5a2b0b}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px}th{background:#eee}.r{text-align:right}</style></head><body><h1>${esc(db.settings.company)}</h1><h2>Material Purchase</h2><p><b>Supplier:</b> ${esc(x.supplier)}<br><b>Mobile:</b> ${esc(x.supplierPhone||'-')}<br><b>Bill No:</b> ${esc(x.ref)}<br><b>Date:</b> ${x.date}<br><b>Type:</b> ${x.type==='gst'?'GST Purchase':'Non-GST Purchase'}<br><b>Payment Mode:</b> ${esc(x.paymentMode||'Cash')}<br><b>Paid:</b> ${money(x.paidAmount||x.receivedAmount||0)} &nbsp; <b>Outstanding:</b> ${money(x.outstandingAmount||0)}</p><table><tr><th>Material</th><th>Qty</th><th>Rate</th><th>GST</th><th>Total</th></tr>${x.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} ${i.unit}</td><td>${money(i.rate)}</td><td>${i.gstRate}%</td><td>${money(i.total)}</td></tr>`).join('')}</table><p class="r">Taxable: ${money(x.taxable)}<br>GST: ${money(x.gst)}<br><b>Grand Total: ${money(x.total)}</b></p></body></html>`);w.document.close();w.print()}
 function sales(){billing()}
 function receivable(){let a=db.invoices.filter(x=>x.status!=='Paid');document.getElementById('app').innerHTML=`<section class="page"><h2>💰 Receivable</h2><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>${a.map(x=>`<tr><td>${x.no}</td><td>${esc(x.customer)}</td><td>${x.date}</td><td>${money(x.grand)}</td><td>${x.status}</td><td><button class="btn success" onclick="markInvoicePaid('${x.no}')">Mark Paid</button></td></tr>`).join('')||'<tr><td colspan="6">No receivables.</td></tr>'}</table></div></section>`}
 function markInvoicePaid(no){let x=db.invoices.find(x=>x.no===no);if(x){x.status='Paid';db.transactions.push({date:dateIN(),particular:'Receipt for '+no,type:'Credit',amount:x.grand});save();receivable();toast('Marked Paid')}}
