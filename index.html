@@ -155,19 +155,6 @@ html,body{overflow-x:hidden}
   .sss-branch-top{align-items:flex-start;flex-direction:column}
 }
 </style>
-
-<style id="sss-multi-branch-annual-css">
-.sss-mba-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.sss-mba-card{background:#fff;border:1px solid #e1e1e1;border-radius:12px;padding:14px}
-.sss-mba-card b{display:block;font-size:18px;margin-top:5px}
-.sss-mba-actions{display:flex;flex-wrap:wrap;gap:8px}
-.sss-mba-table{width:100%;border-collapse:collapse}
-.sss-mba-table th,.sss-mba-table td{border:1px solid #ddd;padding:8px}
-.sss-mba-table th{background:#5a2b0b;color:#fff}
-.sss-mba-main{background:#fff8ed}
-@media(max-width:800px){.sss-mba-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.sss-mba-grid{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
 
@@ -206,7 +193,7 @@ html,body{overflow-x:hidden}
 
 
 
-<button type="button" class="btn primary" onclick="sssOpenBranches()" style="margin:12px">🏢 Multiple Branch</button><button type="button" class="btn success" onclick="sssOpenMultiBranchReports()" style="margin:12px">📊 Branch Reports</button>
+<button type="button" class="btn primary" onclick="sssOpenBranches()" style="margin:12px">🏢 Multiple Branch</button>
 <section id="sssBranchManagement" class="page" style="display:none">
   <h2>🏢 Multiple Branch Management</h2>
 
@@ -858,240 +845,6 @@ function printTodaySummary(){
 
 
 
-
-<section id="sssMultiBranchReports" class="page" style="display:none">
-  <div class="actions" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <h2 style="margin:0">🏢 Multi-Branch Reports</h2>
-    <div class="sss-mba-actions">
-      <button class="btn primary" type="button" onclick="sssMBARefresh()">↻ Refresh</button>
-      <button class="btn success" type="button" onclick="sssMBAExportPDF()">📄 Annual PDF</button>
-      <button class="btn light" type="button" onclick="sssMBAExportCSV()">📊 Excel/CSV</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3>📅 Report Period & Branch</h3>
-    <div class="sss-mba-grid">
-      <div class="field"><label>Year</label><select id="sssMBAYear" onchange="sssMBARefresh()"></select></div>
-      <div class="field"><label>Branch</label><select id="sssMBABranch" onchange="sssMBARefresh()"><option value="ALL">All Branches</option></select></div>
-      <div class="field"><label>From</label><input id="sssMBAFrom" type="date" onchange="sssMBARefresh()"></div>
-      <div class="field"><label>To</label><input id="sssMBATo" type="date" onchange="sssMBARefresh()"></div>
-    </div>
-    <small>Annual report मध्ये Sales, Purchase, Sales Return, Purchase Return, Receipts, Payments, GST आणि Outstanding summary दिसेल.</small>
-  </div>
-
-  <div id="sssMBACards" class="sss-mba-grid"></div>
-
-  <div class="panel">
-    <h3>📋 Branch-wise Annual Summary</h3>
-    <div class="table-wrap">
-      <table class="sss-mba-table">
-        <thead><tr><th>Branch</th><th>Sales</th><th>Purchase</th><th>Sales Return</th><th>Purchase Return</th><th>Receipt</th><th>Payment</th><th>GST</th><th>Net</th></tr></thead>
-        <tbody id="sssMBARows"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3>📆 Monthly Summary</h3>
-    <div class="table-wrap">
-      <table class="sss-mba-table">
-        <thead><tr><th>Month</th><th>Sales</th><th>Purchase</th><th>Receipt</th><th>Payment</th><th>GST</th><th>Net</th></tr></thead>
-        <tbody id="sssMBAMonthRows"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<script id="sss-multi-branch-annual-js">
-(function(){
-'use strict';
-
-function mbaMoney(n){return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
-function mbaDate(x){
-  const s=String(x||'').slice(0,10);
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const d=new Date(x); return isNaN(d)?'':d.toISOString().slice(0,10);
-}
-function mbaDB(){try{return typeof db!=='undefined'?db:{} }catch(e){return {}}}
-function mbaBranches(){
-  try{
-    const a=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
-    return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}];
-  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}]}
-}
-function mbaBranchName(id){
-  const b=mbaBranches().find(x=>x.id===id); return b?b.name:(id==='MAIN'?'Main Branch':id||'Main Branch');
-}
-function mbaRecordBranch(x){
-  return String(x?.branchId||x?.branch||x?.branchCode||'MAIN')||'MAIN';
-}
-function mbaAmount(x,keys){
-  for(const k of keys){const n=Number(x?.[k]);if(isFinite(n)&&n)return n}
-  return 0;
-}
-function mbaDateOk(x,from,to){
-  const d=mbaDate(x); return d && d>=from && d<=to;
-}
-function mbaRowsFor(type){
-  const d=mbaDB();
-  const map={
-    sales:d.invoices||[],
-    purchase:d.purchases||[],
-    salesReturn:d.salesReturns||d.salesReturn||[],
-    purchaseReturn:d.purchaseReturns||d.purchaseReturn||[],
-    transactions:d.transactions||[],
-    receipts:(d.receipts||[]),
-    payments:(d.payments||[])
-  };
-  return map[type]||[];
-}
-function mbaCalc(from,to,branch){
-  const inv=mbaRowsFor('sales').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
-  const pur=mbaRowsFor('purchase').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
-  const sr=mbaRowsFor('salesReturn').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
-  const pr=mbaRowsFor('purchaseReturn').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
-  const tx=mbaRowsFor('transactions').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
-
-  const sales=inv.reduce((s,x)=>s+mbaAmount(x,['grand','total','amount']),0);
-  const purchase=pur.reduce((s,x)=>s+mbaAmount(x,['total','grand','amount']),0);
-  const salesReturn=sr.reduce((s,x)=>s+mbaAmount(x,['grand','total','amount']),0);
-  const purchaseReturn=pr.reduce((s,x)=>s+mbaAmount(x,['total','grand','amount']),0);
-  const gst=inv.reduce((s,x)=>s+mbaAmount(x,['gst','tax']),0);
-
-  let receipt=tx.filter(x=>/receipt|credit/i.test(String(x.particular||x.type||''))).reduce((s,x)=>s+mbaAmount(x,['amount','receivedAmount']),0);
-  let payment=tx.filter(x=>/payment|debit/i.test(String(x.particular||x.type||''))).reduce((s,x)=>s+mbaAmount(x,['amount','paidAmount']),0);
-
-  receipt += mbaRowsFor('receipts').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch)).reduce((s,x)=>s+mbaAmount(x,['amount','received']),0);
-  payment += mbaRowsFor('payments').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch)).reduce((s,x)=>s+mbaAmount(x,['amount','paid']),0);
-
-  return {sales,purchase,salesReturn,purchaseReturn,receipt,payment,gst,net:sales-salesReturn-purchase+purchaseReturn};
-}
-
-function mbaGetDates(){
-  const y=new Date().getFullYear();
-  const ys=document.getElementById('sssMBAYear');
-  if(ys&&!ys.options.length){
-    for(let i=y-5;i<=y+1;i++){const o=document.createElement('option');o.value=i;o.textContent=i;ys.appendChild(o)}
-    ys.value=y;
-  }
-  const year=Number(ys?.value||y);
-  const from=document.getElementById('sssMBAFrom'),to=document.getElementById('sssMBATo');
-  if(from&&!from.value)from.value=year+'-01-01';
-  if(to&&!to.value)to.value=year+'-12-31';
-  return {from:from?.value||year+'-01-01',to:to?.value||year+'-12-31',year};
-}
-
-window.sssOpenMultiBranchReports=function(){
-  const p=document.getElementById('sssMultiBranchReports');if(p)p.style.display='block';
-  const bs=document.getElementById('sssMBABranch');
-  if(bs){
-    const old=bs.value||'ALL';
-    bs.innerHTML='<option value="ALL">All Branches</option>'+mbaBranches().map(b=>`<option value="${b.id}">${b.name} (${b.code})</option>`).join('');
-    bs.value=[...bs.options].some(o=>o.value===old)?old:'ALL';
-  }
-  mbaGetDates();sssMBARefresh();
-};
-
-window.sssMBARefresh=function(){
-  const {from,to}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
-  const total=mbaCalc(from,to,branch);
-  const cards=[
-    ['💰','Total Sales',total.sales],['🛒','Total Purchase',total.purchase],
-    ['↩️','Sales Return',total.salesReturn],['↪️','Purchase Return',total.purchaseReturn],
-    ['🟢','Receipt',total.receipt],['🔴','Payment',total.payment],
-    ['🧾','GST',total.gst],['📈','Net Business',total.net]
-  ];
-  const c=document.getElementById('sssMBACards');if(c)c.innerHTML=cards.map(x=>`<div class="sss-mba-card"><span>${x[0]} ${x[1]}</span><b>${mbaMoney(x[2])}</b></div>`).join('');
-
-  const branches=mbaBranches().filter(b=>branch==='ALL'||b.id===branch);
-  const rb=document.getElementById('sssMBARows');
-  if(rb)rb.innerHTML=branches.map(b=>{
-    const x=mbaCalc(from,to,b.id);
-    return `<tr class="${b.isMain?'sss-mba-main':''}"><td><b>${b.name}</b><br><small>${b.code}</small></td><td>${mbaMoney(x.sales)}</td><td>${mbaMoney(x.purchase)}</td><td>${mbaMoney(x.salesReturn)}</td><td>${mbaMoney(x.purchaseReturn)}</td><td>${mbaMoney(x.receipt)}</td><td>${mbaMoney(x.payment)}</td><td>${mbaMoney(x.gst)}</td><td>${mbaMoney(x.net)}</td></tr>`;
-  }).join('')||'<tr><td colspan="9">No branch data.</td></tr>';
-
-  const mr=document.getElementById('sssMBAMonthRows');
-  if(mr){
-    const {year}=mbaGetDates();
-    const arr=[];
-    for(let m=1;m<=12;m++){
-      const mm=String(m).padStart(2,'0'), x=mbaCalc(`${year}-${mm}-01`,`${year}-${mm}-${new Date(year,m,0).getDate()}`,branch);
-      arr.push(`<tr><td>${new Date(year,m-1,1).toLocaleString('en-IN',{month:'long'})}</td><td>${mbaMoney(x.sales)}</td><td>${mbaMoney(x.purchase)}</td><td>${mbaMoney(x.receipt)}</td><td>${mbaMoney(x.payment)}</td><td>${mbaMoney(x.gst)}</td><td>${mbaMoney(x.net)}</td></tr>`);
-    }
-    mr.innerHTML=arr.join('');
-  }
-};
-
-window.sssMBAExportCSV=function(){
-  const {from,to,year}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
-  const rows=[['SSS Technology - Multi Branch Annual Report',year],['Period',from,to],[],
-    ['Branch','Sales','Purchase','Sales Return','Purchase Return','Receipt','Payment','GST','Net']];
-  mbaBranches().filter(b=>branch==='ALL'||b.id===branch).forEach(b=>{
-    const x=mbaCalc(from,to,b.id);rows.push([b.name,x.sales,x.purchase,x.salesReturn,x.purchaseReturn,x.receipt,x.payment,x.gst,x.net]);
-  });
-  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`sss-technology-annual-${year}.csv`;a.click();
-};
-
-window.sssMBAExportPDF=async function(){
-  if(typeof ensurePDFLibraries==='function' && !(await ensurePDFLibraries()))return;
-  if(!window.jspdf?.jsPDF){alert('PDF library unavailable.');return}
-  const {jsPDF}=window.jspdf, {from,to,year}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
-  const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
-  doc.setFontSize(18);doc.setTextColor(90,43,11);doc.text('Ganesh Plywood — Multi Branch Annual Report',40,40);
-  doc.setFontSize(10);doc.setTextColor(70);doc.text(`SSS Technology • ${from} to ${to} • Branch: ${branch==='ALL'?'All Branches':mbaBranchName(branch)}`,40,58);
-  const rows=mbaBranches().filter(b=>branch==='ALL'||b.id===branch).map(b=>{const x=mbaCalc(from,to,b.id);return [b.name,b.code,x.sales,x.purchase,x.salesReturn,x.purchaseReturn,x.receipt,x.payment,x.gst,x.net]});
-  doc.autoTable({startY:75,head:[['Branch','Code','Sales','Purchase','Sales Return','Purchase Return','Receipt','Payment','GST','Net']],body:rows,theme:'grid',styles:{fontSize:7,cellPadding:4},headStyles:{fillColor:[90,43,11],textColor:255}});
-  const y=(doc.lastAutoTable?.finalY||300)+25;
-  const t=mbaCalc(from,to,branch);
-  doc.setFontSize(11);doc.setTextColor(40);doc.text(`Total Sales: ${mbaMoney(t.sales)}   Purchase: ${mbaMoney(t.purchase)}   Receipt: ${mbaMoney(t.receipt)}   Payment: ${mbaMoney(t.payment)}   GST: ${mbaMoney(t.gst)}   Net: ${mbaMoney(t.net)}`,40,y);
-  doc.save(`sss-technology-multi-branch-annual-${year}.pdf`);
-};
-
-window.sssEditMainBranchName=function(){
-  const a=mbaBranches(), m=a.find(x=>x.id==='MAIN')||{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true};
-  const name=prompt('Main Branch Name',m.name);
-  if(name===null)return;
-  const n=name.trim();if(!n){alert('Branch name required');return}
-  m.name=n;m.isMain=true;m.id='MAIN';m.code=m.code||'MAIN';
-  const rest=a.filter(x=>x.id!=='MAIN');localStorage.setItem('SSS_TECHNOLOGY_BRANCHES_V3',JSON.stringify([m,...rest]));
-  if(typeof sssBranchRefresh==='function')sssBranchRefresh();
-  alert('✅ Main Branch name updated');
-};
-
-window.sssEditAnyBranchName=function(id){
-  const a=mbaBranches(),b=a.find(x=>x.id===id);if(!b)return;
-  const n=prompt('Branch Name',b.name);if(n===null)return;
-  if(!n.trim()){alert('Branch name required');return}
-  b.name=n.trim();localStorage.setItem('SSS_TECHNOLOGY_BRANCHES_V3',JSON.stringify(a));
-  if(typeof sssBranchRefresh==='function')sssBranchRefresh();
-  sssMBARefresh();
-};
-
-})();
-</script>
-
-<script id="sss-main-branch-edit-override">
-(function(){
-  window.sssBranchRefresh=function(){
-    const get=window.sssGetBranches;
-    const a=typeof get==='function'?get():[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}];
-    const active=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
-    const badge=document.getElementById('sssActiveBranchBadge');
-    const b=a.find(x=>x.id===active)||a[0];
-    if(badge)badge.textContent='🟢 '+b.name+' ('+b.code+')';
-    const tb=document.getElementById('sssBranchRows');if(!tb)return;
-    tb.innerHTML=a.map((x,i)=>{
-      const main=x.id==='MAIN'||x.isMain, act=x.id===active;
-      const actions=main
-        ? `<button type="button" class="btn light" onclick="sssEditMainBranchName()">✏️ Edit Name</button><button type="button" class="btn primary" onclick="sssBranchActivate('MAIN')">🟢 Active</button>`
-        : `<button type="button" class="btn light" onclick="sssBranchEdit('${String(x.id).replace(/'/g,"\\'")}')">✏️ Edit</button><button type="button" class="btn primary" onclick="sssBranchActivate('${String(x.id).replace(/'/g,"\\'")}')">🟢 Active</button><button type="button" class="btn danger" onclick="sssBranchDelete('${String(x.id).replace(/'/g,"\\'")}')">🗑️ Delete</button>`;
-      return `<tr class="${act?'sss-mba-main':''}"><td>${i+1}</td><td><b>${x.name}</b>${main?' <span class="sss-main-lock">🏠 Main</span>':''}</td><td>${x.code||''}</td><td>${x.mobile||''}</td><td>${x.address||''}</td><td>${act?'🟢 Active':'Inactive'}</td><td>${actions}</td></tr>`;
-    }).join('');
-  };
-})();
-</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
@@ -2204,5 +1957,332 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 
 </script>
+<style id="sss-branch-complete-css">
+#sssBranchManagement{box-sizing:border-box;width:100%;padding:12px}
+.sss-branch-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sss-branch-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sss-active-badge{display:inline-block;margin-top:6px;padding:8px 12px;border-radius:20px;background:#e9f7ef;color:#157347;font-weight:700}
+.sss-branch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sss-branch-table{width:100%;border-collapse:collapse}
+.sss-branch-table th,.sss-branch-table td{border:1px solid #ddd;padding:9px;vertical-align:middle}
+.sss-branch-table th{background:#6b310b;color:#fff}
+.sss-branch-table tr.sss-active-row{background:#eef9f1}
+.sss-branch-table button{margin:2px}
+.sss-main-lock{color:#157347;font-weight:700}
+@media(max-width:700px){
+  .sss-branch-grid{grid-template-columns:1fr}
+  .sss-branch-top{align-items:flex-start;flex-direction:column}
+}
+</style>
+<section id="sssBranchManagement" class="page" style="display:none">
+  <h2>🏢 Multiple Branch Management</h2>
+
+  <div class="panel">
+    <div class="sss-branch-top">
+      <div>
+        <b>Active Branch</b>
+        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
+      </div>
+      <div class="sss-branch-actions">
+        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
+        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
+    <input type="hidden" id="sssBranchEditId">
+    <div class="sss-branch-grid">
+      <div class="field">
+        <label>Branch Name *</label>
+        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
+      </div>
+      <div class="field">
+        <label>Branch Code *</label>
+        <input id="sssBranchCode" placeholder="e.g. SNG01">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
+      </div>
+      <div class="field">
+        <label>Address</label>
+        <input id="sssBranchAddress" placeholder="Branch address">
+      </div>
+    </div>
+    <div class="sss-branch-actions">
+      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
+      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📋 All Branches</h3>
+    <div class="table-wrap">
+      <table class="sss-branch-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
+            <th>Address</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sssBranchRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<style id="sss-multi-branch-annual-css">
+.sss-mba-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sss-mba-card{background:#fff;border:1px solid #e1e1e1;border-radius:12px;padding:14px}
+.sss-mba-card b{display:block;font-size:18px;margin-top:5px}
+.sss-mba-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sss-mba-table{width:100%;border-collapse:collapse}
+.sss-mba-table th,.sss-mba-table td{border:1px solid #ddd;padding:8px}
+.sss-mba-table th{background:#5a2b0b;color:#fff}
+.sss-mba-main{background:#fff8ed}
+@media(max-width:800px){.sss-mba-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.sss-mba-grid{grid-template-columns:1fr}}
+</style>
+<section id="sssMultiBranchReports" class="page" style="display:none">
+  <div class="actions" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <h2 style="margin:0">🏢 Multi-Branch Reports</h2>
+    <div class="sss-mba-actions">
+      <button class="btn primary" type="button" onclick="sssMBARefresh()">↻ Refresh</button>
+      <button class="btn success" type="button" onclick="sssMBAExportPDF()">📄 Annual PDF</button>
+      <button class="btn light" type="button" onclick="sssMBAExportCSV()">📊 Excel/CSV</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📅 Report Period & Branch</h3>
+    <div class="sss-mba-grid">
+      <div class="field"><label>Year</label><select id="sssMBAYear" onchange="sssMBARefresh()"></select></div>
+      <div class="field"><label>Branch</label><select id="sssMBABranch" onchange="sssMBARefresh()"><option value="ALL">All Branches</option></select></div>
+      <div class="field"><label>From</label><input id="sssMBAFrom" type="date" onchange="sssMBARefresh()"></div>
+      <div class="field"><label>To</label><input id="sssMBATo" type="date" onchange="sssMBARefresh()"></div>
+    </div>
+    <small>Annual report मध्ये Sales, Purchase, Sales Return, Purchase Return, Receipts, Payments, GST आणि Outstanding summary दिसेल.</small>
+  </div>
+
+  <div id="sssMBACards" class="sss-mba-grid"></div>
+
+  <div class="panel">
+    <h3>📋 Branch-wise Annual Summary</h3>
+    <div class="table-wrap">
+      <table class="sss-mba-table">
+        <thead><tr><th>Branch</th><th>Sales</th><th>Purchase</th><th>Sales Return</th><th>Purchase Return</th><th>Receipt</th><th>Payment</th><th>GST</th><th>Net</th></tr></thead>
+        <tbody id="sssMBARows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📆 Monthly Summary</h3>
+    <div class="table-wrap">
+      <table class="sss-mba-table">
+        <thead><tr><th>Month</th><th>Sales</th><th>Purchase</th><th>Receipt</th><th>Payment</th><th>GST</th><th>Net</th></tr></thead>
+        <tbody id="sssMBAMonthRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<script id="sss-multi-branch-annual-js">
+(function(){
+'use strict';
+
+function mbaMoney(n){return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function mbaDate(x){
+  const s=String(x||'').slice(0,10);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d=new Date(x); return isNaN(d)?'':d.toISOString().slice(0,10);
+}
+function mbaDB(){try{return typeof db!=='undefined'?db:{} }catch(e){return {}}}
+function mbaBranches(){
+  try{
+    const a=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
+    return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}];
+  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}]}
+}
+function mbaBranchName(id){
+  const b=mbaBranches().find(x=>x.id===id); return b?b.name:(id==='MAIN'?'Main Branch':id||'Main Branch');
+}
+function mbaRecordBranch(x){
+  return String(x?.branchId||x?.branch||x?.branchCode||'MAIN')||'MAIN';
+}
+function mbaAmount(x,keys){
+  for(const k of keys){const n=Number(x?.[k]);if(isFinite(n)&&n)return n}
+  return 0;
+}
+function mbaDateOk(x,from,to){
+  const d=mbaDate(x); return d && d>=from && d<=to;
+}
+function mbaRowsFor(type){
+  const d=mbaDB();
+  const map={
+    sales:d.invoices||[],
+    purchase:d.purchases||[],
+    salesReturn:d.salesReturns||d.salesReturn||[],
+    purchaseReturn:d.purchaseReturns||d.purchaseReturn||[],
+    transactions:d.transactions||[],
+    receipts:(d.receipts||[]),
+    payments:(d.payments||[])
+  };
+  return map[type]||[];
+}
+function mbaCalc(from,to,branch){
+  const inv=mbaRowsFor('sales').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
+  const pur=mbaRowsFor('purchase').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
+  const sr=mbaRowsFor('salesReturn').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
+  const pr=mbaRowsFor('purchaseReturn').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
+  const tx=mbaRowsFor('transactions').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch));
+
+  const sales=inv.reduce((s,x)=>s+mbaAmount(x,['grand','total','amount']),0);
+  const purchase=pur.reduce((s,x)=>s+mbaAmount(x,['total','grand','amount']),0);
+  const salesReturn=sr.reduce((s,x)=>s+mbaAmount(x,['grand','total','amount']),0);
+  const purchaseReturn=pr.reduce((s,x)=>s+mbaAmount(x,['total','grand','amount']),0);
+  const gst=inv.reduce((s,x)=>s+mbaAmount(x,['gst','tax']),0);
+
+  let receipt=tx.filter(x=>/receipt|credit/i.test(String(x.particular||x.type||''))).reduce((s,x)=>s+mbaAmount(x,['amount','receivedAmount']),0);
+  let payment=tx.filter(x=>/payment|debit/i.test(String(x.particular||x.type||''))).reduce((s,x)=>s+mbaAmount(x,['amount','paidAmount']),0);
+
+  receipt += mbaRowsFor('receipts').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch)).reduce((s,x)=>s+mbaAmount(x,['amount','received']),0);
+  payment += mbaRowsFor('payments').filter(x=>mbaDateOk(x.date,from,to)&&(branch==='ALL'||mbaRecordBranch(x)===branch)).reduce((s,x)=>s+mbaAmount(x,['amount','paid']),0);
+
+  return {sales,purchase,salesReturn,purchaseReturn,receipt,payment,gst,net:sales-salesReturn-purchase+purchaseReturn};
+}
+
+function mbaGetDates(){
+  const y=new Date().getFullYear();
+  const ys=document.getElementById('sssMBAYear');
+  if(ys&&!ys.options.length){
+    for(let i=y-5;i<=y+1;i++){const o=document.createElement('option');o.value=i;o.textContent=i;ys.appendChild(o)}
+    ys.value=y;
+  }
+  const year=Number(ys?.value||y);
+  const from=document.getElementById('sssMBAFrom'),to=document.getElementById('sssMBATo');
+  if(from&&!from.value)from.value=year+'-01-01';
+  if(to&&!to.value)to.value=year+'-12-31';
+  return {from:from?.value||year+'-01-01',to:to?.value||year+'-12-31',year};
+}
+
+window.sssOpenMultiBranchReports=function(){
+  const p=document.getElementById('sssMultiBranchReports');if(p)p.style.display='block';
+  const bs=document.getElementById('sssMBABranch');
+  if(bs){
+    const old=bs.value||'ALL';
+    bs.innerHTML='<option value="ALL">All Branches</option>'+mbaBranches().map(b=>`<option value="${b.id}">${b.name} (${b.code})</option>`).join('');
+    bs.value=[...bs.options].some(o=>o.value===old)?old:'ALL';
+  }
+  mbaGetDates();sssMBARefresh();
+};
+
+window.sssMBARefresh=function(){
+  const {from,to}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
+  const total=mbaCalc(from,to,branch);
+  const cards=[
+    ['💰','Total Sales',total.sales],['🛒','Total Purchase',total.purchase],
+    ['↩️','Sales Return',total.salesReturn],['↪️','Purchase Return',total.purchaseReturn],
+    ['🟢','Receipt',total.receipt],['🔴','Payment',total.payment],
+    ['🧾','GST',total.gst],['📈','Net Business',total.net]
+  ];
+  const c=document.getElementById('sssMBACards');if(c)c.innerHTML=cards.map(x=>`<div class="sss-mba-card"><span>${x[0]} ${x[1]}</span><b>${mbaMoney(x[2])}</b></div>`).join('');
+
+  const branches=mbaBranches().filter(b=>branch==='ALL'||b.id===branch);
+  const rb=document.getElementById('sssMBARows');
+  if(rb)rb.innerHTML=branches.map(b=>{
+    const x=mbaCalc(from,to,b.id);
+    return `<tr class="${b.isMain?'sss-mba-main':''}"><td><b>${b.name}</b><br><small>${b.code}</small></td><td>${mbaMoney(x.sales)}</td><td>${mbaMoney(x.purchase)}</td><td>${mbaMoney(x.salesReturn)}</td><td>${mbaMoney(x.purchaseReturn)}</td><td>${mbaMoney(x.receipt)}</td><td>${mbaMoney(x.payment)}</td><td>${mbaMoney(x.gst)}</td><td>${mbaMoney(x.net)}</td></tr>`;
+  }).join('')||'<tr><td colspan="9">No branch data.</td></tr>';
+
+  const mr=document.getElementById('sssMBAMonthRows');
+  if(mr){
+    const {year}=mbaGetDates();
+    const arr=[];
+    for(let m=1;m<=12;m++){
+      const mm=String(m).padStart(2,'0'), x=mbaCalc(`${year}-${mm}-01`,`${year}-${mm}-${new Date(year,m,0).getDate()}`,branch);
+      arr.push(`<tr><td>${new Date(year,m-1,1).toLocaleString('en-IN',{month:'long'})}</td><td>${mbaMoney(x.sales)}</td><td>${mbaMoney(x.purchase)}</td><td>${mbaMoney(x.receipt)}</td><td>${mbaMoney(x.payment)}</td><td>${mbaMoney(x.gst)}</td><td>${mbaMoney(x.net)}</td></tr>`);
+    }
+    mr.innerHTML=arr.join('');
+  }
+};
+
+window.sssMBAExportCSV=function(){
+  const {from,to,year}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
+  const rows=[['SSS Technology - Multi Branch Annual Report',year],['Period',from,to],[],
+    ['Branch','Sales','Purchase','Sales Return','Purchase Return','Receipt','Payment','GST','Net']];
+  mbaBranches().filter(b=>branch==='ALL'||b.id===branch).forEach(b=>{
+    const x=mbaCalc(from,to,b.id);rows.push([b.name,x.sales,x.purchase,x.salesReturn,x.purchaseReturn,x.receipt,x.payment,x.gst,x.net]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`sss-technology-annual-${year}.csv`;a.click();
+};
+
+window.sssMBAExportPDF=async function(){
+  if(typeof ensurePDFLibraries==='function' && !(await ensurePDFLibraries()))return;
+  if(!window.jspdf?.jsPDF){alert('PDF library unavailable.');return}
+  const {jsPDF}=window.jspdf, {from,to,year}=mbaGetDates(), branch=document.getElementById('sssMBABranch')?.value||'ALL';
+  const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+  doc.setFontSize(18);doc.setTextColor(90,43,11);doc.text('Ganesh Plywood — Multi Branch Annual Report',40,40);
+  doc.setFontSize(10);doc.setTextColor(70);doc.text(`SSS Technology • ${from} to ${to} • Branch: ${branch==='ALL'?'All Branches':mbaBranchName(branch)}`,40,58);
+  const rows=mbaBranches().filter(b=>branch==='ALL'||b.id===branch).map(b=>{const x=mbaCalc(from,to,b.id);return [b.name,b.code,x.sales,x.purchase,x.salesReturn,x.purchaseReturn,x.receipt,x.payment,x.gst,x.net]});
+  doc.autoTable({startY:75,head:[['Branch','Code','Sales','Purchase','Sales Return','Purchase Return','Receipt','Payment','GST','Net']],body:rows,theme:'grid',styles:{fontSize:7,cellPadding:4},headStyles:{fillColor:[90,43,11],textColor:255}});
+  const y=(doc.lastAutoTable?.finalY||300)+25;
+  const t=mbaCalc(from,to,branch);
+  doc.setFontSize(11);doc.setTextColor(40);doc.text(`Total Sales: ${mbaMoney(t.sales)}   Purchase: ${mbaMoney(t.purchase)}   Receipt: ${mbaMoney(t.receipt)}   Payment: ${mbaMoney(t.payment)}   GST: ${mbaMoney(t.gst)}   Net: ${mbaMoney(t.net)}`,40,y);
+  doc.save(`sss-technology-multi-branch-annual-${year}.pdf`);
+};
+
+window.sssEditMainBranchName=function(){
+  const a=mbaBranches(), m=a.find(x=>x.id==='MAIN')||{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true};
+  const name=prompt('Main Branch Name',m.name);
+  if(name===null)return;
+  const n=name.trim();if(!n){alert('Branch name required');return}
+  m.name=n;m.isMain=true;m.id='MAIN';m.code=m.code||'MAIN';
+  const rest=a.filter(x=>x.id!=='MAIN');localStorage.setItem('SSS_TECHNOLOGY_BRANCHES_V3',JSON.stringify([m,...rest]));
+  if(typeof sssBranchRefresh==='function')sssBranchRefresh();
+  alert('✅ Main Branch name updated');
+};
+
+window.sssEditAnyBranchName=function(id){
+  const a=mbaBranches(),b=a.find(x=>x.id===id);if(!b)return;
+  const n=prompt('Branch Name',b.name);if(n===null)return;
+  if(!n.trim()){alert('Branch name required');return}
+  b.name=n.trim();localStorage.setItem('SSS_TECHNOLOGY_BRANCHES_V3',JSON.stringify(a));
+  if(typeof sssBranchRefresh==='function')sssBranchRefresh();
+  sssMBARefresh();
+};
+
+})();
+</script>
+<script id="sss-main-branch-edit-override">
+(function(){
+  window.sssBranchRefresh=function(){
+    const get=window.sssGetBranches;
+    const a=typeof get==='function'?get():[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true}];
+    const active=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
+    const badge=document.getElementById('sssActiveBranchBadge');
+    const b=a.find(x=>x.id===active)||a[0];
+    if(badge)badge.textContent='🟢 '+b.name+' ('+b.code+')';
+    const tb=document.getElementById('sssBranchRows');if(!tb)return;
+    tb.innerHTML=a.map((x,i)=>{
+      const main=x.id==='MAIN'||x.isMain, act=x.id===active;
+      const actions=main
+        ? `<button type="button" class="btn light" onclick="sssEditMainBranchName()">✏️ Edit Name</button><button type="button" class="btn primary" onclick="sssBranchActivate('MAIN')">🟢 Active</button>`
+        : `<button type="button" class="btn light" onclick="sssBranchEdit('${String(x.id).replace(/'/g,"\\'")}')">✏️ Edit</button><button type="button" class="btn primary" onclick="sssBranchActivate('${String(x.id).replace(/'/g,"\\'")}')">🟢 Active</button><button type="button" class="btn danger" onclick="sssBranchDelete('${String(x.id).replace(/'/g,"\\'")}')">🗑️ Delete</button>`;
+      return `<tr class="${act?'sss-mba-main':''}"><td>${i+1}</td><td><b>${x.name}</b>${main?' <span class="sss-main-lock">🏠 Main</span>':''}</td><td>${x.code||''}</td><td>${x.mobile||''}</td><td>${x.address||''}</td><td>${act?'🟢 Active':'Inactive'}</td><td>${actions}</td></tr>`;
+    }).join('');
+  };
+})();
+</script>
+
+<div class="sss-feature-buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px">
+  <button type="button" class="btn primary" onclick="sssOpenBranches()">🏢 Multiple Branch</button>
+  <button type="button" class="btn success" onclick="sssOpenMultiBranchReports()">📊 Branch Reports</button>
+</div>
+<style id="sss-feature-buttons-css">
+.sss-feature-buttons .btn{cursor:pointer}
+</style>
+
 </body>
 </html>
