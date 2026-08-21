@@ -784,278 +784,7 @@ function printTodaySummary(){
 
 
 
-<section id="sssBranchManagement" class="page" style="display:none">
-  <h2>🏢 Multiple Branch Management</h2>
 
-  <div class="panel">
-    <div class="sss-branch-top">
-      <div>
-        <b>Active Branch</b>
-        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
-      </div>
-      <div class="sss-branch-actions">
-        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
-        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
-    <input type="hidden" id="sssBranchEditId">
-    <div class="sss-branch-grid">
-      <div class="field">
-        <label>Branch Name *</label>
-        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
-      </div>
-      <div class="field">
-        <label>Branch Code *</label>
-        <input id="sssBranchCode" placeholder="e.g. SNG01">
-      </div>
-      <div class="field">
-        <label>Mobile Number</label>
-        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
-      </div>
-      <div class="field">
-        <label>Address</label>
-        <input id="sssBranchAddress" placeholder="Branch address">
-      </div>
-    </div>
-    <div class="sss-branch-actions">
-      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
-      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3>📋 All Branches</h3>
-    <div class="table-wrap">
-      <table class="sss-branch-table">
-        <thead>
-          <tr>
-            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
-            <th>Address</th><th>Status</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="sssBranchRows"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<script id="sss-branch-complete-js">
-(function(){
-  'use strict';
-
-  const BRANCH_KEY = 'SSS_TECHNOLOGY_BRANCHES_V3';
-  const ACTIVE_KEY = 'SSS_TECHNOLOGY_ACTIVE_BRANCH_V3';
-
-  const MAIN = {
-    id: 'MAIN',
-    name: 'Main Branch',
-    code: 'MAIN',
-    mobile: '',
-    address: '',
-    isMain: true,
-    createdAt: 'system'
-  };
-
-  function getBranches(){
-    try{
-      let a = JSON.parse(localStorage.getItem(BRANCH_KEY) || 'null');
-      if(!Array.isArray(a) || !a.length){
-        a = [MAIN];
-        localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
-      }
-      // Main Branch is always present and always first.
-      if(!a.some(x=>x.id==='MAIN')){
-        a.unshift(MAIN);
-      }else{
-        a = [MAIN].concat(a.filter(x=>x.id!=='MAIN'));
-      }
-      localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
-      return a;
-    }catch(e){
-      localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN]));
-      return [MAIN];
-    }
-  }
-
-  function setBranches(a){
-    localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN].concat(a.filter(x=>x.id!=='MAIN'))));
-  }
-
-  function getActiveId(){
-    const a=getBranches();
-    const id=localStorage.getItem(ACTIVE_KEY);
-    return a.some(x=>x.id===id) ? id : 'MAIN';
-  }
-
-  function setActiveId(id){
-    const a=getBranches();
-    if(!a.some(x=>x.id===id)) id='MAIN';
-    localStorage.setItem(ACTIVE_KEY,id);
-  }
-
-  function esc(v){
-    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-
-  window.sssOpenBranches = function(){
-    const p=document.getElementById('sssBranchManagement');
-    if(p) p.style.display='block';
-    sssBranchRefresh();
-  };
-
-  window.sssBranchRefresh = function(){
-    getBranches();
-    const a=getBranches(), active=getActiveId();
-    const badge=document.getElementById('sssActiveBranchBadge');
-    if(badge){
-      const b=a.find(x=>x.id===active)||MAIN;
-      badge.textContent='🟢 '+b.name+' ('+b.code+')';
-    }
-
-    const tbody=document.getElementById('sssBranchRows');
-    if(!tbody)return;
-
-    tbody.innerHTML=a.map(function(b,i){
-      const isActive=b.id===active;
-      const status=isActive
-        ? '<span class="sss-main-lock">🟢 Active</span>'
-        : (b.isMain ? '<span class="sss-main-lock">🏠 Main</span>' : 'Inactive');
-
-      const actions = b.isMain
-        ? '<button type="button" class="btn primary" onclick="sssBranchActivate(\'MAIN\')">🟢 Active</button>'
-        : '<button type="button" class="btn light" onclick="sssBranchEdit(\''+esc(b.id)+'\')">✏️ Edit</button>'+
-          '<button type="button" class="btn primary" onclick="sssBranchActivate(\''+esc(b.id)+'\')">🟢 Active</button>'+
-          '<button type="button" class="btn danger" onclick="sssBranchDelete(\''+esc(b.id)+'\')">🗑️ Delete</button>';
-
-      return '<tr class="'+(isActive?'sss-active-row':'')+'">'+
-        '<td>'+(i+1)+'</td>'+
-        '<td><b>'+esc(b.name)+'</b></td>'+
-        '<td>'+esc(b.code)+'</td>'+
-        '<td>'+esc(b.mobile)+'</td>'+
-        '<td>'+esc(b.address)+'</td>'+
-        '<td>'+status+'</td>'+
-        '<td>'+actions+'</td>'+
-      '</tr>';
-    }).join('');
-  };
-
-  window.sssBranchNew = function(){
-    document.getElementById('sssBranchEditId').value='';
-    document.getElementById('sssBranchName').value='';
-    document.getElementById('sssBranchCode').value='';
-    document.getElementById('sssBranchMobile').value='';
-    document.getElementById('sssBranchAddress').value='';
-    document.getElementById('sssBranchFormTitle').textContent='➕ Add New Branch';
-  };
-
-  window.sssBranchEdit = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b || b.isMain){
-      if(b && b.isMain) alert('Main Branch edit/delete करू नका.');
-      return;
-    }
-    document.getElementById('sssBranchEditId').value=b.id;
-    document.getElementById('sssBranchName').value=b.name||'';
-    document.getElementById('sssBranchCode').value=b.code||'';
-    document.getElementById('sssBranchMobile').value=b.mobile||'';
-    document.getElementById('sssBranchAddress').value=b.address||'';
-    document.getElementById('sssBranchFormTitle').textContent='✏️ Update Branch';
-    document.getElementById('sssBranchName').scrollIntoView({behavior:'smooth',block:'center'});
-  };
-
-  window.sssBranchSave = function(){
-    const editId=(document.getElementById('sssBranchEditId').value||'').trim();
-    const name=(document.getElementById('sssBranchName').value||'').trim();
-    const code=(document.getElementById('sssBranchCode').value||'').trim().toUpperCase();
-    const mobile=(document.getElementById('sssBranchMobile').value||'').trim();
-    const address=(document.getElementById('sssBranchAddress').value||'').trim();
-
-    if(!name || !code){
-      alert('❌ Branch Name आणि Branch Code आवश्यक आहेत.');
-      return;
-    }
-
-    const a=getBranches();
-
-    // Branch code must be unique.
-    const duplicate=a.find(x=>x.code.toUpperCase()===code && x.id!==editId);
-    if(duplicate){
-      alert('❌ हा Branch Code आधीपासून वापरलेला आहे: '+code);
-      return;
-    }
-
-    if(editId){
-      const i=a.findIndex(x=>x.id===editId);
-      if(i<0){alert('Branch सापडली नाही.');return;}
-      a[i]=Object.assign({},a[i],{name,code,mobile,address,updatedAt:new Date().toISOString()});
-      setBranches(a);
-      alert('✅ Branch updated successfully.');
-    }else{
-      const b={
-        id:'BR_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-        name,code,mobile,address,isMain:false,
-        createdAt:new Date().toISOString()
-      };
-      a.push(b);
-      setBranches(a);
-      setActiveId(b.id);
-      alert('✅ New branch added and activated.');
-    }
-
-    sssBranchNew();
-    sssBranchRefresh();
-  };
-
-  window.sssBranchDelete = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b)return;
-    if(b.isMain || id==='MAIN'){
-      alert('🏠 Main Branch delete करता येणार नाही.');
-      return;
-    }
-    if(!confirm('Delete branch "'+b.name+'"?'))return;
-
-    const wasActive=getActiveId()===id;
-    setBranches(getBranches().filter(x=>x.id!==id));
-    if(wasActive)setActiveId('MAIN');
-    sssBranchRefresh();
-    alert('🗑️ Branch deleted.');
-  };
-
-  window.sssBranchActivate = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b)return;
-    setActiveId(id);
-    sssBranchRefresh();
-
-    // Other ERP modules can listen to this event and filter their data by branchId.
-    window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{
-      branchId:b.id,branchName:b.name,branchCode:b.code
-    }}));
-
-    alert('🟢 Active Branch: '+b.name);
-  };
-
-  window.sssGetActiveBranch = function(){
-    return getBranches().find(x=>x.id===getActiveId())||MAIN;
-  };
-
-  window.sssGetBranches = function(){
-    return getBranches();
-  };
-
-  document.addEventListener('DOMContentLoaded',function(){
-    getBranches();
-    sssBranchRefresh();
-  });
-})();
-</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
@@ -1952,6 +1681,276 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 (()=>{const K='SSS_ERP_BRANCHES_V1',R='SSS_ERP_BRANCH_RIGHTS_V1',A='SSS_ERP_ACTIVE_BRANCH_V1',D={id:'MAIN',name:'SSS Technology - Main Branch',code:'MAIN',mobile:'',address:''};const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}},wr=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),bs=()=>{let a=rd(K,[]);if(!a.length){a=[D];wr(K,a)}return a},aid=()=>localStorage.getItem(A)||bs()[0].id;window.sssOpenBranches=()=>{document.getElementById('sssBranchManagement').style.display='block';sssRenderBranches();sssLoadBranchRights()};window.sssRenderBranches=()=>{let a=bs(),id=aid(),s=document.getElementById('sssBranchSelect'),t=document.getElementById('sssBranchRows'),x=a.find(z=>z.id===id);if(s)s.innerHTML=a.map(z=>`<option value="${z.id}" ${z.id===id?'selected':''}>${z.name} — ${z.code}</option>`).join('');if(t)t.innerHTML=a.map(z=>`<tr><td>${z.name}</td><td>${z.code}</td><td>${z.mobile||''}</td><td>${z.address||''}</td><td>${z.id===id?'🟢 Active':'Inactive'}</td><td><button class="btn light" onclick="sssEditBranch('${z.id}')">✏️ Edit</button></td></tr>`).join('');if(x)document.getElementById('sssActiveBranchName').value=x.name+' ('+x.code+')'};window.sssSwitchBranch=id=>{if(!bs().find(x=>x.id===id))return;localStorage.setItem(A,id);sssRenderBranches();sssLoadBranchRights()};window.sssSaveBranch=()=>{let n=sssBranchName.value.trim(),c=sssBranchCode.value.trim().toUpperCase();if(!n||!c)return alert('Branch Name आणि Code टाका');let a=bs(),id=sssBranchSelect.value||'BR_'+Date.now(),i=a.findIndex(x=>x.id===id),o={id,name:n,code:c,mobile:sssBranchMobile.value.trim(),address:sssBranchAddress.value.trim()};i<0?a.push(o):a[i]=o;wr(K,a);localStorage.setItem(A,id);sssRenderBranches();alert('✅ Branch saved')};window.sssEditBranch=id=>{let x=bs().find(z=>z.id===id);if(!x)return;sssBranchSelect.value=id;sssBranchName.value=x.name;sssBranchCode.value=x.code;sssBranchMobile.value=x.mobile||'';sssBranchAddress.value=x.address||''};window.sssClearBranchForm=()=>['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>document.getElementById(id).value='');window.sssDeleteBranch=()=>{let id=sssBranchSelect.value;if(id==='MAIN')return alert('Main Branch delete करता येणार नाही');if(confirm('ही Branch delete करायची?')){let a=bs().filter(x=>x.id!==id);wr(K,a);localStorage.setItem(A,a[0].id);sssRenderBranches()}};window.sssLoadBranchRights=()=>{let u=sssBranchUserId.value,allow=rd(R,{})[u]||[];sssBranchRightsChecks.innerHTML=bs().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allow.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('')};window.sssSaveBranchRights=()=>{let u=sssBranchUserId.value.trim();if(!u)return alert('User ID टाका');let r=rd(R,{});r[u]=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);wr(R,r);alert('✅ Branch rights saved')};addEventListener('DOMContentLoaded',sssRenderBranches)})();
-</script>
-</body>
+</script><section id="sssBranchManagement" class="page" style="display:none">
+  <h2>🏢 Multiple Branch Management</h2>
+
+  <div class="panel">
+    <div class="sss-branch-top">
+      <div>
+        <b>Active Branch</b>
+        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
+      </div>
+      <div class="sss-branch-actions">
+        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
+        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
+    <input type="hidden" id="sssBranchEditId">
+    <div class="sss-branch-grid">
+      <div class="field">
+        <label>Branch Name *</label>
+        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
+      </div>
+      <div class="field">
+        <label>Branch Code *</label>
+        <input id="sssBranchCode" placeholder="e.g. SNG01">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
+      </div>
+      <div class="field">
+        <label>Address</label>
+        <input id="sssBranchAddress" placeholder="Branch address">
+      </div>
+    </div>
+    <div class="sss-branch-actions">
+      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
+      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📋 All Branches</h3>
+    <div class="table-wrap">
+      <table class="sss-branch-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
+            <th>Address</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sssBranchRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script id="sss-branch-complete-js">
+(function(){
+  'use strict';
+
+  const BRANCH_KEY = 'SSS_TECHNOLOGY_BRANCHES_V3';
+  const ACTIVE_KEY = 'SSS_TECHNOLOGY_ACTIVE_BRANCH_V3';
+
+  const MAIN = {
+    id: 'MAIN',
+    name: 'Main Branch',
+    code: 'MAIN',
+    mobile: '',
+    address: '',
+    isMain: true,
+    createdAt: 'system'
+  };
+
+  function getBranches(){
+    try{
+      let a = JSON.parse(localStorage.getItem(BRANCH_KEY) || 'null');
+      if(!Array.isArray(a) || !a.length){
+        a = [MAIN];
+        localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
+      }
+      // Main Branch is always present and always first.
+      if(!a.some(x=>x.id==='MAIN')){
+        a.unshift(MAIN);
+      }else{
+        a = [MAIN].concat(a.filter(x=>x.id!=='MAIN'));
+      }
+      localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
+      return a;
+    }catch(e){
+      localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN]));
+      return [MAIN];
+    }
+  }
+
+  function setBranches(a){
+    localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN].concat(a.filter(x=>x.id!=='MAIN'))));
+  }
+
+  function getActiveId(){
+    const a=getBranches();
+    const id=localStorage.getItem(ACTIVE_KEY);
+    return a.some(x=>x.id===id) ? id : 'MAIN';
+  }
+
+  function setActiveId(id){
+    const a=getBranches();
+    if(!a.some(x=>x.id===id)) id='MAIN';
+    localStorage.setItem(ACTIVE_KEY,id);
+  }
+
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  window.sssOpenBranches = function(){
+    const p=document.getElementById('sssBranchManagement');
+    if(p) p.style.display='block';
+    sssBranchRefresh();
+  };
+
+  window.sssBranchRefresh = function(){
+    getBranches();
+    const a=getBranches(), active=getActiveId();
+    const badge=document.getElementById('sssActiveBranchBadge');
+    if(badge){
+      const b=a.find(x=>x.id===active)||MAIN;
+      badge.textContent='🟢 '+b.name+' ('+b.code+')';
+    }
+
+    const tbody=document.getElementById('sssBranchRows');
+    if(!tbody)return;
+
+    tbody.innerHTML=a.map(function(b,i){
+      const isActive=b.id===active;
+      const status=isActive
+        ? '<span class="sss-main-lock">🟢 Active</span>'
+        : (b.isMain ? '<span class="sss-main-lock">🏠 Main</span>' : 'Inactive');
+
+      const actions = b.isMain
+        ? '<button type="button" class="btn primary" onclick="sssBranchActivate(\'MAIN\')">🟢 Active</button>'
+        : '<button type="button" class="btn light" onclick="sssBranchEdit(\''+esc(b.id)+'\')">✏️ Edit</button>'+
+          '<button type="button" class="btn primary" onclick="sssBranchActivate(\''+esc(b.id)+'\')">🟢 Active</button>'+
+          '<button type="button" class="btn danger" onclick="sssBranchDelete(\''+esc(b.id)+'\')">🗑️ Delete</button>';
+
+      return '<tr class="'+(isActive?'sss-active-row':'')+'">'+
+        '<td>'+(i+1)+'</td>'+
+        '<td><b>'+esc(b.name)+'</b></td>'+
+        '<td>'+esc(b.code)+'</td>'+
+        '<td>'+esc(b.mobile)+'</td>'+
+        '<td>'+esc(b.address)+'</td>'+
+        '<td>'+status+'</td>'+
+        '<td>'+actions+'</td>'+
+      '</tr>';
+    }).join('');
+  };
+
+  window.sssBranchNew = function(){
+    document.getElementById('sssBranchEditId').value='';
+    document.getElementById('sssBranchName').value='';
+    document.getElementById('sssBranchCode').value='';
+    document.getElementById('sssBranchMobile').value='';
+    document.getElementById('sssBranchAddress').value='';
+    document.getElementById('sssBranchFormTitle').textContent='➕ Add New Branch';
+  };
+
+  window.sssBranchEdit = function(id){
+    const b=getBranches().find(x=>x.id===id);
+    if(!b || b.isMain){
+      if(b && b.isMain) alert('Main Branch edit/delete करू नका.');
+      return;
+    }
+    document.getElementById('sssBranchEditId').value=b.id;
+    document.getElementById('sssBranchName').value=b.name||'';
+    document.getElementById('sssBranchCode').value=b.code||'';
+    document.getElementById('sssBranchMobile').value=b.mobile||'';
+    document.getElementById('sssBranchAddress').value=b.address||'';
+    document.getElementById('sssBranchFormTitle').textContent='✏️ Update Branch';
+    document.getElementById('sssBranchName').scrollIntoView({behavior:'smooth',block:'center'});
+  };
+
+  window.sssBranchSave = function(){
+    const editId=(document.getElementById('sssBranchEditId').value||'').trim();
+    const name=(document.getElementById('sssBranchName').value||'').trim();
+    const code=(document.getElementById('sssBranchCode').value||'').trim().toUpperCase();
+    const mobile=(document.getElementById('sssBranchMobile').value||'').trim();
+    const address=(document.getElementById('sssBranchAddress').value||'').trim();
+
+    if(!name || !code){
+      alert('❌ Branch Name आणि Branch Code आवश्यक आहेत.');
+      return;
+    }
+
+    const a=getBranches();
+
+    // Branch code must be unique.
+    const duplicate=a.find(x=>x.code.toUpperCase()===code && x.id!==editId);
+    if(duplicate){
+      alert('❌ हा Branch Code आधीपासून वापरलेला आहे: '+code);
+      return;
+    }
+
+    if(editId){
+      const i=a.findIndex(x=>x.id===editId);
+      if(i<0){alert('Branch सापडली नाही.');return;}
+      a[i]=Object.assign({},a[i],{name,code,mobile,address,updatedAt:new Date().toISOString()});
+      setBranches(a);
+      alert('✅ Branch updated successfully.');
+    }else{
+      const b={
+        id:'BR_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+        name,code,mobile,address,isMain:false,
+        createdAt:new Date().toISOString()
+      };
+      a.push(b);
+      setBranches(a);
+      setActiveId(b.id);
+      alert('✅ New branch added and activated.');
+    }
+
+    sssBranchNew();
+    sssBranchRefresh();
+  };
+
+  window.sssBranchDelete = function(id){
+    const b=getBranches().find(x=>x.id===id);
+    if(!b)return;
+    if(b.isMain || id==='MAIN'){
+      alert('🏠 Main Branch delete करता येणार नाही.');
+      return;
+    }
+    if(!confirm('Delete branch "'+b.name+'"?'))return;
+
+    const wasActive=getActiveId()===id;
+    setBranches(getBranches().filter(x=>x.id!==id));
+    if(wasActive)setActiveId('MAIN');
+    sssBranchRefresh();
+    alert('🗑️ Branch deleted.');
+  };
+
+  window.sssBranchActivate = function(id){
+    const b=getBranches().find(x=>x.id===id);
+    if(!b)return;
+    setActiveId(id);
+    sssBranchRefresh();
+
+    // Other ERP modules can listen to this event and filter their data by branchId.
+    window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{
+      branchId:b.id,branchName:b.name,branchCode:b.code
+    }}));
+
+    alert('🟢 Active Branch: '+b.name);
+  };
+
+  window.sssGetActiveBranch = function(){
+    return getBranches().find(x=>x.id===getActiveId())||MAIN;
+  };
+
+  window.sssGetBranches = function(){
+    return getBranches();
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    getBranches();
+    sssBranchRefresh();
+  });
+})();
+</script></body>
 </html>
