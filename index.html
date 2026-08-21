@@ -32,7 +32,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .dash-card:after{content:'₹';position:absolute;right:14px;bottom:-18px;font-size:70px;font-weight:900;opacity:.05}
 .today-summary{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px #00000010}
 .today-summary h3{margin:0 0 12px;color:var(--brown)}
-.summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}
+.summary-row{display:grid;grid-template-columns:minmax(0,1fr) 180px auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee;font-size:13px}.summary-row>b{display:block!important;text-align:right!important;font-size:14px!important;min-height:20px;line-height:20px;font-weight:800}.summary-row .summary-actions{justify-self:end}.summary-row>span:first-child{font-weight:500}
 .summary-row b{font-size:14px}.summary-actions{margin-left:auto;display:none;gap:4px}.summary-actions .btn{padding:4px 7px;font-size:11px}.today-summary.admin-editable .summary-actions{display:flex}.summary-row{align-items:center;gap:8px}.summary-row>b{margin-left:auto}.summary-row .summary-actions{margin-left:8px}.today-summary.admin-editable .summary-row>b{margin-left:auto}
 .chart-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;min-height:300px}
 .donut{width:190px;height:190px;border-radius:50%;margin:10px auto 15px;position:relative;background:conic-gradient(#1269d8 0 20%,#f2b600 20% 37%,#6d28d9 37% 53%,#18b879 53% 74%,#8b8b8b 74% 100%)}
@@ -412,15 +412,15 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit All</button>
 <button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete All Edits</button>
 </div>
-<div class="summary-row"><span>Opening Stock</span><b class="orange" id="summaryOpeningValue">₹ 0.00</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales</span><b class="green" id="summarySalesValue">₹ 0.00</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase</span><b class="orange" id="summaryPurchaseValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales Return</span><b class="red" id="summarySalesReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase Return</span><b class="blue" id="summaryPurchaseReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Opening Stock (Units)</span><b class="orange" id="summaryOpeningValue">₹ 0.00</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales (Units)</span><b class="green" id="summarySalesValue">₹ 0.00</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase (Units)</span><b class="orange" id="summaryPurchaseValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales Return (Units)</span><b class="red" id="summarySalesReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase Return (Units)</span><b class="blue" id="summaryPurchaseReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
 <div class="summary-row"><span>Receipt Today</span><b class="green" id="summaryReceiptsValue">₹ 0.00</b><span class="summary-actions no-print" data-key="receipts"><button class="btn light" onclick="editSummaryField('receipts')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receipts')">🗑️</button></span></div>
 <div class="summary-row"><span>Payment Today</span><b class="red" id="summaryPaymentsValue">₹ 0.00</b><span class="summary-actions no-print" data-key="payments"><button class="btn light" onclick="editSummaryField('payments')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payments')">🗑️</button></span></div>
-<div class="summary-row"><span>Closing Stock</span><b class="purple" id="summaryClosingValue">₹ 0.00</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
-<div class="summary-row"><span>Stock Change</span><b id="summaryStockChange" class="green"><span id="summaryStockChangeValue">₹ 0.00</span></b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
+<div class="summary-row"><span>Closing Stock (Units)</span><b class="purple" id="summaryClosingValue">₹ 0.00</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Change (Units)</span><b id="summaryStockChange" class="green"><span id="summaryStockChangeValue">₹ 0.00</span></b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
 <div class="summary-row"><span>Pending Receivable</span><b class="blue" id="summaryReceivableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
 <div class="summary-row"><span>Pending Payable</span><b class="red" id="summaryPayableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
 <div class="summary-row"><span>Stock Sale Value</span><b class="green" id="summaryStockSaleValue">₹ 0.00</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
@@ -512,37 +512,32 @@ renderTodaySummaryValues();
 applyAdminSummaryControls();
 }
 
+function summaryDisplayValue(key, value){
+  const n=Number(value||0);
+  // Stock movement fields are quantities; financial fields remain in rupees.
+  const qtyKeys=['opening','sales','purchase','salesReturn','purchaseReturn','closing','stockChange'];
+  if(qtyKeys.includes(key)) return `${n.toLocaleString('en-IN',{maximumFractionDigits:2})} Units`;
+  return money(Number.isFinite(n)?n:0);
+}
 function renderTodaySummaryValues(){
-  try{
-    const c=summaryCalculatedValues();
-    const v=k=>getSummaryValue(k,c[k]??0);
-    const set=(id,key)=>{
-      const el=document.getElementById(id);
-      if(el) el.textContent=money(v(key));
-    };
-    set('summaryOpeningValue','opening');
-    set('summarySalesValue','sales');
-    set('summaryPurchaseValue','purchase');
-    set('summarySalesReturnValue','salesReturn');
-    set('summaryPurchaseReturnValue','purchaseReturn');
-    set('summaryReceiptsValue','receipts');
-    set('summaryPaymentsValue','payments');
-    set('summaryClosingValue','closing');
-    set('summaryStockChangeValue','stockChange');
-    set('summaryReceivableValue','receivable');
-    set('summaryPayableValue','payable');
-    set('summaryStockSaleValue','stockSale');
-    set('summaryProfitValue','profit');
-    const sc=document.getElementById('summaryStockChange');
-    if(sc) sc.className=v('stockChange')>=0?'green':'red';
-    const pr=document.getElementById('summaryProfit');
-    if(pr) pr.className=v('profit')>=0?'green':'red';
-  }catch(e){
-    console.error('Today Summary render failed:',e);
-    // Last-resort visible test values so the value column never remains blank.
-    const ids=['summaryOpeningValue','summarySalesValue','summaryPurchaseValue','summarySalesReturnValue','summaryPurchaseReturnValue','summaryReceiptsValue','summaryPaymentsValue','summaryClosingValue','summaryStockChangeValue','summaryReceivableValue','summaryPayableValue','summaryStockSaleValue','summaryProfitValue'];
-    ids.forEach(id=>{const el=document.getElementById(id);if(el&&!el.textContent.trim())el.textContent='₹ 0.00';});
-  }
+  const c = (typeof summaryCalculatedValues==='function') ? summaryCalculatedValues() : {};
+  const keys = {
+    summaryOpeningValue:'opening', summarySalesValue:'sales', summaryPurchaseValue:'purchase',
+    summarySalesReturnValue:'salesReturn', summaryPurchaseReturnValue:'purchaseReturn',
+    summaryReceiptsValue:'receipts', summaryPaymentsValue:'payments', summaryClosingValue:'closing',
+    summaryStockChangeValue:'stockChange', summaryReceivableValue:'receivable', summaryPayableValue:'payable',
+    summaryStockSaleValue:'stockSale', summaryProfitValue:'profit'
+  };
+  Object.keys(keys).forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const key=keys[id];
+    let value=0;
+    try { value=getSummaryValue(key, Number(c[key]||0)); } catch(e) { value=Number(c[key]||0); }
+    el.textContent=summaryDisplayValue(key,value);
+    el.style.display='block'; el.style.visibility='visible'; el.style.opacity='1';
+  });
+  const sc=document.getElementById('summaryStockChange'); if(sc){const v=Number(getSummaryValue('stockChange',c.stockChange||0));sc.className=v>=0?'green':'red';}
+  const pr=document.getElementById('summaryProfit'); if(pr){const v=Number(getSummaryValue('profit',c.profit||0));pr.className=v>=0?'green':'red';}
 }
 // Run after the dashboard DOM is painted as well as immediately.
 renderTodaySummaryValues();
@@ -613,7 +608,12 @@ function summaryCalculatedValues(){
   const saleValue=db.stock.reduce((a,x)=>a+(Number(x.qty)||0)*(Number(x.saleRate??x.rate)||0),0);
   const stockChange=purchaseValue-openingValue;
   const profit=saleValue-purchaseValue;
-  return {opening:openingValue,sales,purchase,salesReturn,purchaseReturn,receipts,payments,closing:purchaseValue,stockChange,receivable:rec,payable:pay,stockSale:saleValue,profit};
+  const salesQty=Object.values(soldToday).reduce((a,v)=>a+Number(v||0),0);
+  const purchaseQty=Object.values(purchasedToday).reduce((a,v)=>a+Number(v||0),0);
+  const salesReturnQty=Object.values(salesReturnedToday).reduce((a,v)=>a+Number(v||0),0);
+  const purchaseReturnQty=Object.values(purchaseReturnedToday).reduce((a,v)=>a+Number(v||0),0);
+  const stockChangeQty=closingQty-openingQty;
+  return {opening:openingQty,sales:salesQty,purchase:purchaseQty,salesReturn:salesReturnQty,purchaseReturn:purchaseReturnQty,receipts,payments,closing:closingQty,stockChange:stockChangeQty,receivable:rec,payable:pay,stockSale:saleValue,profit};
 }
 function getSummaryValue(key, calculated){const v=localStorage.getItem(summaryOverrideKey(key));return v===null?calculated:Number(v);}
 function editSummaryField(key){
