@@ -109,6 +109,8 @@ html,body{overflow-x:hidden}
 .table-wrap table{min-width:900px}
 @media(max-width:700px){.table-wrap{overflow-x:auto}.table-wrap table{min-width:900px}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -1044,10 +1046,75 @@ function partyForm(type,id=null){let arr=type==='customer'?db.customers:db.suppl
 function saveParty(type,id){let arr=type==='customer'?db.customers:db.suppliers,x={id:id||Date.now(),name:document.getElementById('pn').value.trim(),phone:document.getElementById('pp').value.trim(),gstin:document.getElementById('pg').value.trim(),address:document.getElementById('pa2').value.trim()};if(!x.name)return toast('Name required');let i=arr.findIndex(z=>z.id===id);if(i<0)arr.push(x);else arr[i]=x;save();closeModal();parties(type);toast('Saved')}
 function delParty(type,id){if(confirm('Delete this record?')){let arr=type==='customer'?db.customers:db.suppliers;arr.splice(arr.findIndex(x=>x.id===id),1);save();parties(type)}}
 
-function reports(){
-let sales=db.invoices.reduce((a,x)=>a+x.grand,0),pur=db.purchases.reduce((a,x)=>a+x.total,0),gst=db.invoices.reduce((a,x)=>a+x.gst,0);
-document.getElementById('app').innerHTML=`<section class="page"><h2>📊 Reports</h2><div class="cards">${card('Sales',money(sales),'Gross sales','green')}${card('Purchase',money(pur),'Gross purchase','orange')}${card('GST Collected',money(gst),'Invoice GST','blue')}${card('Difference',money(sales-pur),'Sales - Purchase','purple')}</div><div class="section-title">Invoice Report</div><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Taxable</th><th>GST</th><th>Total</th></tr>${db.invoices.map(x=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.taxable)}</td><td>${money(x.gst)}</td><td>${money(x.grand)}</td></tr>`).join('')||'<tr><td colspan="6">No data.</td></tr>'}</table></div><div class="actions"><button class="btn primary" onclick="window.print()">Print Report</button></div></section>`
+function getERPReportData(section){
+  const moneyOrUnit=(n)=>money(Number(n||0));
+  const today=new Date().toLocaleDateString('en-IN');
+  const c=(typeof summaryCalculatedValues==='function')?summaryCalculatedValues():{};
+  const val=(k)=>{try{return getSummaryValue(k,Number(c[k]||0))}catch(e){return Number(c[k]||0)}};
+  const unit=(k,n)=>{const qty=['opening','sales','purchase','salesReturn','purchaseReturn','closing','stockChange'];return qty.includes(k)?`${Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})} Units`:moneyOrUnit(n)};
+  const map=(cols,rows,title)=>({title,cols,rows});
+  const data={};
+  data.dashboard=map(['Particular','Value'],[
+    ['Opening Stock',unit('opening',val('opening'))],['Sales',unit('sales',val('sales'))],['Purchase',unit('purchase',val('purchase'))],
+    ['Sales Return',unit('salesReturn',val('salesReturn'))],['Purchase Return',unit('purchaseReturn',val('purchaseReturn'))],
+    ['Receipt Today',moneyOrUnit(val('receipts'))],['Payment Today',moneyOrUnit(val('payments'))],['Closing Stock',unit('closing',val('closing'))],
+    ['Stock Change',unit('stockChange',val('stockChange'))],['Pending Receivable',moneyOrUnit(val('receivable'))],['Pending Payable',moneyOrUnit(val('payable'))],
+    ['Stock Sale Value',moneyOrUnit(val('stockSale'))],['Expected Profit',moneyOrUnit(val('profit'))]
+  ],`Today's Summary — ${today}`);
+  data.billing=map(['Invoice','Date','Customer','Mobile','Total','Received','Outstanding','Status'],db.invoices.map(x=>[x.no,x.date,x.customer,x.customerPhone||'-',money(x.grand),money(x.receivedAmount||0),money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0))),x.paymentStatus||x.status||'Outstanding']),'GST Billing / Sales');
+  data.stock=map(['Item','Category','HSN','Unit','Qty','Min','Purchase Rate','Sales Rate','Stock Value'],db.stock.map(x=>[x.name,x.category,x.hsn||'-',x.unit,x.qty,x.min??0,money(x.rate),money(x.saleRate??x.rate),money((x.qty||0)*(x.rate||0))]),'Stock Report');
+  data.purchase=map(['Bill No','Date','Supplier','Mobile','Total','Paid','Outstanding','Status'],db.purchases.map(x=>[x.ref||'-',x.date,x.supplier,x.supplierPhone||'-',money(x.total),money(x.paidAmount||0),money(x.outstandingAmount||0),x.paymentStatus||x.status||'Outstanding']),'Purchase Report');
+  data.rate=map(['Item','Category','Unit','Purchase Rate','Sales Rate','Profit/Unit','GST'],db.stock.map(x=>[x.name,x.category,x.unit,money(x.rate),money(x.saleRate??x.rate),money((x.saleRate??x.rate)-(x.rate||0)),`${x.gst||0}%`]),'Rate Checklist');
+  data.purchaseReturn=map(['Date','Supplier','Reference','Amount','Status'],(db.purchaseReturns||[]).map(x=>[x.date,x.supplier||'-',x.ref||'-',money(x.total||x.amount||0),x.status||'Success']),'Purchase Return Report');
+  data.salesReturn=map(['Date','Customer','Reference','Amount','Status'],(db.salesReturns||[]).map(x=>[x.date,x.customer||'-',x.ref||'-',money(x.total||x.amount||0),x.status||'Success']),'Sales Return Report');
+  data.receivable=map(['Invoice','Customer','Date','Total','Received','Outstanding','Status'],db.invoices.filter(x=>Number(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0)))>0).map(x=>[x.no,x.customer,x.date,money(x.grand),money(x.receivedAmount||0),money(x.outstandingAmount??Math.max(0,(x.grand||0)-(x.receivedAmount||0))),x.paymentStatus||x.status||'Outstanding']),'Receivable Report');
+  data.payable=map(['Date','Supplier','Bill No','Total','Paid','Outstanding','Status'],db.purchases.filter(x=>Number(x.outstandingAmount||0)>0 || (x.status&&x.status!=='Paid')).map(x=>[x.date,x.supplier,x.ref||'-',money(x.total),money(x.paidAmount||0),money(x.outstandingAmount||0),x.paymentStatus||x.status||'Outstanding']),'Payable Report');
+  data.customers=map(['Name','Mobile','GSTIN','Address'],db.customers.map(x=>[x.name,x.phone||'-',x.gstin||'-',x.address||'-']),'Customers Report');
+  data.suppliers=map(['Name','Mobile','GSTIN','Address'],db.suppliers.map(x=>[x.name,x.phone||'-',x.gstin||'-',x.address||'-']),'Suppliers Report');
+  data.transactions=map(['Date','Particular','Type','Amount','Payment Mode'],db.transactions.map(x=>[x.date,x.particular,x.type,money(x.amount),x.paymentMode||'-']),'Transactions Report');
+  data.settings=map(['Setting','Value'],[['Company',db.settings.company],['Address',db.settings.address],['GSTIN',db.settings.gstin||'-'],['Phone',db.settings.phone||'-'],['Invoice Prefix',db.settings.prefix||'GP'],['Default GST',`${db.settings.defaultGST||0}%`]],'Settings Report');
+  if(isAdminUser()) data.users=map(['Name','Username','Role','Active'],users.map(x=>[x.name||'-',x.username||'-',x.role||'-',x.active?'Yes':'No']),'Login Users Report');
+  const aliases={sales:'billing',invoices:'billing',gst:'billing',purchases:'purchase',returns:'salesReturn'};
+  return section==='all'?Object.values(data):[data[aliases[section]||section]||data.dashboard];
 }
+async function ensurePDFLibraries(){
+  if(window.jspdf?.jsPDF) return true;
+  const load=(src)=>new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=src;sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)});
+  try{await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');return !!window.jspdf?.jsPDF}catch(e){toast('PDF library could not load. Check internet.');return false}
+}
+async function downloadERPReport(section='all'){
+  if(!await ensurePDFLibraries()) return;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'});
+  const reports=getERPReportData(section);
+  reports.forEach((r,idx)=>{
+    if(idx) doc.addPage();
+    doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(90,43,11);doc.text('Ganesh Plywood',40,42);
+    doc.setFontSize(12);doc.setTextColor(70,70,70);doc.text(r.title,40,62);doc.setFontSize(9);doc.text('Designed by SSS Technology',40,78);
+    const rows=(r.rows&&r.rows.length)?r.rows:[['No records found','','','','','','','','']];
+    doc.autoTable({startY:92,head:[r.cols],body:rows,theme:'grid',styles:{fontSize:8,cellPadding:4,overflow:'linebreak'},headStyles:{fillColor:[90,43,11],textColor:255},margin:{left:40,right:40},didDrawPage:(d)=>{doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text(`Ganesh Plywood ERP • ${new Date().toLocaleString('en-IN')}`,40,doc.internal.pageSize.height-18);doc.text(`Page ${d.pageNumber}`,doc.internal.pageSize.width-70,doc.internal.pageSize.height-18)}});
+  });
+  const suffix=section==='all'?'all-erp-reports':section;doc.save(`ganesh-plywood-${suffix}-${new Date().toISOString().slice(0,10)}.pdf`);toast('PDF downloaded successfully');
+}
+function reports(){
+  const sales=db.invoices.reduce((a,x)=>a+Number(x.grand||0),0),pur=db.purchases.reduce((a,x)=>a+Number(x.total||0),0),gst=db.invoices.reduce((a,x)=>a+Number(x.gst||0),0);
+  const cards=[['dashboard','📊','Dashboard / Today Summary'],['billing','🧾','GST Billing / Sales'],['stock','📦','Stock'],['purchase','🛒','Purchase'],['rate','💹','Rate Checklist'],['purchaseReturn','↪️','Purchase Return'],['salesReturn','↩️','Sales Return'],['receivable','💰','Receivable'],['payable','💳','Payable'],['customers','👥','Customers'],['suppliers','🚚','Suppliers'],['transactions','💼','Transactions'],['settings','⚙️','Settings']];
+  document.getElementById('app').innerHTML=`<section class="page"><div class="actions" style="justify-content:space-between"><h2 style="margin:0">📊 Reports</h2><button class="btn primary" onclick="downloadERPReport('all')">⬇️ Download All Reports PDF</button></div>
+  <div class="cards">${card('Sales',money(sales),'Gross sales','green')}${card('Purchase',money(pur),'Gross purchase','orange')}${card('GST Collected',money(gst),'Invoice GST','blue')}${card('Difference',money(sales-pur),'Sales - Purchase','purple')}</div>
+  <div class="panel" style="margin-top:14px;border:2px solid #ead8c7;background:#fffaf5"><h3 style="margin:0 0 8px">📚 PDF Report Downloads</h3><div class="sub" style="margin-bottom:12px">एकाच PDF मध्ये सर्व reports किंवा प्रत्येक report स्वतंत्र PDF मध्ये download करा.</div><div class="actions" style="flex-wrap:wrap"><button class="btn primary" onclick="downloadERPReport('all')">📚 Download All Reports — One PDF</button><button class="btn light" onclick="printReportsPage()">🖨️ Print Reports List</button></div></div><div class="section-title">📄 Separate PDF Reports</div><div class="cards">${cards.map(x=>`<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><div style="font-size:22px">${x[1]}</div><b>${x[2]}</b><div class="sub">Independent PDF report</div></div><button class="btn success" onclick="downloadERPReport('${x[0]}')">⬇️ Download PDF</button></div>`).join('')}</div>
+  <div class="section-title">Invoice Report</div><div class="panel table-wrap"><table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Taxable</th><th>GST</th><th>Total</th></tr>${db.invoices.map(x=>`<tr><td>${x.no}</td><td>${x.date}</td><td>${esc(x.customer)}</td><td>${money(x.taxable)}</td><td>${money(x.gst)}</td><td>${money(x.grand)}</td></tr>`).join('')||'<tr><td colspan="6">No data.</td></tr>'}</table></div></section>`;
+}
+
+
+function printReportsPage(){
+  const w=window.open('','_blank'); if(!w)return;
+  w.document.write(`<html><head><title>Ganesh Plywood Reports</title><style>body{font-family:Arial;padding:28px}h1{color:#5a2b0b}.item{border:1px solid #ddd;padding:10px;margin:7px 0;border-radius:8px}.brand{color:#666}</style></head><body><h1>Ganesh Plywood — Reports</h1><div class="brand">Designed by SSS Technology</div><hr>${cardsForPrint()}</body></html>`);
+  w.document.close();
+}
+function cardsForPrint(){
+  const names=['Dashboard / Today Summary','GST Billing / Sales','Stock','Purchase','Rate Checklist','Purchase Return','Sales Return','Receivable','Payable','Customers','Suppliers','Transactions','Settings'];
+  return names.map((n,i)=>`<div class="item"><b>${i+1}. ${n}</b><div>Separate PDF available from Reports menu</div></div>`).join('');
+}
+
 function transactions(){
  document.getElementById('app').innerHTML=`<section class="page"><h2>💼 Recent Transactions</h2>
  <div class="actions"><input class="search" id="txnSearch" placeholder="Search transaction..." oninput="renderTransactions()"><button class="btn primary" onclick="openPage('Dashboard')">← Dashboard</button></div>
