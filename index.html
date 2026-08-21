@@ -412,17 +412,17 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
 <button class="btn light" onclick="editTodaySummary()">✏️ Edit All</button>
 <button class="btn danger" onclick="deleteTodaySummary()">🗑️ Delete All Edits</button>
 </div>
-<div class="summary-row"><span>Opening Stock (Units)</span><b class="orange" id="summaryOpeningValue">₹ 0.00</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales (Units)</span><b class="green" id="summarySalesValue">₹ 0.00</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase (Units)</span><b class="orange" id="summaryPurchaseValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
-<div class="summary-row"><span>Sales Return (Units)</span><b class="red" id="summarySalesReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
-<div class="summary-row"><span>Purchase Return (Units)</span><b class="blue" id="summaryPurchaseReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Opening Stock</span><b class="orange" id="summaryOpeningValue">₹ 0.00</b><span class="summary-actions no-print" data-key="opening"><button class="btn light" onclick="editSummaryField('opening')">✏️</button><button class="btn danger" onclick="deleteSummaryField('opening')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales</span><b class="green" id="summarySalesValue">₹ 0.00</b><span class="summary-actions no-print" data-key="sales"><button class="btn light" onclick="editSummaryField('sales')">✏️</button><button class="btn danger" onclick="deleteSummaryField('sales')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase</span><b class="orange" id="summaryPurchaseValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchase"><button class="btn light" onclick="editSummaryField('purchase')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchase')">🗑️</button></span></div>
+<div class="summary-row"><span>Sales Return</span><b class="red" id="summarySalesReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="salesReturn"><button class="btn light" onclick="editSummaryField('salesReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('salesReturn')">🗑️</button></span></div>
+<div class="summary-row"><span>Purchase Return</span><b class="blue" id="summaryPurchaseReturnValue">₹ 0.00</b><span class="summary-actions no-print" data-key="purchaseReturn"><button class="btn light" onclick="editSummaryField('purchaseReturn')">✏️</button><button class="btn danger" onclick="deleteSummaryField('purchaseReturn')">🗑️</button></span></div>
 <div class="summary-row"><span>Receipt Today</span><b class="green" id="summaryReceiptsValue">₹ 0.00</b><span class="summary-actions no-print" data-key="receipts"><button class="btn light" onclick="editSummaryField('receipts')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receipts')">🗑️</button></span></div>
 <div class="summary-row"><span>Payment Today</span><b class="red" id="summaryPaymentsValue">₹ 0.00</b><span class="summary-actions no-print" data-key="payments"><button class="btn light" onclick="editSummaryField('payments')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payments')">🗑️</button></span></div>
-<div class="summary-row"><span>Closing Stock (Units)</span><b class="purple" id="summaryClosingValue">₹ 0.00</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
-<div class="summary-row"><span>Stock Change (Units)</span><b id="summaryStockChange" class="green"><span id="summaryStockChangeValue">₹ 0.00</span></b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
-<div class="summary-row"><span>Pending Receivable</span><b class="blue" id="summaryReceivableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
-<div class="summary-row"><span>Pending Payable</span><b class="red" id="summaryPayableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
+<div class="summary-row"><span>Closing Stock</span><b class="purple" id="summaryClosingValue">₹ 0.00</b><span class="summary-actions no-print" data-key="closing"><button class="btn light" onclick="editSummaryField('closing')">✏️</button><button class="btn danger" onclick="deleteSummaryField('closing')">🗑️</button></span></div>
+<div class="summary-row"><span>Stock Change</span><b id="summaryStockChange" class="green"><span id="summaryStockChangeValue">₹ 0.00</span></b><span class="summary-actions no-print" data-key="stockChange"><button class="btn light" onclick="editSummaryField('stockChange')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockChange')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Receivable (Cash ₹)</span><b class="blue" id="summaryReceivableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="receivable"><button class="btn light" onclick="editSummaryField('receivable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('receivable')">🗑️</button></span></div>
+<div class="summary-row"><span>Pending Payable (Cash ₹)</span><b class="red" id="summaryPayableValue">₹ 0.00</b><span class="summary-actions no-print" data-key="payable"><button class="btn light" onclick="editSummaryField('payable')">✏️</button><button class="btn danger" onclick="deleteSummaryField('payable')">🗑️</button></span></div>
 <div class="summary-row"><span>Stock Sale Value</span><b class="green" id="summaryStockSaleValue">₹ 0.00</b><span class="summary-actions no-print" data-key="stockSale"><button class="btn light" onclick="editSummaryField('stockSale')">✏️</button><button class="btn danger" onclick="deleteSummaryField('stockSale')">🗑️</button></span></div>
 <div class="summary-row"><span>Expected Profit</span><b id="summaryProfit" class="green"><span id="summaryProfitValue">₹ 0.00</span></b><span class="summary-actions no-print" data-key="profit"><button class="btn light" onclick="editSummaryField('profit')">✏️</button><button class="btn danger" onclick="deleteSummaryField('profit')">🗑️</button></span></div>
 </aside>
@@ -513,11 +513,12 @@ applyAdminSummaryControls();
 }
 
 function summaryDisplayValue(key, value){
-  const n=Number(value||0);
-  // Stock movement fields are quantities; financial fields remain in rupees.
+  const n=Number(value);
+  const safe=Number.isFinite(n)?n:0;
+  // Stock movement fields are quantities; pending receivable/payable and other financial fields remain in rupees.
   const qtyKeys=['opening','sales','purchase','salesReturn','purchaseReturn','closing','stockChange'];
-  if(qtyKeys.includes(key)) return `${n.toLocaleString('en-IN',{maximumFractionDigits:2})} Units`;
-  return money(Number.isFinite(n)?n:0);
+  if(qtyKeys.includes(key)) return `${safe.toLocaleString('en-IN',{maximumFractionDigits:2})} Units`;
+  return money(safe);
 }
 function renderTodaySummaryValues(){
   const c = (typeof summaryCalculatedValues==='function') ? summaryCalculatedValues() : {};
