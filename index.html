@@ -138,7 +138,6 @@ html,body{overflow-x:hidden}
 </style>
 
 
-<style id="sss-branch-final-css">#sssBranchManagement{padding:12px}#sssBranchManagement .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sss-branch-check{display:flex;gap:8px;padding:8px;border:1px solid #ddd;border-radius:7px}.sss-branch-check input{width:18px;height:18px}@media(max-width:700px){#sssBranchManagement .grid2{grid-template-columns:1fr}}</style>
 <style id="sss-branch-complete-css">
 #sssBranchManagement{box-sizing:border-box;width:100%;padding:12px}
 .sss-branch-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -195,7 +194,68 @@ html,body{overflow-x:hidden}
 
 
 <button type="button" class="btn primary" onclick="sssOpenBranches()" style="margin:12px">🏢 Multiple Branch</button>
-<script type="text/javascript" id="sss-erp-all-js">
+<section id="sssBranchManagement" class="page" style="display:none">
+  <h2>🏢 Multiple Branch Management</h2>
+
+  <div class="panel">
+    <div class="sss-branch-top">
+      <div>
+        <b>Active Branch</b>
+        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
+      </div>
+      <div class="sss-branch-actions">
+        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
+        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
+    <input type="hidden" id="sssBranchEditId">
+    <div class="sss-branch-grid">
+      <div class="field">
+        <label>Branch Name *</label>
+        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
+      </div>
+      <div class="field">
+        <label>Branch Code *</label>
+        <input id="sssBranchCode" placeholder="e.g. SNG01">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
+      </div>
+      <div class="field">
+        <label>Address</label>
+        <input id="sssBranchAddress" placeholder="Branch address">
+      </div>
+    </div>
+    <div class="sss-branch-actions">
+      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
+      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📋 All Branches</h3>
+    <div class="table-wrap">
+      <table class="sss-branch-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
+            <th>Address</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sssBranchRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<script id="sss-technology-erp-all-in-one-js">
+
 
 
 // Billing payment helpers - loaded as executable JavaScript (not inside a src script tag).
@@ -1681,66 +1741,9 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 (()=>{const K='SSS_ERP_BRANCHES_V1',R='SSS_ERP_BRANCH_RIGHTS_V1',A='SSS_ERP_ACTIVE_BRANCH_V1',D={id:'MAIN',name:'SSS Technology - Main Branch',code:'MAIN',mobile:'',address:''};const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}},wr=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),bs=()=>{let a=rd(K,[]);if(!a.length){a=[D];wr(K,a)}return a},aid=()=>localStorage.getItem(A)||bs()[0].id;window.sssOpenBranches=()=>{document.getElementById('sssBranchManagement').style.display='block';sssRenderBranches();sssLoadBranchRights()};window.sssRenderBranches=()=>{let a=bs(),id=aid(),s=document.getElementById('sssBranchSelect'),t=document.getElementById('sssBranchRows'),x=a.find(z=>z.id===id);if(s)s.innerHTML=a.map(z=>`<option value="${z.id}" ${z.id===id?'selected':''}>${z.name} — ${z.code}</option>`).join('');if(t)t.innerHTML=a.map(z=>`<tr><td>${z.name}</td><td>${z.code}</td><td>${z.mobile||''}</td><td>${z.address||''}</td><td>${z.id===id?'🟢 Active':'Inactive'}</td><td><button class="btn light" onclick="sssEditBranch('${z.id}')">✏️ Edit</button></td></tr>`).join('');if(x)document.getElementById('sssActiveBranchName').value=x.name+' ('+x.code+')'};window.sssSwitchBranch=id=>{if(!bs().find(x=>x.id===id))return;localStorage.setItem(A,id);sssRenderBranches();sssLoadBranchRights()};window.sssSaveBranch=()=>{let n=sssBranchName.value.trim(),c=sssBranchCode.value.trim().toUpperCase();if(!n||!c)return alert('Branch Name आणि Code टाका');let a=bs(),id=sssBranchSelect.value||'BR_'+Date.now(),i=a.findIndex(x=>x.id===id),o={id,name:n,code:c,mobile:sssBranchMobile.value.trim(),address:sssBranchAddress.value.trim()};i<0?a.push(o):a[i]=o;wr(K,a);localStorage.setItem(A,id);sssRenderBranches();alert('✅ Branch saved')};window.sssEditBranch=id=>{let x=bs().find(z=>z.id===id);if(!x)return;sssBranchSelect.value=id;sssBranchName.value=x.name;sssBranchCode.value=x.code;sssBranchMobile.value=x.mobile||'';sssBranchAddress.value=x.address||''};window.sssClearBranchForm=()=>['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>document.getElementById(id).value='');window.sssDeleteBranch=()=>{let id=sssBranchSelect.value;if(id==='MAIN')return alert('Main Branch delete करता येणार नाही');if(confirm('ही Branch delete करायची?')){let a=bs().filter(x=>x.id!==id);wr(K,a);localStorage.setItem(A,a[0].id);sssRenderBranches()}};window.sssLoadBranchRights=()=>{let u=sssBranchUserId.value,allow=rd(R,{})[u]||[];sssBranchRightsChecks.innerHTML=bs().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allow.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('')};window.sssSaveBranchRights=()=>{let u=sssBranchUserId.value.trim();if(!u)return alert('User ID टाका');let r=rd(R,{});r[u]=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);wr(R,r);alert('✅ Branch rights saved')};addEventListener('DOMContentLoaded',sssRenderBranches)})();
-</script><section id="sssBranchManagement" class="page" style="display:none">
-  <h2>🏢 Multiple Branch Management</h2>
 
-  <div class="panel">
-    <div class="sss-branch-top">
-      <div>
-        <b>Active Branch</b>
-        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
-      </div>
-      <div class="sss-branch-actions">
-        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
-        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
-      </div>
-    </div>
-  </div>
 
-  <div class="panel">
-    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
-    <input type="hidden" id="sssBranchEditId">
-    <div class="sss-branch-grid">
-      <div class="field">
-        <label>Branch Name *</label>
-        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
-      </div>
-      <div class="field">
-        <label>Branch Code *</label>
-        <input id="sssBranchCode" placeholder="e.g. SNG01">
-      </div>
-      <div class="field">
-        <label>Mobile Number</label>
-        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
-      </div>
-      <div class="field">
-        <label>Address</label>
-        <input id="sssBranchAddress" placeholder="Branch address">
-      </div>
-    </div>
-    <div class="sss-branch-actions">
-      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
-      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
-    </div>
-  </div>
 
-  <div class="panel">
-    <h3>📋 All Branches</h3>
-    <div class="table-wrap">
-      <table class="sss-branch-table">
-        <thead>
-          <tr>
-            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
-            <th>Address</th><th>Status</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="sssBranchRows"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<script id="sss-branch-complete-js">
 (function(){
   'use strict';
 
@@ -1952,5 +1955,7 @@ document.addEventListener('DOMContentLoaded',function(){
     sssBranchRefresh();
   });
 })();
-</script></body>
+
+</script>
+</body>
 </html>
