@@ -111,6 +111,14 @@ html,body{overflow-x:hidden}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+#sssRightsSettings{max-width:1100px;margin:auto}
+.rights-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rights-grid label{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #eadfd4;border-radius:8px;background:#fff}
+.rights-grid input{width:18px;height:18px}
+@media(max-width:700px){.rights-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -509,6 +517,101 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
     <button class="btn light" onclick="sssPrintReport()">🖨️ Print Report</button>
   </div>
 </section>
+
+<section id="sssRightsSettings" class="page" style="display:none">
+  <h2>🔐 User Rights Settings</h2>
+  <div class="panel">
+    <h3>👤 Select User / User ID</h3>
+    <div class="grid2">
+      <div class="field">
+        <label>User ID / Email</label>
+        <input id="rightsUserId" placeholder="Enter user ID or email">
+      </div>
+      <div class="field">
+        <label>Role</label>
+        <select id="rightsRole">
+          <option value="staff">Staff</option>
+          <option value="manager">Manager</option>
+          <option value="accountant">Accountant</option>
+          <option value="sales">Sales</option>
+          <option value="purchase">Purchase</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>☑️ Functions Rights</h3>
+    <div class="rights-grid">
+      <label><input type="checkbox" data-right="dashboard_view"> Dashboard View</label>
+      <label><input type="checkbox" data-right="today_summary_view"> Today's Summary View</label>
+      <label><input type="checkbox" data-right="today_summary_edit"> Today's Summary Edit</label>
+      <label><input type="checkbox" data-right="today_summary_delete"> Today's Summary Delete</label>
+
+      <label><input type="checkbox" data-right="billing_view"> Billing View</label>
+      <label><input type="checkbox" data-right="billing_create"> Create Bill</label>
+      <label><input type="checkbox" data-right="billing_edit"> Edit Bill</label>
+      <label><input type="checkbox" data-right="billing_delete"> Delete Bill</label>
+      <label><input type="checkbox" data-right="billing_payment"> Payment / Received Update</label>
+
+      <label><input type="checkbox" data-right="purchase_view"> Purchase View</label>
+      <label><input type="checkbox" data-right="purchase_create"> Create Purchase</label>
+      <label><input type="checkbox" data-right="purchase_edit"> Edit Purchase</label>
+      <label><input type="checkbox" data-right="purchase_delete"> Delete Purchase</label>
+      <label><input type="checkbox" data-right="purchase_payment"> Purchase Payment Update</label>
+
+      <label><input type="checkbox" data-right="stock_view"> Stock View</label>
+      <label><input type="checkbox" data-right="stock_create"> Add Stock</label>
+      <label><input type="checkbox" data-right="stock_edit"> Edit Stock</label>
+      <label><input type="checkbox" data-right="stock_delete"> Delete Stock</label>
+      <label><input type="checkbox" data-right="stock_adjust"> Stock In / Out</label>
+
+      <label><input type="checkbox" data-right="customer_view"> Customers View</label>
+      <label><input type="checkbox" data-right="customer_create"> Customer Create</label>
+      <label><input type="checkbox" data-right="customer_edit"> Customer Edit</label>
+      <label><input type="checkbox" data-right="customer_delete"> Customer Delete</label>
+
+      <label><input type="checkbox" data-right="supplier_view"> Suppliers View</label>
+      <label><input type="checkbox" data-right="supplier_create"> Supplier Create</label>
+      <label><input type="checkbox" data-right="supplier_edit"> Supplier Edit</label>
+      <label><input type="checkbox" data-right="supplier_delete"> Supplier Delete</label>
+
+      <label><input type="checkbox" data-right="reports_view"> Reports View</label>
+      <label><input type="checkbox" data-right="reports_pdf"> PDF Download</label>
+      <label><input type="checkbox" data-right="excel_export"> Excel / CSV Export</label>
+
+      <label><input type="checkbox" data-right="receivable_view"> Receivable View</label>
+      <label><input type="checkbox" data-right="receivable_edit"> Receivable Update</label>
+      <label><input type="checkbox" data-right="payable_view"> Payable View</label>
+      <label><input type="checkbox" data-right="payable_edit"> Payable Update</label>
+
+      <label><input type="checkbox" data-right="expense_create"> Expense Entry</label>
+      <label><input type="checkbox" data-right="ledger_view"> Ledger View</label>
+      <label><input type="checkbox" data-right="workorder_create"> Furniture / Door Work Order</label>
+
+      <label><input type="checkbox" data-right="settings_view"> Settings View</label>
+      <label><input type="checkbox" data-right="user_rights"> User Rights Management</label>
+      <label><input type="checkbox" data-right="all_data_delete"> All Data Delete</label>
+    </div>
+
+    <div class="actions">
+      <button class="btn success" onclick="sssSaveUserRights()">💾 Save Rights</button>
+      <button class="btn light" onclick="sssLoadUserRights()">↻ Load Rights</button>
+      <button class="btn danger" onclick="sssClearUserRights()">🗑️ Clear Rights</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📋 Saved User Rights</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User ID</th><th>Role</th><th>Rights Count</th><th>Action</th></tr></thead>
+        <tbody id="sssRightsRows"><tr><td colspan="4">No rights saved.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 <div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed by <b>SSS Technology</b> for Ganesh Plywood</span></div></section>`;
 renderTodaySummaryValues();
 applyAdminSummaryControls();
@@ -726,7 +829,75 @@ function printTodaySummary(){
   if(!box)return toast('Today summary not available');
   const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
   const date=new Date().toLocaleDateString('en-IN');
-  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div></body></html>`;
+  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
+<script>
+/* ===== SSS Technology - User Rights Management ===== */
+(function(){
+  const RIGHTS_KEY='SSS_ERP_USER_RIGHTS_V1';
+  const defaultRights = ['dashboard_view','today_summary_view','billing_view','purchase_view','stock_view','customer_view','supplier_view','reports_view'];
+
+  function getAllRights(){
+    try{return JSON.parse(localStorage.getItem(RIGHTS_KEY)||'{}')}catch(e){return {}}
+  }
+  function setAllRights(x){localStorage.setItem(RIGHTS_KEY,JSON.stringify(x));}
+
+  window.sssSaveUserRights=function(){
+    const uid=(document.getElementById('rightsUserId')?.value||'').trim();
+    const role=document.getElementById('rightsRole')?.value||'staff';
+    if(!uid){alert('Enter User ID / Email');return;}
+    const rights={};
+    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>rights[cb.dataset.right]=!!cb.checked);
+    const all=getAllRights();
+    all[uid]={userId:uid,role,rights,updatedAt:new Date().toISOString()};
+    setAllRights(all);
+    sssRenderRights();
+    alert('✅ User rights saved for '+uid);
+  };
+
+  window.sssLoadUserRights=function(){
+    const uid=(document.getElementById('rightsUserId')?.value||'').trim();
+    if(!uid){alert('Enter User ID / Email');return;}
+    const data=getAllRights()[uid];
+    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>cb.checked=!!(data?.rights?.[cb.dataset.right]));
+    if(data?.role)document.getElementById('rightsRole').value=data.role;
+    if(data) alert('Rights loaded'); else alert('No saved rights for this user');
+  };
+
+  window.sssClearUserRights=function(){
+    const uid=(document.getElementById('rightsUserId')?.value||'').trim();
+    if(!uid)return;
+    if(!confirm('Clear all rights for '+uid+'?'))return;
+    const all=getAllRights();delete all[uid];setAllRights(all);
+    document.querySelectorAll('#sssRightsSettings input[data-right]').forEach(cb=>cb.checked=false);
+    sssRenderRights();
+  };
+
+  window.sssOpenRightsForUser=function(uid){
+    const e=document.getElementById('sssRightsSettings');if(e)e.style.display='block';
+    const input=document.getElementById('rightsUserId');if(input)input.value=uid||'';
+    sssLoadUserRights();
+  };
+
+  window.sssHasRight=function(uid,right){
+    const all=getAllRights(), data=all[uid];
+    if(data?.role==='admin')return true;
+    return !!data?.rights?.[right];
+  };
+
+  window.sssRenderRights=function(){
+    const tb=document.getElementById('sssRightsRows');if(!tb)return;
+    const all=getAllRights(), rows=Object.values(all);
+    tb.innerHTML=rows.map(x=>{
+      const count=Object.values(x.rights||{}).filter(Boolean).length;
+      return `<tr><td>${typeof esc==='function'?esc(x.userId):x.userId}</td><td>${x.role}</td><td>${count}</td><td><button class="btn light" onclick="sssOpenRightsForUser('${String(x.userId).replace(/'/g,"\\'")}')">✏️ Edit</button></td></tr>`;
+    }).join('')||'<tr><td colspan="4">No rights saved.</td></tr>';
+  };
+
+  window.addEventListener('load',()=>setTimeout(sssRenderRights,300));
+})();
+</script>
+
+</body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
 function fillBillingCustomer(){
