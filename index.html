@@ -752,107 +752,7 @@ function printTodaySummary(){
   const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
   const date=new Date().toLocaleDateString('en-IN');
   const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
-<script id="sss-advanced-js">
-(function(){
-  const KEY='SSS_ERP_ADVANCED_SETTINGS_V1', AUDIT='SSS_ERP_AUDIT_V1';
 
-  function read(k, d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}}
-  function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
-  function now(){return new Date().toLocaleString()}
-  function audit(action,details){
-    const a=read(AUDIT,[]);
-    a.unshift({date:now(),user:localStorage.getItem('currentUser')||'Admin',action,details});
-    write(AUDIT,a.slice(0,200)); sssRenderAudit();
-  }
-  function getDB(){
-    try{
-      if(typeof db!=='undefined') return db;
-    }catch(e){}
-    return null;
-  }
-  window.sssOpenAdvanced=function(){
-    const p=document.getElementById('sssAdvancedERP'); if(p)p.style.display='block';
-    sssLoadAdvancedSettings(); sssRenderAudit();
-  };
-  window.sssSaveAdvancedSettings=function(){
-    const x={
-      lowStock:!!document.getElementById('advLowStockAlert')?.checked,
-      outstanding:!!document.getElementById('advOutstandingAlert')?.checked,
-      backup:!!document.getElementById('advBackupReminder')?.checked,
-      autoCustomer:!!document.getElementById('advAutoCustomer')?.checked,
-      autoSupplier:!!document.getElementById('advAutoSupplier')?.checked,
-      autoInvoice:!!document.getElementById('advAutoInvoiceNo')?.checked
-    };
-    write(KEY,x); audit('Settings Updated','Advanced ERP settings saved'); alert('✅ Advanced settings saved');
-  };
-  window.sssLoadAdvancedSettings=function(){
-    const x=read(KEY,{});
-    ['lowStock','outstanding','backup','autoCustomer','autoSupplier','autoInvoice'].forEach(k=>{
-      const id={'lowStock':'advLowStockAlert','outstanding':'advOutstandingAlert','backup':'advBackupReminder','autoCustomer':'advAutoCustomer','autoSupplier':'advAutoSupplier','autoInvoice':'advAutoInvoiceNo'}[k];
-      const el=document.getElementById(id); if(el)el.checked=!!x[k];
-    });
-  };
-  window.sssAdvLowStock=function(){
-    const d=getDB(), items=d?.stock||[];
-    const low=items.filter(x=>Number(x.qty||0)<=Number(x.min||0));
-    alert(low.length?('⚠️ Low Stock: '+low.map(x=>x.name+' ('+(x.qty||0)+')').join(', ')):'✅ No low-stock items');
-    audit('Low Stock Check',low.length+' item(s) below minimum');
-  };
-  window.sssAdvOutstanding=function(){
-    const d=getDB(), inv=d?.invoices||[], pur=d?.purchases||[];
-    const rec=inv.reduce((s,x)=>s+Math.max(0,Number(x.grand||x.total||0)-Number(x.receivedAmount||x.received||0)),0);
-    const pay=pur.reduce((s,x)=>s+Math.max(0,Number(x.total||x.grand||0)-Number(x.paidAmount||x.paid||0)),0);
-    alert('Receivable: ₹ '+rec.toFixed(2)+'\nPayable: ₹ '+pay.toFixed(2));
-    audit('Outstanding Check','Receivable ₹'+rec.toFixed(2)+', Payable ₹'+pay.toFixed(2));
-  };
-  window.sssAdvTodayReport=function(){
-    const d=getDB()||{}, today=new Date().toISOString().slice(0,10);
-    const arr=(d.invoices||[]).filter(x=>String(x.date||'').slice(0,10)===today);
-    const sales=arr.reduce((s,x)=>s+Number(x.grand||x.total||0),0);
-    alert('Today Sales: ₹ '+sales.toFixed(2)+'\nInvoices: '+arr.length);
-    audit('Today Report','Sales ₹'+sales.toFixed(2)+', '+arr.length+' invoice(s)');
-  };
-  window.sssAdvAudit=function(){sssRenderAudit();document.getElementById('sssAdvAuditRows')?.scrollIntoView({behavior:'smooth'});};
-  window.sssRenderAudit=function(){
-    const tb=document.getElementById('sssAdvAuditRows'); if(!tb)return;
-    const a=read(AUDIT,[]);
-    tb.innerHTML=a.map(x=>`<tr><td>${x.date}</td><td>${x.user}</td><td>${x.action}</td><td>${x.details}</td></tr>`).join('')||'<tr><td colspan="4">No activity yet.</td></tr>';
-  };
-  window.sssAdvancedAuditClear=function(){
-    if(confirm('Clear audit log?')){write(AUDIT,[]);sssRenderAudit();}
-  };
-  window.sssAdvancedBackup=function(){
-    const payload={exportedAt:new Date().toISOString(),localStorage:{}};
-    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);payload.localStorage[k]=localStorage.getItem(k)}
-    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sss-technology-erp-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
-    audit('Backup','ERP local data backup downloaded');
-  };
-  window.sssAdvancedRestore=function(){
-    const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
-    input.onchange=()=>{const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{
-      try{
-        const p=JSON.parse(r.result);if(!p.localStorage)throw new Error('Invalid backup');
-        Object.entries(p.localStorage).forEach(([k,v])=>localStorage.setItem(k,v));
-        audit('Restore','ERP backup restored');alert('✅ Backup restored. Reload the app.');
-      }catch(e){alert('❌ Invalid backup file')}
-    };r.readAsText(f)};input.click();
-  };
-  window.sssAdvancedSearch=function(q){
-    const box=document.getElementById('sssAdvSearchResults');if(!box)return;
-    q=(q||'').toLowerCase().trim();if(!q){box.textContent='Type to search ERP data.';return}
-    const d=getDB()||{}, out=[];
-    ['stock','customers','suppliers','invoices','purchases'].forEach(type=>{
-      (d[type]||[]).forEach(x=>{
-        const text=JSON.stringify(x).toLowerCase();
-        if(text.includes(q))out.push({type,x});
-      });
-    });
-    box.innerHTML=out.slice(0,30).map(o=>`<div class="sss-adv-result"><b>${o.type}</b> — ${String(o.x.name||o.x.customerName||o.x.supplierName||o.x.invoiceNo||o.x.id||'Record')}</div>`).join('')||'No matching records.';
-  };
-  document.addEventListener('DOMContentLoaded',()=>{sssLoadAdvancedSettings();sssRenderAudit()});
-})();
-</script>
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
@@ -1624,6 +1524,126 @@ function sssHasFunctionRight(right){
  if(u.role==='Admin')return true;
  const x=sssRightsStore()[u.id]; return !!x?.rights?.[right];
 }
+
+</script>
+
+<script id="sss-advanced-nav">
+document.addEventListener('DOMContentLoaded',function(){
+  try{
+    var host=document.querySelector('#settings .actions, #settings .panel, main');
+    if(host && !document.getElementById('sssAdvancedOpenBtn')){
+      var b=document.createElement('button');
+      b.id='sssAdvancedOpenBtn';
+      b.type='button';
+      b.className='btn primary';
+      b.textContent='⚡ Advanced ERP';
+      b.onclick=function(){ if(window.sssOpenAdvanced) window.sssOpenAdvanced(); };
+      host.appendChild(b);
+    }
+  }catch(e){}
+});
+</script>
+<script id="sss-advanced-js-fixed">
+
+(function(){
+  const KEY='SSS_ERP_ADVANCED_SETTINGS_V1', AUDIT='SSS_ERP_AUDIT_V1';
+
+  function read(k, d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}}
+  function write(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function now(){return new Date().toLocaleString()}
+  function audit(action,details){
+    const a=read(AUDIT,[]);
+    a.unshift({date:now(),user:localStorage.getItem('currentUser')||'Admin',action,details});
+    write(AUDIT,a.slice(0,200)); sssRenderAudit();
+  }
+  function getDB(){
+    try{
+      if(typeof db!=='undefined') return db;
+    }catch(e){}
+    return null;
+  }
+  window.sssOpenAdvanced=function(){
+    const p=document.getElementById('sssAdvancedERP'); if(p)p.style.display='block';
+    sssLoadAdvancedSettings(); sssRenderAudit();
+  };
+  window.sssSaveAdvancedSettings=function(){
+    const x={
+      lowStock:!!document.getElementById('advLowStockAlert')?.checked,
+      outstanding:!!document.getElementById('advOutstandingAlert')?.checked,
+      backup:!!document.getElementById('advBackupReminder')?.checked,
+      autoCustomer:!!document.getElementById('advAutoCustomer')?.checked,
+      autoSupplier:!!document.getElementById('advAutoSupplier')?.checked,
+      autoInvoice:!!document.getElementById('advAutoInvoiceNo')?.checked
+    };
+    write(KEY,x); audit('Settings Updated','Advanced ERP settings saved'); alert('✅ Advanced settings saved');
+  };
+  window.sssLoadAdvancedSettings=function(){
+    const x=read(KEY,{});
+    ['lowStock','outstanding','backup','autoCustomer','autoSupplier','autoInvoice'].forEach(k=>{
+      const id={'lowStock':'advLowStockAlert','outstanding':'advOutstandingAlert','backup':'advBackupReminder','autoCustomer':'advAutoCustomer','autoSupplier':'advAutoSupplier','autoInvoice':'advAutoInvoiceNo'}[k];
+      const el=document.getElementById(id); if(el)el.checked=!!x[k];
+    });
+  };
+  window.sssAdvLowStock=function(){
+    const d=getDB(), items=d?.stock||[];
+    const low=items.filter(x=>Number(x.qty||0)<=Number(x.min||0));
+    alert(low.length?('⚠️ Low Stock: '+low.map(x=>x.name+' ('+(x.qty||0)+')').join(', ')):'✅ No low-stock items');
+    audit('Low Stock Check',low.length+' item(s) below minimum');
+  };
+  window.sssAdvOutstanding=function(){
+    const d=getDB(), inv=d?.invoices||[], pur=d?.purchases||[];
+    const rec=inv.reduce((s,x)=>s+Math.max(0,Number(x.grand||x.total||0)-Number(x.receivedAmount||x.received||0)),0);
+    const pay=pur.reduce((s,x)=>s+Math.max(0,Number(x.total||x.grand||0)-Number(x.paidAmount||x.paid||0)),0);
+    alert('Receivable: ₹ '+rec.toFixed(2)+'\nPayable: ₹ '+pay.toFixed(2));
+    audit('Outstanding Check','Receivable ₹'+rec.toFixed(2)+', Payable ₹'+pay.toFixed(2));
+  };
+  window.sssAdvTodayReport=function(){
+    const d=getDB()||{}, today=new Date().toISOString().slice(0,10);
+    const arr=(d.invoices||[]).filter(x=>String(x.date||'').slice(0,10)===today);
+    const sales=arr.reduce((s,x)=>s+Number(x.grand||x.total||0),0);
+    alert('Today Sales: ₹ '+sales.toFixed(2)+'\nInvoices: '+arr.length);
+    audit('Today Report','Sales ₹'+sales.toFixed(2)+', '+arr.length+' invoice(s)');
+  };
+  window.sssAdvAudit=function(){sssRenderAudit();document.getElementById('sssAdvAuditRows')?.scrollIntoView({behavior:'smooth'});};
+  window.sssRenderAudit=function(){
+    const tb=document.getElementById('sssAdvAuditRows'); if(!tb)return;
+    const a=read(AUDIT,[]);
+    tb.innerHTML=a.map(x=>`<tr><td>${x.date}</td><td>${x.user}</td><td>${x.action}</td><td>${x.details}</td></tr>`).join('')||'<tr><td colspan="4">No activity yet.</td></tr>';
+  };
+  window.sssAdvancedAuditClear=function(){
+    if(confirm('Clear audit log?')){write(AUDIT,[]);sssRenderAudit();}
+  };
+  window.sssAdvancedBackup=function(){
+    const payload={exportedAt:new Date().toISOString(),localStorage:{}};
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);payload.localStorage[k]=localStorage.getItem(k)}
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sss-technology-erp-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
+    audit('Backup','ERP local data backup downloaded');
+  };
+  window.sssAdvancedRestore=function(){
+    const input=document.createElement('input');input.type='file';input.accept='.json,application/json';
+    input.onchange=()=>{const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{
+      try{
+        const p=JSON.parse(r.result);if(!p.localStorage)throw new Error('Invalid backup');
+        Object.entries(p.localStorage).forEach(([k,v])=>localStorage.setItem(k,v));
+        audit('Restore','ERP backup restored');alert('✅ Backup restored. Reload the app.');
+      }catch(e){alert('❌ Invalid backup file')}
+    };r.readAsText(f)};input.click();
+  };
+  window.sssAdvancedSearch=function(q){
+    const box=document.getElementById('sssAdvSearchResults');if(!box)return;
+    q=(q||'').toLowerCase().trim();if(!q){box.textContent='Type to search ERP data.';return}
+    const d=getDB()||{}, out=[];
+    ['stock','customers','suppliers','invoices','purchases'].forEach(type=>{
+      (d[type]||[]).forEach(x=>{
+        const text=JSON.stringify(x).toLowerCase();
+        if(text.includes(q))out.push({type,x});
+      });
+    });
+    box.innerHTML=out.slice(0,30).map(o=>`<div class="sss-adv-result"><b>${o.type}</b> — ${String(o.x.name||o.x.customerName||o.x.supplierName||o.x.invoiceNo||o.x.id||'Record')}</div>`).join('')||'No matching records.';
+  };
+  document.addEventListener('DOMContentLoaded',()=>{sssLoadAdvancedSettings();sssRenderAudit()});
+})();
 
 </script>
 </body>
