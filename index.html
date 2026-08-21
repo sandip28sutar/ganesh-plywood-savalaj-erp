@@ -155,6 +155,25 @@ html,body{overflow-x:hidden}
   .sss-branch-top{align-items:flex-start;flex-direction:column}
 }
 </style>
+
+<style id="sss-hide-branch-menu">
+/* Multiple Branch is not shown as a normal Main Menu item. */
+#nav button[data-p="Multiple Branch"],
+#nav button[data-p="Branch"],
+[data-menu="multiple-branch"],
+.multiple-branch-menu,
+.sss-multiple-branch-menu{display:none!important}
+</style>
+
+<style id="sss-top-branch-switcher-css">
+#sssTopBranchSwitcher{
+  display:inline-flex;align-items:center;gap:6px;margin-left:10px;
+}
+#sssTopBranchSelect{
+  min-width:180px;padding:8px 32px 8px 10px;border:1px solid #d7b994;
+  border-radius:7px;background:#fff;color:#4b250c;font-weight:700;
+}
+</style>
 </head>
 <body>
 
@@ -193,7 +212,7 @@ html,body{overflow-x:hidden}
 
 
 
-<button type="button" class="btn primary" onclick="sssOpenBranches()" style="margin:12px">🏢 Multiple Branch</button>
+
 <section id="sssBranchManagement" class="page" style="display:none">
   <h2>🏢 Multiple Branch Management</h2>
 
@@ -1421,7 +1440,12 @@ function adminDeleteAllData(){
   save(); adminDataControl(); toast('🗑️ All ERP transactional data deleted');
 }
 
-function settings(){const u=getCurrentUser();if(u?.role!=='Admin'){toast('Admin access required');return}document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change Admin Password</button></div><div class="section-title">👥 Multi Login Users</div><div class="actions" data-sss-main-only><button class="btn primary" onclick="sssOpenBranchAssignments()">🔐 Branch-wise Staff Access</button></div><div class="panel"><div class="permission-note"><b>Roles:</b> Admin = full access • Manager = business operations • Staff = sales/stock/customer access. Passwords are device-local; for multi-device secure access use Firebase Login.</div><div class="actions"><button class="btn primary" onclick="userForm()">+ Add User</button></div><div class="table-wrap"><table class="user-table"><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${users.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.username)}</td><td><span class="role-badge">${esc(x.role)}</span></td><td>${x.active?'Active':'Disabled'}</td><td><button class="btn light" onclick="userForm('${x.id}')">Edit</button> <button class="btn ${x.active?'danger':'success'}" onclick="toggleUser('${x.id}')">${x.active?'Disable':'Enable'}</button></td></tr>`).join('')}</tbody></table></div></div>
+function settings(){const u=getCurrentUser();if(u?.role!=='Admin'){toast('Admin access required');return}document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change Admin Password</button></div><div class="section-title">👥 Multi Login Users</div><div class="actions" data-sss-main-only><button class="btn primary" onclick="sssOpenBranchAssignments()">🔐 Branch-wise Staff Access</button></div>
+<div class="actions" data-sss-main-only id="sssBranchAdminTools">
+  <button type="button" class="btn primary" onclick="sssOpenBranches()">🏢 Branch Management</button>
+  <button type="button" class="btn success" onclick="sssOpenMultiBranchReports()">📊 All Branch Reports</button>
+</div>
+<div class="panel"><div class="permission-note"><b>Roles:</b> Admin = full access • Manager = business operations • Staff = sales/stock/customer access. Passwords are device-local; for multi-device secure access use Firebase Login.</div><div class="actions"><button class="btn primary" onclick="userForm()">+ Add User</button></div><div class="table-wrap"><table class="user-table"><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${users.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.username)}</td><td><span class="role-badge">${esc(x.role)}</span></td><td>${x.active?'Active':'Disabled'}</td><td><button class="btn light" onclick="userForm('${x.id}')">Edit</button> <button class="btn ${x.active?'danger':'success'}" onclick="toggleUser('${x.id}')">${x.active?'Disable':'Enable'}</button></td></tr>`).join('')}</tbody></table></div></div>
 <div class="section-title">🔐 User Function Rights</div>
 <div class="panel sss-rights-panel">
   <div class="permission-note">Admin can assign individual functions to each User ID. Tick the required checkboxes and press <b>Save Rights</b>.</div>
@@ -2247,6 +2271,68 @@ window.sssBARenderSelector=function(){
 })();
 </script>
 
+
+<div id="sssTopBranchSwitcher" title="Working Branch">
+  <span>🏢</span>
+  <select id="sssTopBranchSelect" onchange="sssTopBranchChange(this.value)" aria-label="Working Branch"></select>
+</div>
+<script id="sss-top-branch-switcher-js">
+(function(){
+'use strict';
+function getBranches(){
+  try{
+    const a=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
+    return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
+  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
+}
+function currentId(){return localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN'}
+function allowed(){
+  try{
+    if(window.SSS_ACCESS){
+      if(window.SSS_ACCESS.isMainManager())return getBranches().filter(b=>b.isActive!==false);
+      const u=window.SSS_ACCESS.currentUser();
+      return getBranches().filter(b=>window.SSS_ACCESS.assigned(u).includes(String(b.id)) && b.isActive!==false);
+    }
+  }catch(e){}
+  return getBranches().filter(b=>b.isActive!==false);
+}
+function fill(){
+  const el=document.getElementById('sssTopBranchSelect');if(!el)return;
+  const list=allowed();
+  const cur=currentId();
+  el.innerHTML=list.map(b=>`<option value="${String(b.id).replace(/"/g,'&quot;')}">${String(b.name)}${b.code?' ('+String(b.code)+')':''}</option>`).join('');
+  if(list.some(b=>String(b.id)===String(cur)))el.value=cur;
+  else if(list[0]){
+    el.value=list[0].id;
+    localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',list[0].id);
+  }
+}
+window.sssTopBranchChange=function(id){
+  const list=allowed(), b=list.find(x=>String(x.id)===String(id));
+  if(!b){alert('⛔ This branch is not assigned to you.');fill();return}
+  localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
+  try{
+    if(typeof window.sssSwitchWorkingBranch==='function'){
+      window.sssSwitchWorkingBranch(String(id));
+    }else if(typeof window.sssSwitchBranch==='function'){
+      window.sssSwitchBranch(String(id));
+    }
+  }catch(e){console.error(e)}
+  fill();
+  // Refresh visible ERP screen after branch change.
+  setTimeout(function(){
+    try{if(typeof nav==='function')nav()}catch(e){}
+    try{if(typeof dashboard==='function')dashboard()}catch(e){}
+    try{if(typeof stock==='function')stock()}catch(e){}
+  },80);
+};
+window.sssRefreshTopBranchSwitcher=fill;
+document.addEventListener('DOMContentLoaded',fill);
+window.addEventListener('sssBranchDataLoaded',fill);
+window.addEventListener('sssActiveBranchChanged',fill);
+})();
+</script>
+
 <div id="sssBranchAccessBadge" style="position:fixed;right:10px;top:10px;z-index:9998;padding:7px 12px;border-radius:18px;background:#fff8ed;border:1px solid #e4c9a5;color:#5a2b0b;font-size:12px;font-weight:700;display:none"></div>
 <style>
 #sssBranchAccessBadge{display:block}
@@ -2398,12 +2484,17 @@ if(typeof oldOpen==='function'){
 // Make the working branch switch enforce assignment.
 const oldSwitch=window.sssSwitchWorkingBranch;
 window.sssSwitchWorkingBranch=function(id){
-  if(!sssCanSeeBranch(id)){
+  if(!window.SSS_ACCESS || !window.SSS_ACCESS.canSee(String(id))){
     alert('⛔ You do not have access to this branch.');
     return;
   }
   localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-  if(typeof oldSwitch==='function')return oldSwitch(id);
+  if(typeof window.sssSwitchWorkingBranchData==='function'){
+    return window.sssSwitchWorkingBranchData(String(id));
+  }
+  if(typeof window.sssSwitchBranch==='function'){
+    return window.sssSwitchBranch(String(id));
+  }
 };
 
 // Stamp common collections whenever the current data is saved.
@@ -2464,6 +2555,19 @@ window.sssSaveBranchAssignments=function(){
   localStorage.setItem('SSS_BRANCH_USER_ACCESS_V2',JSON.stringify(access));
   closeModal();toast('✅ Branch access saved');
 };
+})();
+</script>
+
+<script id="sss-branch-menu-access">
+(function(){
+  function update(){
+    const main=window.SSS_ACCESS && window.SSS_ACCESS.isMainManager && window.SSS_ACCESS.isMainManager();
+    const e=document.getElementById('sssBranchAdminTools');
+    if(e)e.style.display=main?'flex':'none';
+  }
+  document.addEventListener('DOMContentLoaded',update);
+  window.addEventListener('sssBranchDataLoaded',update);
+  window.addEventListener('storage',update);
 })();
 </script>
 </body>
