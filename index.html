@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5a2b0b">
 <link rel="manifest" href="manifest.json">
-<title>Ganesh Plywood ERP — Advanced | Designed by SSS Technology</title>
+<title>Ganesh Plywood ERP — Advanced | Designed by SANDIP S. SUTAR</title>
 <style>
 :root{--brown:#5a2b0b;--brown2:#7a3b0c;--bg:#f4f4f4;--card:#fff;--line:#e3e3e3;--green:#159447;--red:#c62828;--blue:#1269d8;--orange:#dc6c11}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:#222}
@@ -585,7 +585,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
   </div>
 </div>
 
-<!-- SSS TECHNOLOGY ADVANCED ERP MODULES -->
+<!-- SANDIP S. SUTAR ADVANCED ERP MODULES -->
 <section id="sssAdvancedERP" class="page" style="display:none">
   <h2>🚀 Advanced Business ERP</h2>
 
@@ -639,7 +639,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
     <button class="btn light" onclick="sssPrintReport()">🖨️ Print Report</button>
   </div>
 </section>
-<div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed by <b>SSS Technology</b> for Ganesh Plywood</span></div></section>`;
+<div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed by <b>SANDIP S. SUTAR</b> for Ganesh Plywood</span></div></section>`;
 renderTodaySummaryValues();
 applyAdminSummaryControls();
 }
@@ -856,7 +856,7 @@ function printTodaySummary(){
   if(!box)return toast('Today summary not available');
   const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
   const date=new Date().toLocaleDateString('en-IN');
-  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
+  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SANDIP S. SUTAR</div>
 
 
 
@@ -1227,7 +1227,7 @@ async function downloadERPReport(section='all'){
   reports.forEach((r,idx)=>{
     if(idx) doc.addPage();
     doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(90,43,11);doc.text('Ganesh Plywood',40,42);
-    doc.setFontSize(12);doc.setTextColor(70,70,70);doc.text(r.title,40,62);doc.setFontSize(9);doc.text('Designed by SSS Technology',40,78);
+    doc.setFontSize(12);doc.setTextColor(70,70,70);doc.text(r.title,40,62);doc.setFontSize(9);doc.text('Designed by SANDIP S. SUTAR',40,78);
     const rows=(r.rows&&r.rows.length)?r.rows:[['No records found','','','','','','','','']];
     doc.autoTable({startY:92,head:[r.cols],body:rows,theme:'grid',styles:{fontSize:8,cellPadding:4,overflow:'linebreak'},headStyles:{fillColor:[90,43,11],textColor:255},margin:{left:40,right:40},didDrawPage:(d)=>{doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text(`Ganesh Plywood ERP • ${new Date().toLocaleString('en-IN')}`,40,doc.internal.pageSize.height-18);doc.text(`Page ${d.pageNumber}`,doc.internal.pageSize.width-70,doc.internal.pageSize.height-18)}});
   });
@@ -1245,7 +1245,7 @@ function reports(){
 
 function printReportsPage(){
   const w=window.open('','_blank'); if(!w)return;
-  w.document.write(`<html><head><title>Ganesh Plywood Reports</title><style>body{font-family:Arial;padding:28px}h1{color:#5a2b0b}.item{border:1px solid #ddd;padding:10px;margin:7px 0;border-radius:8px}.brand{color:#666}</style></head><body><h1>Ganesh Plywood — Reports</h1><div class="brand">Designed by SSS Technology</div><hr>${cardsForPrint()}</body></html>`);
+  w.document.write(`<html><head><title>Ganesh Plywood Reports</title><style>body{font-family:Arial;padding:28px}h1{color:#5a2b0b}.item{border:1px solid #ddd;padding:10px;margin:7px 0;border-radius:8px}.brand{color:#666}</style></head><body><h1>Ganesh Plywood — Reports</h1><div class="brand">Designed by SANDIP S. SUTAR</div><hr>${cardsForPrint()}</body></html>`);
   w.document.close();
 }
 function cardsForPrint(){
@@ -1528,8 +1528,8 @@ document.getElementById('today').textContent=dateIN();document.getElementById('m
 nav();if(!ensureSession()){ }else openPage('Dashboard');
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
 
-/* SSS Technology Advanced ERP JS - repaired placement */
-/* ===== SSS Technology Advanced ERP - added to existing index.html ===== */
+/* SANDIP S. SUTAR Advanced ERP JS - repaired placement */
+/* ===== SANDIP S. SUTAR Advanced ERP - added to existing index.html ===== */
 (function(){
   function arr(k){ if(!Array.isArray(db[k])) db[k]=[]; return db[k]; }
   function money(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -1593,7 +1593,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
   window.sssPrintReport=function(){
     sssRefreshAdvanced();
     const w=window.open('','_blank');if(!w)return;
-    w.document.write('<html><head><title>Ganesh Plywood ERP Report</title></head><body style="font-family:Arial;padding:30px"><h1>Ganesh Plywood ERP</h1><p>SSS Technology</p><h2>Advanced Business Report</h2><p>Generated: '+new Date().toLocaleString()+'</p><button onclick="print()">Print</button></body></html>');
+    w.document.write('<html><head><title>Ganesh Plywood ERP Report</title></head><body style="font-family:Arial;padding:30px"><h1>Ganesh Plywood ERP</h1><p>SANDIP S. SUTAR</p><h2>Advanced Business Report</h2><p>Generated: '+new Date().toLocaleString()+'</p><button onclick="print()">Print</button></body></html>');
     w.document.close();
   };
 
@@ -1605,7 +1605,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
 
 
 
-/* SSS Technology - per-user function rights */
+/* SANDIP S. SUTAR - per-user function rights */
 const SSS_RIGHTS_KEY='SSS_ERP_FUNCTION_RIGHTS_V1';
 const SSS_RIGHT_KEYS=[
 'dashboard_view','today_summary_view','today_summary_edit','today_summary_delete',
@@ -1764,7 +1764,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 
-(()=>{const K='SSS_ERP_BRANCHES_V1',R='SSS_ERP_BRANCH_RIGHTS_V1',A='SSS_ERP_ACTIVE_BRANCH_V1',D={id:'MAIN',name:'SSS Technology - Main Branch',code:'MAIN',mobile:'',address:''};const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}},wr=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),bs=()=>{let a=rd(K,[]);if(!a.length){a=[D];wr(K,a)}return a},aid=()=>localStorage.getItem(A)||bs()[0].id;window.sssOpenBranches=()=>{document.getElementById('sssBranchManagement').style.display='block';sssRenderBranches();sssLoadBranchRights()};window.sssRenderBranches=()=>{let a=bs(),id=aid(),s=document.getElementById('sssBranchSelect'),t=document.getElementById('sssBranchRows'),x=a.find(z=>z.id===id);if(s)s.innerHTML=a.map(z=>`<option value="${z.id}" ${z.id===id?'selected':''}>${z.name} — ${z.code}</option>`).join('');if(t)t.innerHTML=a.map(z=>`<tr><td>${z.name}</td><td>${z.code}</td><td>${z.mobile||''}</td><td>${z.address||''}</td><td>${z.id===id?'🟢 Active':'Inactive'}</td><td><button class="btn light" onclick="sssEditBranch('${z.id}')">✏️ Edit</button></td></tr>`).join('');if(x)document.getElementById('sssActiveBranchName').value=x.name+' ('+x.code+')'};window.sssSwitchBranch=id=>{if(!bs().find(x=>x.id===id))return;localStorage.setItem(A,id);sssRenderBranches();sssLoadBranchRights()};window.sssSaveBranch=()=>{let n=sssBranchName.value.trim(),c=sssBranchCode.value.trim().toUpperCase();if(!n||!c)return alert('Branch Name आणि Code टाका');let a=bs(),id=sssBranchSelect.value||'BR_'+Date.now(),i=a.findIndex(x=>x.id===id),o={id,name:n,code:c,mobile:sssBranchMobile.value.trim(),address:sssBranchAddress.value.trim()};i<0?a.push(o):a[i]=o;wr(K,a);localStorage.setItem(A,id);sssRenderBranches();alert('✅ Branch saved')};window.sssEditBranch=id=>{let x=bs().find(z=>z.id===id);if(!x)return;sssBranchSelect.value=id;sssBranchName.value=x.name;sssBranchCode.value=x.code;sssBranchMobile.value=x.mobile||'';sssBranchAddress.value=x.address||''};window.sssClearBranchForm=()=>['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>document.getElementById(id).value='');window.sssDeleteBranch=()=>{let id=sssBranchSelect.value;if(id==='MAIN')return alert('Main Branch delete करता येणार नाही');if(confirm('ही Branch delete करायची?')){let a=bs().filter(x=>x.id!==id);wr(K,a);localStorage.setItem(A,a[0].id);sssRenderBranches()}};window.sssLoadBranchRights=()=>{let u=sssBranchUserId.value,allow=rd(R,{})[u]||[];sssBranchRightsChecks.innerHTML=bs().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allow.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('')};window.sssSaveBranchRights=()=>{let u=sssBranchUserId.value.trim();if(!u)return alert('User ID टाका');let r=rd(R,{});r[u]=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);wr(R,r);alert('✅ Branch rights saved')};addEventListener('DOMContentLoaded',sssRenderBranches)})();
+(()=>{const K='SSS_ERP_BRANCHES_V1',R='SSS_ERP_BRANCH_RIGHTS_V1',A='SSS_ERP_ACTIVE_BRANCH_V1',D={id:'MAIN',name:'SANDIP S. SUTAR - Main Branch',code:'MAIN',mobile:'',address:''};const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}},wr=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),bs=()=>{let a=rd(K,[]);if(!a.length){a=[D];wr(K,a)}return a},aid=()=>localStorage.getItem(A)||bs()[0].id;window.sssOpenBranches=()=>{document.getElementById('sssBranchManagement').style.display='block';sssRenderBranches();sssLoadBranchRights()};window.sssRenderBranches=()=>{let a=bs(),id=aid(),s=document.getElementById('sssBranchSelect'),t=document.getElementById('sssBranchRows'),x=a.find(z=>z.id===id);if(s)s.innerHTML=a.map(z=>`<option value="${z.id}" ${z.id===id?'selected':''}>${z.name} — ${z.code}</option>`).join('');if(t)t.innerHTML=a.map(z=>`<tr><td>${z.name}</td><td>${z.code}</td><td>${z.mobile||''}</td><td>${z.address||''}</td><td>${z.id===id?'🟢 Active':'Inactive'}</td><td><button class="btn light" onclick="sssEditBranch('${z.id}')">✏️ Edit</button></td></tr>`).join('');if(x)document.getElementById('sssActiveBranchName').value=x.name+' ('+x.code+')'};window.sssSwitchBranch=id=>{if(!bs().find(x=>x.id===id))return;localStorage.setItem(A,id);sssRenderBranches();sssLoadBranchRights()};window.sssSaveBranch=()=>{let n=sssBranchName.value.trim(),c=sssBranchCode.value.trim().toUpperCase();if(!n||!c)return alert('Branch Name आणि Code टाका');let a=bs(),id=sssBranchSelect.value||'BR_'+Date.now(),i=a.findIndex(x=>x.id===id),o={id,name:n,code:c,mobile:sssBranchMobile.value.trim(),address:sssBranchAddress.value.trim()};i<0?a.push(o):a[i]=o;wr(K,a);localStorage.setItem(A,id);sssRenderBranches();alert('✅ Branch saved')};window.sssEditBranch=id=>{let x=bs().find(z=>z.id===id);if(!x)return;sssBranchSelect.value=id;sssBranchName.value=x.name;sssBranchCode.value=x.code;sssBranchMobile.value=x.mobile||'';sssBranchAddress.value=x.address||''};window.sssClearBranchForm=()=>['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>document.getElementById(id).value='');window.sssDeleteBranch=()=>{let id=sssBranchSelect.value;if(id==='MAIN')return alert('Main Branch delete करता येणार नाही');if(confirm('ही Branch delete करायची?')){let a=bs().filter(x=>x.id!==id);wr(K,a);localStorage.setItem(A,a[0].id);sssRenderBranches()}};window.sssLoadBranchRights=()=>{let u=sssBranchUserId.value,allow=rd(R,{})[u]||[];sssBranchRightsChecks.innerHTML=bs().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allow.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('')};window.sssSaveBranchRights=()=>{let u=sssBranchUserId.value.trim();if(!u)return alert('User ID टाका');let r=rd(R,{});r[u]=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);wr(R,r);alert('✅ Branch rights saved')};addEventListener('DOMContentLoaded',sssRenderBranches)})();
 
 
 
@@ -2636,7 +2636,7 @@ document.addEventListener('DOMContentLoaded',install,{once:true});
  <div id="sssAdvBox">
   <div class="sssAdvHead">
    <div>
-    <h2 style="margin:0">🚀 SSS Technology — Advanced ERP Control Center</h2>
+    <h2 style="margin:0">🚀 SANDIP S. SUTAR — Advanced ERP Control Center</h2>
     <div class="sssMini">Branch analytics • audit log • stock transfer • management controls</div>
    </div>
    <button type="button" class="btn danger" onclick="sssAdvClose()">Close</button>
@@ -2909,7 +2909,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div id="sssEnterpriseOverlay">
  <div id="sssEnterpriseBox">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-   <div><h2 style="margin:0">🏢 SSS Technology — Enterprise ERP</h2><small>Advanced management, approvals, alerts & analytics</small></div>
+   <div><h2 style="margin:0">🏢 SANDIP S. SUTAR — Enterprise ERP</h2><small>Advanced management, approvals, alerts & analytics</small></div>
    <button class="btn danger" onclick="sssEnterpriseClose()">Close</button>
   </div>
 
@@ -3215,7 +3215,7 @@ window.sssSafeSaveUser=function(){
 <div id="sssAdvSettingsOverlay">
  <div id="sssAdvSettingsBox">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-   <div><h2 style="margin:0">⚙️ Advanced ERP Settings</h2><small>SSS Technology — System Control Center</small></div>
+   <div><h2 style="margin:0">⚙️ Advanced ERP Settings</h2><small>SANDIP S. SUTAR — System Control Center</small></div>
    <button type="button" class="btn danger" onclick="sssAdvSettingsClose()">Close</button>
   </div>
 
@@ -3306,7 +3306,7 @@ window.sssSafeSaveUser=function(){
 'use strict';
 const KEY='SSS_TECHNOLOGY_ADVANCED_SETTINGS_V1';
 const defaults={
- company:'SSS Technology',mobile:'',address:'',gstin:'',prefix:'INV-',fy:'2026-27',
+ company:'SANDIP S. SUTAR',mobile:'',address:'',gstin:'',prefix:'INV-',fy:'2026-27',
  autoInvoice:'yes',payment:'Cash',print:'no',whatsapp:'yes',editInvoice:'admin',deleteInvoice:'admin',
  creditLimit:0,dueDays:30,profit:'sale-purchase',lowStock:'yes',minStock:5,transferApproval:'yes',
  session:8,audit:'yes',failed:5,summary:'yes',lowNotify:'yes',recNotify:'yes'
