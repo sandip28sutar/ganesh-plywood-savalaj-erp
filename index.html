@@ -2925,5 +2925,407 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 })();
 </script>
+
+<style id="sss-enterprise-advanced-css">
+#sssEnterpriseOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:100000;display:none;padding:14px;overflow:auto}
+#sssEnterpriseBox{max-width:1180px;margin:18px auto;background:#fff;border-radius:16px;padding:18px;box-shadow:0 15px 45px rgba(0,0,0,.3)}
+.sssEntGrid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px}
+.sssEntCard{border:1px solid #e6e6e6;border-radius:11px;padding:12px;background:#fff}
+.sssEntCard b{font-size:20px;display:block;margin-top:5px}
+.sssEntTabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+.sssEntTabs button{border:1px solid #ddd;border-radius:8px;padding:9px 12px;background:#fafafa}
+.sssEntPanel{display:none}.sssEntPanel.active{display:block}
+.sssEntTable{width:100%;border-collapse:collapse;font-size:13px}
+.sssEntTable th,.sssEntTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sssEntTable th{background:#faf1e7}
+.sssEntForm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sssEntForm input,.sssEntForm select{width:100%;padding:9px}
+.sssEntWide{grid-column:1/-1}
+.sssEntAlert{padding:10px;border-radius:9px;margin:8px 0;background:#fff6e7}
+@media(max-width:800px){.sssEntGrid{grid-template-columns:1fr 1fr}.sssEntForm{grid-template-columns:1fr}}
+@media(max-width:520px){.sssEntGrid{grid-template-columns:1fr}}
+</style>
+
+<div id="sssEnterpriseOverlay">
+ <div id="sssEnterpriseBox">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+   <div><h2 style="margin:0">🏢 SSS Technology — Enterprise ERP</h2><small>Advanced management, approvals, alerts & analytics</small></div>
+   <button class="btn danger" onclick="sssEnterpriseClose()">Close</button>
+  </div>
+
+  <div class="sssEntGrid" id="sssEntCards" style="margin-top:14px"></div>
+
+  <div class="sssEntTabs">
+   <button onclick="sssEntTab('analytics')">📈 Analytics</button>
+   <button onclick="sssEntTab('dues')">⏰ Due Alerts</button>
+   <button onclick="sssEntTab('approvals')">✅ Approvals</button>
+   <button onclick="sssEntTab('expenses')">💸 Expenses</button>
+   <button onclick="sssEntTab('staff')">👥 Staff Performance</button>
+   <button onclick="sssEntTab('backup')">☁️ Backup Center</button>
+  </div>
+
+  <div id="sssEntAnalytics" class="sssEntPanel active"></div>
+  <div id="sssEntDues" class="sssEntPanel"></div>
+  <div id="sssEntApprovals" class="sssEntPanel"></div>
+
+  <div id="sssEntExpenses" class="sssEntPanel">
+   <h3>💸 Expense Register</h3>
+   <div class="sssEntForm">
+    <div><label>Category</label><input id="sssExpCat" placeholder="Transport / Salary / Electricity"></div>
+    <div><label>Amount</label><input id="sssExpAmt" type="number" min="0" step="0.01"></div>
+    <div><label>Reference</label><input id="sssExpRef" placeholder="Bill / voucher no."></div>
+    <div><label>Branch</label><select id="sssExpBranch"></select></div>
+    <div class="sssEntWide"><label>Note</label><input id="sssExpNote" placeholder="Expense details"></div>
+   </div>
+   <br><button class="btn success" onclick="sssAddExpense()">💾 Save Expense</button>
+   <div id="sssExpenseList"></div>
+  </div>
+
+  <div id="sssEntStaff" class="sssEntPanel"></div>
+
+  <div id="sssEntBackup" class="sssEntPanel">
+   <h3>☁️ Backup & Recovery Center</h3>
+   <div class="sssEntAlert">Export a complete local ERP snapshot before major changes. This includes business data, branch settings and user-rights data stored in the browser.</div>
+   <button class="btn primary" onclick="sssEnterpriseBackup()">⬇ Full ERP Backup</button>
+   <button class="btn light" onclick="sssEnterpriseRestore()">⬆ Restore ERP Backup</button>
+   <input id="sssRestoreFile" type="file" accept=".json" style="display:none">
+   <p id="sssBackupMsg"></p>
+  </div>
+ </div>
+</div>
+
+<script id="sss-enterprise-advanced-module">
+(function(){
+'use strict';
+const EXP='SSS_ENTERPRISE_EXPENSES_V1';
+const APPROVAL='SSS_ENTERPRISE_APPROVALS_V1';
+
+function j(k,d){try{return JSON.parse(localStorage.getItem(k)||'')??d}catch(e){return d}}
+function sj(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function n(v){return Number(v||0)||0}
+function money(v){return '₹ '+n(v).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function branches(){return (window.SSS_ACCESS?.branches?.()||j('SSS_TECHNOLOGY_BRANCHES_V3',[{id:'MAIN',name:'Main Branch',isActive:true}])).filter(x=>x.isActive!==false)}
+function users(){try{if(typeof users!=='undefined'&&Array.isArray(users))return users}catch(e){}return j('GP_ERP_USERS_V1',[])}
+function cur(){try{if(typeof getCurrentUser==='function')return getCurrentUser()}catch(e){}return users()[0]||null}
+function admin(){const u=cur(),r=String(u?.role||'').toLowerCase();return r==='admin'||(r==='manager'&&window.SSS_ACCESS?.isMainManager?.())}
+function arr(k){try{return Array.isArray(db?.[k])?db[k]:[]}catch(e){return []}}
+function visible(a){try{return window.SSS_ACCESS?.filter?window.SSS_ACCESS.filter(a):a}catch(e){return a}}
+function bid(x){return String(x?.branchId||'MAIN')}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function metrics(){
+ const inv=visible(arr('invoices')),pur=visible(arr('purchases')),st=visible(arr('stock'));
+ const sales=inv.reduce((s,x)=>s+n(x.grand||x.total||x.amount),0);
+ const purchase=pur.reduce((s,x)=>s+n(x.grand||x.total||x.amount),0);
+ const rec=inv.reduce((s,x)=>s+n(x.receivedAmount||x.received)+n(x.upiReceived),0);
+ const out=inv.reduce((s,x)=>s+n(x.outstandingAmount||x.outstanding),0);
+ const stock=st.reduce((s,x)=>s+n(x.qty||x.quantity),0);
+ const expenses=j(EXP,[]).filter(x=>admin()||bid(x)===String(localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN')).reduce((s,x)=>s+n(x.amount),0);
+ return {sales,purchase,rec,out,stock,expenses,profit:sales-purchase-expenses};
+}
+function renderCards(){
+ const m=metrics();
+ document.getElementById('sssEntCards').innerHTML=[
+  ['🧾 Sales',money(m.sales)],['🛒 Purchase',money(m.purchase)],['💵 Received',money(m.rec)],
+  ['⏳ Receivable',money(m.out)],['📦 Stock Qty',m.stock],['💸 Expenses',money(m.expenses)],
+  ['📈 Estimated Profit',money(m.profit)],['🏢 Branches',branches().length]
+ ].map(x=>`<div class="sssEntCard"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+}
+window.sssEntTab=function(t){
+ ['analytics','dues','approvals','expenses','staff','backup'].forEach(x=>document.getElementById('sssEnt'+x.charAt(0).toUpperCase()+x.slice(1)).classList.remove('active'));
+ document.getElementById('sssEnt'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+ if(t==='analytics')renderAnalytics();
+ if(t==='dues')renderDues();
+ if(t==='approvals')renderApprovals();
+ if(t==='expenses'){fillExpenseBranches();renderExpenses()}
+ if(t==='staff')renderStaff();
+};
+function renderAnalytics(){
+ const bs=branches(),inv=arr('invoices'),pur=arr('purchases');
+ document.getElementById('sssEntAnalytics').innerHTML='<h3>📈 Branch Analytics</h3><table class="sssEntTable"><thead><tr><th>Branch</th><th>Sales</th><th>Purchase</th><th>Margin</th></tr></thead><tbody>'+
+ bs.map(b=>{
+  const s=inv.filter(x=>bid(x)===String(b.id)).reduce((a,x)=>a+n(x.grand||x.total||x.amount),0);
+  const p=pur.filter(x=>bid(x)===String(b.id)).reduce((a,x)=>a+n(x.grand||x.total||x.amount),0);
+  return `<tr><td>${b.name}</td><td>${money(s)}</td><td>${money(p)}</td><td>${money(s-p)}</td></tr>`
+ }).join('')+'</tbody></table>';
+}
+function renderDues(){
+ const inv=visible(arr('invoices')).filter(x=>n(x.outstandingAmount||x.outstanding)>0);
+ document.getElementById('sssEntDues').innerHTML='<h3>⏰ Pending Receivable Alerts</h3><table class="sssEntTable"><thead><tr><th>Customer</th><th>Mobile</th><th>Outstanding</th><th>Date</th></tr></thead><tbody>'+
+ inv.map(x=>`<tr><td>${x.customer?.name||x.customerName||'Walk-in Customer'}</td><td>${x.customer?.phone||x.customerPhone||x.mobile||''}</td><td>${money(x.outstandingAmount||x.outstanding)}</td><td>${x.date||''}</td></tr>`).join('')||'<tr><td colspan="4">No pending receivables.</td></tr>'+'</tbody></table>';
+}
+function renderApprovals(){
+ const a=j(APPROVAL,[]);
+ document.getElementById('sssEntApprovals').innerHTML='<h3>✅ Approval Queue</h3><div class="sssEntAlert">Use this queue for high-value bills, discounts, stock adjustments and expenses that need management approval.</div><table class="sssEntTable"><thead><tr><th>Type</th><th>Amount</th><th>User</th><th>Status</th></tr></thead><tbody>'+
+ a.map(x=>`<tr><td>${x.type}</td><td>${money(x.amount)}</td><td>${x.user||''}</td><td>${x.status||'Pending'}</td></tr>`).join('')||'<tr><td colspan="4">No approvals pending.</td></tr>'+'</tbody></table>';
+}
+function fillExpenseBranches(){
+ const s=document.getElementById('sssExpBranch');if(!s)return;
+ s.innerHTML=branches().map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+}
+window.sssAddExpense=function(){
+ if(!admin()){alert('🔒 Admin / Main Manager only.');return}
+ const a=j(EXP,[]),amount=n(document.getElementById('sssExpAmt').value);
+ if(amount<=0)return alert('Enter a valid expense amount.');
+ const u=cur(),x={id:'EXP-'+Date.now(),date:today(),category:document.getElementById('sssExpCat').value.trim(),amount,reference:document.getElementById('sssExpRef').value.trim(),branchId:document.getElementById('sssExpBranch').value,note:document.getElementById('sssExpNote').value.trim(),user:u?.username||u?.name||'Admin'};
+ a.unshift(x);sj(EXP,a);renderExpenses();renderCards();alert('✅ Expense saved');
+};
+function renderExpenses(){
+ const a=j(EXP,[]),body=a.slice(0,100).map(x=>`<tr><td>${x.date}</td><td>${x.category}</td><td>${money(x.amount)}</td><td>${x.branchId}</td><td>${x.reference||''}</td></tr>`).join('');
+ document.getElementById('sssExpenseList').innerHTML='<br><table class="sssEntTable"><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Branch</th><th>Reference</th></tr></thead><tbody>'+body+'</tbody></table>';
+}
+function renderStaff(){
+ const us=users(),inv=arr('invoices');
+ document.getElementById('sssEntStaff').innerHTML='<h3>👥 Staff Performance</h3><table class="sssEntTable"><thead><tr><th>User</th><th>Role</th><th>Invoices</th><th>Sales</th></tr></thead><tbody>'+
+ us.map(u=>{
+  const id=String(u.id||u.username), ii=inv.filter(x=>String(x.createdBy||x.userId||x.staffId||'')===id);
+  const s=ii.reduce((a,x)=>a+n(x.grand||x.total||x.amount),0);
+  return `<tr><td>${u.name||u.username}</td><td>${u.role||''}</td><td>${ii.length}</td><td>${money(s)}</td></tr>`;
+ }).join('')+'</tbody></table>';
+}
+window.sssEnterpriseOpen=function(){
+ if(!admin()){alert('🔒 Admin / Main Branch Manager only.');return}
+ document.getElementById('sssEnterpriseOverlay').style.display='block';
+ renderCards();renderAnalytics();fillExpenseBranches();
+};
+window.sssEnterpriseClose=function(){document.getElementById('sssEnterpriseOverlay').style.display='none'};
+
+window.sssEnterpriseBackup=function(){
+ if(!admin())return alert('Admin only');
+ const data={version:'SSS-ERP-ENTERPRISE-V1',createdAt:new Date().toISOString(),db:(typeof db!=='undefined'?db:{}),branches:branches(),users:users(),rights:j('SSS_ERP_FUNCTION_RIGHTS_V1',{}),userRightsV2:j('SSS_USER_FUNCTION_RIGHTS_V2',{}),expenses:j(EXP,[]),approvals:j(APPROVAL,[])};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='sss-technology-enterprise-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url);
+ document.getElementById('sssBackupMsg').textContent='✅ Full ERP backup exported.';
+};
+window.sssEnterpriseRestore=function(){
+ if(!admin())return alert('Admin only');
+ const f=document.getElementById('sssRestoreFile');f.value='';f.click();
+ f.onchange=function(){
+  const file=f.files?.[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=function(){
+   try{
+    const x=JSON.parse(r.result);
+    if(!x||!x.version)return alert('Invalid SSS ERP backup.');
+    if(!confirm('Restore backup? Existing local ERP data may be replaced.'))return;
+    if(x.db)localStorage.setItem('GP_ERP_DB_V1',JSON.stringify(x.db));
+    if(x.branches)localStorage.setItem('SSS_TECHNOLOGY_BRANCHES_V3',JSON.stringify(x.branches));
+    if(x.rights)localStorage.setItem('SSS_ERP_FUNCTION_RIGHTS_V1',JSON.stringify(x.rights));
+    if(x.userRightsV2)localStorage.setItem('SSS_USER_FUNCTION_RIGHTS_V2',JSON.stringify(x.userRightsV2));
+    if(x.expenses)localStorage.setItem(EXP,JSON.stringify(x.expenses));
+    if(x.approvals)localStorage.setItem(APPROVAL,JSON.stringify(x.approvals));
+    alert('✅ Restore complete. Reload ERP.');
+    location.reload();
+   }catch(e){alert('Restore failed: '+e.message)}
+  };r.readAsText(file);
+ };
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+ setTimeout(function(){
+  if(admin()&&!document.getElementById('sssEnterpriseBtn')){
+   const b=document.createElement('button');b.id='sssEnterpriseBtn';b.className='btn primary';b.type='button';
+   b.textContent='🏢 Enterprise ERP Center';b.onclick=sssEnterpriseOpen;
+   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;host.appendChild(b);
+  }
+ },700);
+});
+})();
+</script>
+
+<style id="sss-user-management-css">
+#sssUserMgmtOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100010;display:none;padding:14px;overflow:auto}
+#sssUserMgmtBox{max-width:1100px;margin:20px auto;background:#fff;border-radius:14px;padding:18px}
+.sssUMForm{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.sssUMForm input,.sssUMForm select{width:100%;padding:9px;border:1px solid #ccc;border-radius:7px}
+.sssUMTable{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
+.sssUMTable th,.sssUMTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sssUMTable th{background:#faf1e7}
+.sssUMPass{font-family:monospace;letter-spacing:1px}
+@media(max-width:800px){.sssUMForm{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.sssUMForm{grid-template-columns:1fr}}
+</style>
+
+<div id="sssUserMgmtOverlay">
+ <div id="sssUserMgmtBox">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+   <div>
+    <h2 style="margin:0">👥 User Management</h2>
+    <small>User ID • Password • Role • Branch • Status • Rights</small>
+   </div>
+   <button type="button" class="btn danger" onclick="sssUserMgmtClose()">Close</button>
+  </div>
+
+  <div class="sssUMForm" style="margin-top:14px">
+   <input id="sssUMId" placeholder="User ID">
+   <input id="sssUMName" placeholder="Name">
+   <input id="sssUMPass" placeholder="Password">
+   <select id="sssUMRole">
+    <option value="staff">Staff</option>
+    <option value="manager">Manager</option>
+    <option value="admin">Admin</option>
+   </select>
+   <select id="sssUMBranch"></select>
+   <select id="sssUMStatus">
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+   </select>
+  </div>
+  <div style="margin-top:10px">
+   <button type="button" class="btn success" onclick="sssUserSave()">💾 Add / Update User</button>
+   <button type="button" class="btn light" onclick="sssUserClear()">Clear</button>
+  </div>
+
+  <div style="overflow:auto">
+   <table class="sssUMTable">
+    <thead>
+     <tr><th>User ID</th><th>Name</th><th>Password</th><th>Role</th><th>Branch</th><th>Status</th><th>Rights</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="sssUserMgmtRows"></tbody>
+   </table>
+  </div>
+ </div>
+</div>
+
+<script id="sss-user-management-module">
+(function(){
+'use strict';
+
+const USER_KEYS=['GP_ERP_USERS_V1','users','loginUsers','ERP_USERS'];
+
+function readUsers(){
+  let arr=[];
+  for(const key of USER_KEYS){
+    try{
+      const x=JSON.parse(localStorage.getItem(key)||'[]');
+      if(Array.isArray(x))arr=arr.concat(x);
+    }catch(e){}
+  }
+  try{
+    if(typeof users!=='undefined'&&Array.isArray(users))arr=arr.concat(users);
+  }catch(e){}
+  const seen=new Set();
+  return arr.filter(u=>{
+    const id=String(u?.id??u?.userId??u?.username??'').trim();
+    if(!id||seen.has(id))return false;
+    seen.add(id);return true;
+  });
+}
+function saveUsers(arr){
+  localStorage.setItem('GP_ERP_USERS_V1',JSON.stringify(arr));
+  // Keep compatibility with common ERP user stores.
+  localStorage.setItem('users',JSON.stringify(arr));
+}
+function branches(){
+  try{
+    const x=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
+    return Array.isArray(x)&&x.length?x:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
+  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
+}
+function rights(){
+  try{return JSON.parse(localStorage.getItem('SSS_USER_FUNCTION_RIGHTS_V2')||'{}')||{}}catch(e){return {}}
+}
+function currentIsAdmin(){
+  try{
+    const id=localStorage.getItem('GP_ERP_SESSION_V1');
+    const u=readUsers().find(x=>String(x.id||x.username)===String(id));
+    return String(u?.role||'').toLowerCase()==='admin';
+  }catch(e){return false}
+}
+function fillBranches(){
+  const s=document.getElementById('sssUMBranch');if(!s)return;
+  s.innerHTML=branches().filter(b=>b.isActive!==false).map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+}
+function render(){
+  const r=rights(),rows=document.getElementById('sssUserMgmtRows');
+  if(!rows)return;
+  rows.innerHTML=readUsers().map(u=>{
+    const id=String(u.id??u.userId??u.username);
+    const b=branches().find(x=>String(x.id)===String(u.branchId||u.branch||'MAIN'));
+    const rr=Array.isArray(r[id])?r[id].length:'Default';
+    const safe=id.replace(/'/g,"\\'");
+    return `<tr>
+      <td><b>${id}</b></td>
+      <td>${u.name||u.fullName||''}</td>
+      <td class="sssUMPass">${u.password||'••••••'}</td>
+      <td>${u.role||'staff'}</td>
+      <td>${b?.name||u.branch||'Main Branch'}</td>
+      <td>${String(u.active??u.status??'active')==='false'||u.status==='inactive'?'🔴 Inactive':'🟢 Active'}</td>
+      <td>${rr} functions</td>
+      <td>
+       <button type="button" class="btn light" onclick="sssUserEdit('${safe}')">✏️ Edit</button>
+       <button type="button" class="btn light" onclick="sssUserReset('${safe}')">🔑 Reset</button>
+       <button type="button" class="btn danger" onclick="sssUserDelete('${safe}')">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8">No users found.</td></tr>';
+}
+window.sssUserMgmtOpen=function(){
+  if(!currentIsAdmin()){alert('🔒 Admin only.');return}
+  fillBranches();render();
+  document.getElementById('sssUserMgmtOverlay').style.display='block';
+};
+window.sssUserMgmtClose=function(){document.getElementById('sssUserMgmtOverlay').style.display='none'};
+window.sssUserClear=function(){
+ ['sssUMId','sssUMName','sssUMPass'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('sssUMRole').value='staff';
+ document.getElementById('sssUMStatus').value='active';
+ fillBranches();
+};
+window.sssUserEdit=function(id){
+  const u=readUsers().find(x=>String(x.id??x.userId??x.username)===String(id));
+  if(!u)return;
+  document.getElementById('sssUMId').value=u.id??u.userId??u.username??'';
+  document.getElementById('sssUMName').value=u.name??u.fullName??'';
+  document.getElementById('sssUMPass').value=u.password??'';
+  document.getElementById('sssUMRole').value=u.role??'staff';
+  document.getElementById('sssUMBranch').value=u.branchId??u.branch??'MAIN';
+  document.getElementById('sssUMStatus').value=(u.status==='inactive'||u.active===false)?'inactive':'active';
+};
+window.sssUserSave=function(){
+  if(!currentIsAdmin()){alert('🔒 Admin only.');return}
+  const id=document.getElementById('sssUMId').value.trim();
+  const name=document.getElementById('sssUMName').value.trim();
+  const pass=document.getElementById('sssUMPass').value;
+  const role=document.getElementById('sssUMRole').value;
+  const branchId=document.getElementById('sssUMBranch').value||'MAIN';
+  const status=document.getElementById('sssUMStatus').value;
+  if(!id||!pass){alert('User ID and Password required.');return}
+  const a=readUsers();
+  const idx=a.findIndex(u=>String(u.id??u.userId??u.username)===id);
+  const user={id,name,password:pass,role,branchId,status,active:status==='active'};
+  if(idx>=0)a[idx]={...a[idx],...user};else a.push(user);
+  saveUsers(a);
+  alert('✅ User saved: '+id);
+  render();sssUserClear();
+};
+window.sssUserReset=function(id){
+  if(!currentIsAdmin())return;
+  const p=prompt('Enter new password for '+id+':');
+  if(p===null)return;
+  if(!p){alert('Password cannot be blank.');return}
+  const a=readUsers(),u=a.find(x=>String(x.id??x.userId??x.username)===id);
+  if(u){u.password=p;saveUsers(a);render();alert('✅ Password reset.')}
+};
+window.sssUserDelete=function(id){
+  if(!currentIsAdmin())return;
+  if(id==='admin'){alert('Admin user cannot be deleted.');return}
+  if(!confirm('Delete User ID '+id+'?'))return;
+  const a=readUsers().filter(u=>String(u.id??u.userId??u.username)!==id);
+  saveUsers(a);render();
+};
+document.addEventListener('DOMContentLoaded',function(){
+ setTimeout(function(){
+  if(currentIsAdmin()&&!document.getElementById('sssUserManagementBtn')){
+   const b=document.createElement('button');
+   b.id='sssUserManagementBtn';b.type='button';b.className='btn primary';
+   b.textContent='👥 User Management';b.onclick=sssUserMgmtOpen;
+   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
+   host.appendChild(b);
+  }
+ },800);
+});
+})();
+</script>
 </body>
 </html>
