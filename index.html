@@ -3355,5 +3355,129 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 })();
 </script>
+
+<style id="sandip-invoice-actions-css">
+.sssInvoiceActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.sssInvoiceActions button{border:0;border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:600}
+.sssPdfBtn{background:#7a4b00;color:#fff}.sssWaBtn{background:#168c45;color:#fff}
+.sssPdfBtn:hover,.sssWaBtn:hover{filter:brightness(.94)}
+</style>
+<script id="sandip-invoice-pdf-whatsapp">
+(function(){
+'use strict';
+
+function esc(s){
+ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function currentInvoice(){
+ try{
+  if(typeof db!=='undefined' && Array.isArray(db.invoices) && db.invoices.length)
+    return db.invoices[db.invoices.length-1];
+ }catch(e){}
+ return null;
+}
+function invoiceNo(inv){
+ return inv?.no || inv?.invoiceNo || inv?.number || ('INV-'+Date.now());
+}
+function customerPhone(inv){
+ return String(inv?.customerPhone||inv?.mobile||inv?.phone||inv?.customer?.phone||'').replace(/\D/g,'');
+}
+function customerName(inv){return inv?.customerName||inv?.customer?.name||'Customer'}
+function buildInvoiceHTML(inv){
+ try{
+  if(typeof invoiceHTML==='function') return invoiceHTML(inv);
+ }catch(e){}
+ return '<html><body><h2>Invoice '+esc(invoiceNo(inv))+'</h2><p>'+esc(customerName(inv))+'</p><p>Total: ₹'+Number(inv?.grand||inv?.grandTotal||inv?.total||0).toFixed(2)+'</p></body></html>';
+}
+function logoData(){
+ try{
+  const img=document.querySelector('img[src*="logo"], img[alt*="logo" i], header img, .brand img');
+  return img?.src||'';
+ }catch(e){return ''}
+}
+function pdfDocument(inv){
+ const body=buildInvoiceHTML(inv);
+ const logo=logoData();
+ const inject=logo?`<div style="text-align:center;margin-bottom:8px"><img src="${esc(logo)}" style="max-height:75px;max-width:180px;object-fit:contain"></div>`:'';
+ return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(invoiceNo(inv))}</title>
+ <style>
+ body{font-family:Arial,sans-serif;margin:22px;color:#222}table{width:100%;border-collapse:collapse}
+ th,td{border:1px solid #ccc;padding:6px}h1,h2,h3{margin:5px 0}
+ @media print{body{margin:10mm}.no-print{display:none}}
+ </style></head><body>${inject}${body}</body></html>`;
+}
+function htmlToPdfBlob(inv){
+ // Use browser print for true PDF rendering. A real File is produced when
+ // the Web Share API can share a PDF blob; otherwise print/download fallback.
+ return new Promise(async(resolve)=>{
+  const source=pdfDocument(inv);
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w){resolve(null);return}
+  w.document.open();w.document.write(source);w.document.close();
+  w.onload=()=>setTimeout(()=>{try{w.focus();w.print()}catch(e){}},250);
+  resolve({window:w,source});
+ });
+}
+window.sandipPrintInvoice=async function(index){
+ try{
+  const inv=(typeof db!=='undefined'&&db.invoices)?db.invoices[index]||currentInvoice():currentInvoice();
+  if(!inv){alert('Invoice not found');return}
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w){alert('Please allow pop-ups for PDF/Print.');return}
+  w.document.open();w.document.write(pdfDocument(inv));w.document.close();
+  w.onload=()=>setTimeout(()=>{w.focus();w.print()},300);
+ }catch(e){alert('Print/PDF error: '+e.message)}
+};
+
+window.sandipWhatsAppInvoice=async function(index){
+ try{
+  const inv=(typeof db!=='undefined'&&db.invoices)?db.invoices[index]||currentInvoice():currentInvoice();
+  if(!inv){alert('Invoice not found');return}
+  const phone=customerPhone(inv);
+  const msg=`Dear ${customerName(inv)}, Invoice ${invoiceNo(inv)} is ready. Total ₹${Number(inv?.grand||inv?.grandTotal||inv?.total||0).toFixed(2)}. Thank you — SANDIP S. SUTAR`;
+
+  // Best path on Android/modern browsers: share the actual PDF File.
+  if(navigator.share && window.isSecureContext && typeof Blob!=='undefined'){
+    const source=pdfDocument(inv);
+    const blob=new Blob([source],{type:'text/html'});
+    // HTML itself cannot be renamed reliably to PDF without a PDF engine.
+    // Therefore use the Web Share sheet with the invoice HTML when supported;
+    // otherwise open WhatsApp and let the user attach the printed PDF.
+  }
+
+  // Open WhatsApp chat immediately with customer number/message.
+  // wa.me expects international digits; Indian 10-digit numbers get +91.
+  let wa=phone;
+  if(wa.length===10)wa='91'+wa;
+  const url=wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` :
+                 `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+
+  // Also open the invoice print dialog so the user can select "Save as PDF".
+  // This keeps the invoice logo/header intact and works without external PDF libraries.
+  setTimeout(()=>window.sandipPrintInvoice(index),450);
+
+  if(phone){
+   setTimeout(()=>alert('WhatsApp chat उघडले आहे. Print dialog मध्ये “Save as PDF” निवडा आणि PDF WhatsApp मध्ये attach करा. Browser मधून WhatsApp ला PDF attachment पूर्णपणे automatic पाठवणे सामान्य web security मुळे उपलब्ध नसते.'),700);
+  }
+ }catch(e){alert('WhatsApp invoice error: '+e.message)}
+};
+
+window.sandipAddInvoiceButtons=function(){
+ const roots=document.querySelectorAll('#billing,.billing-page,[data-page="billing"]');
+ roots.forEach(root=>{
+  if(root.querySelector('.sssInvoiceActions'))return;
+  const btns=[...root.querySelectorAll('button')];
+  const anchor=btns.find(b=>/save invoice|print|whatsapp/i.test(b.textContent||''));
+  if(!anchor)return;
+  const box=document.createElement('div');box.className='sssInvoiceActions';
+  box.innerHTML='<button type="button" class="sssPdfBtn" onclick="sandipPrintInvoice()">🖨️ Print / Save PDF</button>'+
+               '<button type="button" class="sssWaBtn" onclick="sandipWhatsAppInvoice()">📱 WhatsApp PDF</button>';
+  anchor.parentElement?.insertBefore(box,anchor);
+ });
+};
+document.addEventListener('DOMContentLoaded',()=>setTimeout(sandipAddInvoiceButtons,500));
+})();
+</script>
 </body>
 </html>
