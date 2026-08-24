@@ -864,98 +864,6 @@ function printTodaySummary(){
 
 
 
-
-<!-- GANESH PLYWOOD ERP — SINGLE SHOP FINAL LOCK -->
-<style id="ganesh-single-shop-final">
-#sssBranchManagement,#sssBranchAccessPage,#sssBranchAccessBar,
-#sssTopBranchSwitcher,#sssBranchSwitcher,
-.multiple-branch-menu,.sss-multiple-branch-menu,
-.sss-branch-menu,.branch-management-menu,
-[data-menu="multiple-branch"],
-[data-p="Multiple Branch"],
-[data-p="Branch Management"]{display:none!important}
-</style>
-<script id="ganesh-single-shop-final-engine">
-(function(){
-"use strict";
-window.GANESH_SINGLE_SHOP=true;
-window.GANESH_SHOP_ID="GANESH_PLYWOOD";
-window.GANESH_BRANCH_ID="MAIN";
-
-window.sssBAOpen=function(){
- if(typeof toast==="function") toast("🏪 Ganesh Plywood — Single Shop ERP");
-};
-window.sssBAAddBranch=function(){
- if(typeof toast==="function") toast("⛔ Multiple Branch disabled");
-};
-window.sssBAEditBranch=function(){
- if(typeof toast==="function") toast("⛔ Branch Editing disabled");
-};
-window.sssBADeleteBranch=function(){
- if(typeof toast==="function") toast("⛔ Branch Deletion disabled");
-};
-window.baSwitch=function(){
- if(typeof toast==="function") toast("⛔ Branch Switching disabled");
-};
-
-function forceSingleShop(){
- try{
-  if(typeof db!=="object"||!db)return;
-  const collections=["customers","suppliers","stock","invoices","purchases",
-   "transactions","payments","receipts","salesReturns","purchaseReturns"];
-  collections.forEach(function(k){
-   if(!Array.isArray(db[k]))return;
-   db[k].forEach(function(x){
-    if(x&&typeof x==="object"){
-     x.shopId="GANESH_PLYWOOD";
-     x.branchId="MAIN";
-    }
-   });
-  });
-  if(db.settings){
-   db.settings.singleShop=true;
-   db.settings.shopId="GANESH_PLYWOOD";
-   db.settings.branchId="MAIN";
-  }
-  try{localStorage.setItem("GP_ERP_DB",JSON.stringify(db));}catch(e){}
- }catch(e){}
-}
-
-function hideBranchUI(){
- try{
-  document.querySelectorAll("button,a,.menu-item,.nav-item").forEach(function(el){
-   const t=(el.textContent||"").trim().toLowerCase();
-   if(t==="multiple branch"||t==="branch management"||
-      t==="branch management & staff"||t==="branch access"||
-      (t.includes("branch")&&!t.includes("report"))){
-    el.style.display="none";
-   }
-  });
- }catch(e){}
-}
-
-function hideElements(){
- [
-  "#sssBranchManagement","#sssBranchAccessPage","#sssBranchAccessBar",
-  "#sssTopBranchSwitcher","#sssBranchSwitcher",
-  ".multiple-branch-menu",".sss-multiple-branch-menu",
-  ".sss-branch-menu",".branch-management-menu"
- ].forEach(function(s){
-  try{document.querySelectorAll(s).forEach(function(e){e.style.display="none";});}catch(e){}
- });
-}
-
-function init(){
- forceSingleShop();
- hideBranchUI();
- hideElements();
-}
-
-window.addEventListener("load",function(){setTimeout(init,500);});
-setInterval(function(){hideBranchUI();hideElements();},2000);
-})();
-</script>
-
 </body></html>`;
   const w=open('','_blank');w.document.write(html);w.document.close();w.print();
 }
@@ -2114,7 +2022,209 @@ document.addEventListener('DOMContentLoaded',function(){
   <div class="table-wrap"><table class="sss-ba-table"><thead><tr><th>#</th><th>Branch</th><th>Code</th><th>Status</th><th>Action</th></tr></thead><tbody id="sssBABranchRows"></tbody></table></div>
  </div>
 </section>
+<script id="sss-branch-staff-access-engine">
+(function(){
+'use strict';
+const BK='SSS_TECHNOLOGY_BRANCHES_V4';
+const ACTIVE='SSS_TECHNOLOGY_WORKING_BRANCH_V4';
+const DBP='SSS_TECHNOLOGY_BRANCH_DB_V4_';
+const UK='GP_ERP_USERS_V1';
 
+function baBranches(){
+  try{
+    const a=JSON.parse(localStorage.getItem(BK)||'null');
+    if(Array.isArray(a)&&a.length)return a;
+  }catch(e){}
+  return [{id:'MAIN',name:'Main Branch',code:'MAIN',mobile:'',address:'',isMain:true,isActive:true}];
+}
+function baSetBranches(a){localStorage.setItem(BK,JSON.stringify(a))}
+function baUserList(){try{return JSON.parse(localStorage.getItem(UK)||'[]')}catch(e){return []}}
+function baUser(){const id=localStorage.getItem('GP_ERP_SESSION_V1');return baUserList().find(x=>x.id===id&&x.active)!==undefined?baUserList().find(x=>x.id===id&&x.active):null}
+function baRole(u){return String(u?.role||'').toLowerCase()}
+function baBranchId(u){return u?.branchId||'MAIN'}
+function baCanAll(u){
+  if(!u)return false;
+  const r=baRole(u);
+  return r==='admin'||(r==='manager'&&baBranchId(u)==='MAIN');
+}
+function baCanManage(u){return baRole(u)==='admin'||(baRole(u)==='manager'&&baBranchId(u)==='MAIN')}
+function baAllowedBranch(u,id){
+  if(baCanAll(u))return true;
+  return baBranchId(u)===id;
+}
+function baWorking(){
+  const u=baUser(), a=baBranches();
+  let id=localStorage.getItem(ACTIVE)||'MAIN';
+  if(!baAllowedBranch(u,id))id=baBranchId(u)||'MAIN';
+  if(!a.some(x=>x.id===id))id='MAIN';
+  return id;
+}
+function baDBKey(id){return DBP+id}
+function baSaveCurrent(){
+  try{
+    if(typeof db!=='undefined'){
+      localStorage.setItem(baDBKey(baWorking()),JSON.stringify(db));
+      localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
+    }
+  }catch(e){}
+}
+function baLoad(id){
+  const u=baUser();
+  if(!baAllowedBranch(u,id)){toast('⛔ This user can access only '+(baBranches().find(x=>x.id===baBranchId(u))?.name||'assigned branch'));return false}
+  try{
+    const raw=localStorage.getItem(baDBKey(id));
+    if(raw){db=JSON.parse(raw)}
+    else{
+      if(id==='MAIN'){
+        const old=localStorage.getItem('GP_ERP_DB');
+        db=old?JSON.parse(old):db;
+      }else{
+        // New branch starts with its own independent empty ERP database.
+        db={customers:[],suppliers:[],stock:[],invoices:[],purchases:[],salesReturns:[],purchaseReturns:[],transactions:[],receipts:[],payments:[],settings:(typeof db!=='undefined'&&db.settings)?JSON.parse(JSON.stringify(db.settings)):{company:'Ganesh Plywood',address:'',gstin:'',defaultGST:18}};
+      }
+      localStorage.setItem(baDBKey(id),JSON.stringify(db));
+    }
+    localStorage.setItem(ACTIVE,id);
+    localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
+    baBar();
+    return true;
+  }catch(e){console.error(e);return false}
+}
+function baBar(){
+  const e=document.getElementById('sssBranchAccessBar');if(!e)return;
+  const u=baUser(),id=baWorking(),b=baBranches().find(x=>x.id===id)||baBranches()[0];
+  e.style.display=u?'block':'none';
+  e.textContent=u?(baCanAll(u)?'🔐 ALL BRANCH ACCESS':'🔒 BRANCH ACCESS')+'  |  🏢 Working: '+b.name+' ('+b.code+')  |  👤 '+u.name:'';
+}
+function baSwitch(id){
+  const u=baUser();
+  if(!baAllowedBranch(u,id)){toast('⛔ Branch access denied');return}
+  baSaveCurrent(); if(baLoad(id)){
+    try{if(typeof dashboard==='function')dashboard()}catch(e){}
+    try{if(typeof nav==='function')nav()}catch(e){}
+    baRender();
+  }
+}
+function baInit(){
+  let a=baBranches();
+  if(!a.some(x=>x.id==='MAIN'))a.unshift({id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true});
+  a=a.map(x=>({...x,isActive:x.id==='MAIN'?true:x.isActive!==false}));
+  baSetBranches(a);
+  const u=baUser();
+  baLoad(baCanAll(u)?(localStorage.getItem(ACTIVE)||'MAIN'):(baBranchId(u)||'MAIN'));
+  baBar();
+}
+window.sssBAOpen=function(){
+  const u=baUser(); if(!baCanManage(u)){toast('⛔ Admin / Main Branch Manager only');return}
+  const p=document.getElementById('sssBranchAccessPage');if(p)p.style.display='block';
+  baRender();baUsersRender();
+}
+window.sssBAAddBranch=function(){
+  const u=baUser();if(!baCanManage(u)){toast('⛔ Admin / Main Branch Manager only');return}
+  const name=document.getElementById('sssBAN')?.value.trim(),code=document.getElementById('sssBAC')?.value.trim().toUpperCase();
+  if(!name||!code)return toast('Branch Name and Code required');
+  const a=baBranches();if(a.some(x=>x.code.toUpperCase()===code))return toast('Branch code already exists');
+  const id='BR_'+Date.now();
+  a.push({id,name,code,mobile:document.getElementById('sssBAM')?.value.trim()||'',address:document.getElementById('sssBAA')?.value.trim()||'',isMain:false,isActive:document.getElementById('sssBAS')?.value!=='0'});
+  baSetBranches(a);
+  localStorage.setItem(baDBKey(id),JSON.stringify({customers:[],suppliers:[],stock:[],invoices:[],purchases:[],salesReturns:[],purchaseReturns:[],transactions:[],receipts:[],payments:[],settings:(typeof db!=='undefined'&&db.settings)?JSON.parse(JSON.stringify(db.settings)):{company:'Ganesh Plywood',address:'',gstin:'',defaultGST:18}}));
+  sssBAClearBranchForm();baRender();toast('✅ Branch created');
+}
+window.sssBAClearBranchForm=function(){['sssBAN','sssBAC','sssBAM','sssBAA'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''})}
+window.sssBAEditBranch=function(id){
+ const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
+ const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
+ const name=prompt('Branch Name',b.name);if(name===null)return;
+ const code=prompt('Branch Code',b.code);if(code===null)return;
+ b.name=name.trim()||b.name;b.code=code.trim().toUpperCase()||b.code;
+ baSetBranches(a);baRender();baBar();
+}
+window.sssBADeleteBranch=function(id){
+ const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
+ if(id==='MAIN')return toast('🏠 Main Branch cannot be deleted');
+ const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
+ if(!confirm('Delete branch '+b.name+' and its branch data?'))return;
+ baSetBranches(a.filter(x=>x.id!==id));localStorage.removeItem(baDBKey(id));
+ if(baWorking()===id)localStorage.setItem(ACTIVE,'MAIN');
+ baRender();baBar();
+}
+window.sssBASetActive=function(id,active){
+ const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
+ const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
+ if(id==='MAIN')active=true;b.isActive=!!active;baSetBranches(a);baRender();
+}
+window.sssBASaveUserBranch=function(){
+ const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
+ const id=document.getElementById('sssBAUser')?.value,branchId=document.getElementById('sssBAUserBranch')?.value;
+ const list=baUserList(),x=list.find(v=>v.id===id);if(!x)return;
+ x.branchId=branchId;localStorage.setItem(UK,JSON.stringify(list));
+ toast('✅ User branch assigned');setTimeout(()=>location.reload(),400);
+}
+window.sssBAPopulateUser=function(){
+ const id=document.getElementById('sssBAUser')?.value,u=baUserList().find(x=>x.id===id);if(!u)return;
+ const r=document.getElementById('sssBARole');if(r)r.value=u.role||'';
+ const s=document.getElementById('sssBAUserBranch');if(s)s.value=u.branchId||'MAIN';
+}
+function baUsersRender(){
+ const s=document.getElementById('sssBAUser');if(!s)return;
+ s.innerHTML=baUserList().map(x=>`<option value="${x.id}">${x.name} (${x.username}) — ${x.role}</option>`).join('');
+ const b=document.getElementById('sssBAUserBranch');if(b)b.innerHTML=baBranches().map(x=>`<option value="${x.id}">${x.name} (${x.code})</option>`).join('');
+ sssBAPopulateUser();
+}
+function baRender(){
+ const tb=document.getElementById('sssBABranchRows');if(!tb)return;
+ const u=baUser(),cur=baWorking();
+ tb.innerHTML=baBranches().map((b,i)=>`<tr class="${b.id==='MAIN'?'sss-ba-main':''}">
+ <td>${i+1}</td><td><b>${b.name}</b>${b.id==='MAIN'?' 🏠':''}</td><td>${b.code}</td><td>${b.isActive?'🟢 Active':'⚪ Inactive'}</td>
+ <td><div class="sss-ba-actions">
+ <button class="btn primary" onclick="sssBASwitch('${b.id}')">🔵 Work Here</button>
+ ${baCanManage(u)?`<button class="btn light" onclick="sssBAEditBranch('${b.id}')">✏️ Edit</button>${b.id!=='MAIN'?`<button class="btn danger" onclick="sssBADeleteBranch('${b.id}')">🗑️ Delete</button><button class="btn light" onclick="sssBASetActive('${b.id}',${!b.isActive})">${b.isActive?'Deactivate':'Activate'}</button>`:''}`:''}
+ </div></td></tr>`).join('');
+}
+window.sssBASwitch=function(id){baSwitch(id)}
+window.sssBARefresh=baRender;
+window.sssBAGetBranches=baBranches;
+window.sssBAUserCanAll=baCanAll;
+window.sssBAGetWorking=baWorking;
+
+// Assign default branch IDs to existing users once.
+(function(){
+ const list=baUserList();let changed=false;
+ list.forEach(u=>{if(!u.branchId){u.branchId=(String(u.role).toLowerCase()==='admin'?'MAIN':'MAIN');changed=true}});
+ if(changed)localStorage.setItem(UK,JSON.stringify(list));
+})();
+
+// Wrap save so every change is stored in the current branch database.
+const originalSave=window.save;
+if(typeof originalSave==='function'&&!originalSave.__sssBranchAccess){
+ window.save=function(){const r=originalSave.apply(this,arguments);baSaveCurrent();return r};
+ window.save.__sssBranchAccess=true;
+}
+
+// Protect openPage: branch users only see their own branch data. Main Admin/Manager can switch.
+const originalOpenPage=window.openPage;
+if(typeof originalOpenPage==='function'&&!originalOpenPage.__sssBranchAccess){
+ window.openPage=function(p){
+   const u=baUser();
+   if(!u){return originalOpenPage.apply(this,arguments)}
+   const allowed=baCanAll(u)||baAllowedBranch(u,baWorking());
+   if(!allowed){toast('⛔ Access denied');return}
+   if(p==='Branch & Staff Access'){return sssBAOpen()}
+   return originalOpenPage.apply(this,arguments);
+ };
+ window.openPage.__sssBranchAccess=true;
+}
+
+window.addEventListener('load',function(){setTimeout(baInit,250)});
+
+// Expose branch selector for top bar.
+window.sssBARenderSelector=function(){
+ const u=baUser();if(!u)return '';
+ const a=baBranches().filter(b=>b.isActive!==false&&baAllowedBranch(u,b.id));
+ return `<select onchange="sssBASwitch(this.value)" style="max-width:190px">${a.map(b=>`<option value="${b.id}" ${b.id===baWorking()?'selected':''}>🏢 ${b.name}</option>`).join('')}</select>`;
+};
+})();
+</script>
 <script id="sss-branch-access-ui">
 (function(){
   function install(){
