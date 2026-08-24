@@ -2688,5 +2688,132 @@ window.sssSaveBranchAssignments=function(){
   window.addEventListener('storage',update);
 })();
 </script>
+
+<style>
+#sssRightsPanel{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:none;padding:18px;overflow:auto}
+#sssRightsBox{max-width:760px;margin:35px auto;background:#fff;border-radius:12px;padding:18px}
+.sssRightsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sssRightsGrid label{padding:9px;border:1px solid #ddd;border-radius:7px;background:#fafafa}
+@media(max-width:650px){.sssRightsGrid{grid-template-columns:1fr}}
+</style>
+<div id="sssRightsPanel">
+ <div id="sssRightsBox">
+  <h2>🔐 User Function Rights</h2>
+  <p>Select a user and give only the required functions.</p>
+  <select id="sssRightsUser" style="width:100%;padding:10px;margin-bottom:12px"></select>
+  <div id="sssRightsGrid" class="sssRightsGrid"></div>
+  <br>
+  <button type="button" class="btn success" onclick="sssSaveRights()">💾 Save Rights</button>
+  <button type="button" class="btn light" onclick="sssSelectAllRights(true)">✅ All</button>
+  <button type="button" class="btn light" onclick="sssSelectAllRights(false)">☐ Clear</button>
+  <button type="button" class="btn danger" onclick="sssCloseRights()">Close</button>
+ </div>
+</div>
+<script>
+(function(){
+const KEY='SSS_USER_FUNCTION_RIGHTS_V1';
+const RIGHTS=[
+['dashboard','📊 Dashboard'],['billing','🧾 Billing / Sales'],['purchase','🛒 Purchase'],
+['stock','📦 Stock'],['rate','💰 Rate Checklist'],['purchaseReturn','↩️ Purchase Return'],
+['salesReturn','↪️ Sales Return'],['receivable','💵 Receivable'],['payable','💳 Payable'],
+['customers','👥 Customers'],['suppliers','🚚 Suppliers'],['reports','📈 Reports'],
+['transactions','💼 Transactions'],['settings','⚙️ Settings'],['dataControl','🛠️ Data Control'],
+['backup','💾 Backup'],['users','👤 Login Users'],['branchManagement','🏢 Branch Management'],
+['allBranchReports','📊 All Branch Reports']
+];
+
+function users(){
+ try{
+  let a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
+  return Array.isArray(a)?a:[];
+ }catch(e){return []}
+}
+function current(){
+ try{
+  const id=localStorage.getItem('GP_ERP_SESSION_V1');
+  return users().find(u=>String(u.id)===String(id))||null;
+ }catch(e){return null}
+}
+function isMainAdmin(){
+ const u=current(),r=String(u?.role||'').toLowerCase();
+ return r==='admin'||(r==='manager' && window.SSS_ACCESS && window.SSS_ACCESS.isMainManager && window.SSS_ACCESS.isMainManager());
+}
+function load(){
+ try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){return {}}
+}
+function userId(u){return String(u?.id??u?.username??'')}
+function defaults(u){
+ const r=String(u?.role||'').toLowerCase();
+ if(r==='admin') return RIGHTS.map(x=>x[0]);
+ return ['dashboard','billing','purchase','stock','rate','purchaseReturn','salesReturn','receivable','payable','customers','suppliers','reports','transactions'];
+}
+function rights(u){
+ if(!u)return [];
+ const all=load(),id=userId(u);
+ return Array.isArray(all[id])?all[id]:defaults(u);
+}
+window.sssUserHasRight=function(k){
+ const u=current();
+ return !u || rights(u).includes(k);
+};
+window.sssOpenUserFunctionRights=function(){
+ if(!isMainAdmin()){alert('Only Admin / Main Branch Manager can change rights.');return;}
+ const us=users(),sel=document.getElementById('sssRightsUser');
+ sel.innerHTML='<option value="">Select User</option>'+us.map(u=>'<option value="'+userId(u)+'">'+(u.name||u.username||userId(u))+' — '+(u.role||'Staff')+'</option>').join('');
+ document.getElementById('sssRightsPanel').style.display='block';
+ sel.onchange=render;
+ render();
+};
+window.sssCloseRights=function(){document.getElementById('sssRightsPanel').style.display='none'};
+function render(){
+ const id=document.getElementById('sssRightsUser').value;
+ const u=users().find(x=>userId(x)===id);
+ const r=rights(u);
+ document.getElementById('sssRightsGrid').innerHTML=RIGHTS.map(x=>'<label><input type="checkbox" data-right="'+x[0]+'" '+(r.includes(x[0])?'checked':'')+'> '+x[1]+'</label>').join('');
+}
+window.sssSelectAllRights=function(v){document.querySelectorAll('#sssRightsGrid input').forEach(x=>x.checked=v)};
+window.sssSaveRights=function(){
+ const id=document.getElementById('sssRightsUser').value;
+ if(!id){alert('Select User');return}
+ const a=load();
+ a[id]=[...document.querySelectorAll('#sssRightsGrid input:checked')].map(x=>x.dataset.right);
+ localStorage.setItem(KEY,JSON.stringify(a));
+ alert('✅ User function rights saved');
+ applyRights();
+};
+
+function applyRights(){
+ const map={
+ 'Dashboard':'dashboard','GST Billing':'billing','Billing':'billing','Purchase':'purchase','Stock':'stock',
+ 'Rate Checklist':'rate','Purchase Return':'purchaseReturn','Sales Return':'salesReturn',
+ 'Receivable':'receivable','Payable':'payable','Customers':'customers','Suppliers':'suppliers',
+ 'Reports':'reports','Transactions':'transactions','Settings':'settings','Data Control':'dataControl',
+ 'Backup':'backup','Login Users':'users','Branch Management':'branchManagement','All Branch Reports':'allBranchReports'
+ };
+ document.querySelectorAll('button,a,[role="button"]').forEach(el=>{
+  const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+  for(const n in map){
+   if(t===n || t.startsWith(n+' ')){
+    el.style.display=sssUserHasRight(map[n])?'':'none';
+    break;
+   }
+  }
+ });
+}
+document.addEventListener('DOMContentLoaded',function(){
+ setTimeout(function(){
+  applyRights();
+  if(isMainAdmin() && !document.getElementById('sssUserRightsMenuBtn')){
+   const b=document.createElement('button');
+   b.id='sssUserRightsMenuBtn';b.type='button';b.className='btn primary';
+   b.textContent='🔐 User Function Rights';b.onclick=sssOpenUserFunctionRights;
+   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
+   host.appendChild(b);
+  }
+ },300);
+});
+window.addEventListener('sssBranchDataLoaded',()=>setTimeout(applyRights,100));
+})();
+</script>
 </body>
 </html>
