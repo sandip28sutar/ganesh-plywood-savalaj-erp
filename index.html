@@ -2258,16 +2258,17 @@ window.sssBARenderSelector=function(){
       const id=localStorage.getItem('SSS_TECHNOLOGY_WORKING_BRANCH_V4')||'MAIN';
       if(typeof db==='undefined')return;
       ['customers','suppliers','stock','invoices','purchases','salesReturns','purchaseReturns','transactions','receipts','payments'].forEach(k=>{
-        (db[k]||[]).forEach(x=>{if(x&&x.branchId==null)x.branchId=id});
+        const a=db[k];if(!Array.isArray(a))return;
+        for(let i=0;i<a.length;i++){const x=a[i];if(x&&x.branchId==null)x.branchId=id}
       });
     }catch(e){}
   }
   const old=window.save;
   if(typeof old==='function'&&!old.__sssStamp){
-    window.save=function(){stamp();return old.apply(this,arguments)};
-    window.save.__sssStamp=true;
+    window.save=function(){stamp();return old.apply(this,arguments)};window.save.__sssStamp=true;
   }
-  setInterval(stamp,1000);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(stamp,800),{once:true});
+  else setTimeout(stamp,800);
 })();
 </script>
 
@@ -2575,79 +2576,38 @@ window.sssSaveBranchAssignments=function(){
 (function(){
 'use strict';
 function getUsers(){
-  try{
-    if(Array.isArray(window.users) && window.users.length) return window.users;
-  }catch(e){}
-  try{
-    const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
-    return Array.isArray(a)?a:[];
-  }catch(e){return []}
-}
-function populate(){
-  const s=document.getElementById('sssRightsUser');
-  if(!s)return false;
-  const us=getUsers();
-  const old=s.value;
-  s.innerHTML='';
-  if(!us.length){
-    const o=document.createElement('option');
-    o.value='';o.textContent='No users found';
-    s.appendChild(o); return true;
-  }
-  us.filter(u=>u && u.active!==false).forEach(u=>{
-    const o=document.createElement('option');
-    o.value=String(u.id);
-    o.textContent=(u.name||u.username||u.id)+' — '+(u.username||u.id);
-    s.appendChild(o);
-  });
-  if(old && us.some(u=>String(u.id)===old)) s.value=old;
-  else if(s.options.length) s.selectedIndex=0;
-  loadSelected();
-  return true;
+  try{if(Array.isArray(window.users)&&window.users.length)return window.users}catch(e){}
+  try{const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}
 }
 function loadSelected(){
-  const s=document.getElementById('sssRightsUser');
-  if(!s || !s.value)return;
-  const us=getUsers(),u=us.find(x=>String(x.id)===String(s.value));
-  const role=document.getElementById('sssRightsRole');
-  if(role)role.value=u?.role||'Staff';
-  // Use the existing rights store if available.
-  try{
-    if(typeof window.sssLoadRightsForSelected==='function'){
-      // Avoid recursion by only calling the original when it isn't this wrapper.
-      const f=window.sssLoadRightsForSelected;
-      if(!f.__sssFinalWrapper) f();
-    }
-  }catch(e){}
+  const s=document.getElementById('sssRightsUser');if(!s||!s.value)return;
+  const u=getUsers().find(x=>String(x.id)===String(s.value));
+  const role=document.getElementById('sssRightsRole');if(role)role.value=u?.role||'Staff';
+  try{const f=window.sssLoadRightsForSelected;if(typeof f==='function'&&!f.__sssFinalWrapper)f()}catch(e){}
+}
+function populate(){
+  const s=document.getElementById('sssRightsUser');if(!s)return false;
+  const us=getUsers().filter(u=>u&&u.active!==false),old=s.value;
+  const sig=us.map(u=>String(u.id)+'|'+(u.name||u.username||u.id)+'|'+(u.username||u.id)).join('||');
+  if(s.dataset.sssUsers===sig){loadSelected();return true}
+  s.dataset.sssUsers=sig;s.innerHTML='';
+  if(!us.length){const o=document.createElement('option');o.value='';o.textContent='No users found';s.appendChild(o);return true}
+  us.forEach(u=>{const o=document.createElement('option');o.value=String(u.id);o.textContent=(u.name||u.username||u.id)+' — '+(u.username||u.id);s.appendChild(o)});
+  if(old&&us.some(u=>String(u.id)===old))s.value=old;else s.selectedIndex=0;
+  loadSelected();return true;
 }
 function install(){
-  const s=document.getElementById('sssRightsUser');
-  if(!s)return;
-  if(!s.__sssFinalListener){
-    s.addEventListener('change',loadSelected);
-    s.__sssFinalListener=true;
-  }
+  const s=document.getElementById('sssRightsUser');if(!s)return;
+  if(!s.__sssFinalListener){s.addEventListener('change',loadSelected);s.__sssFinalListener=true}
   populate();
 }
 const oldSettings=window.settings;
 if(typeof oldSettings==='function'&&!oldSettings.__sssRightsWrapped){
-  window.settings=function(){
-    const r=oldSettings.apply(this,arguments);
-    setTimeout(install,0);
-    setTimeout(install,80);
-    setTimeout(install,300);
-    return r;
-  };
+  window.settings=function(){const r=oldSettings.apply(this,arguments);setTimeout(install,0);setTimeout(install,120);return r};
   window.settings.__sssRightsWrapped=true;
 }
 window.sssFixUserRightsDropdown=install;
-document.addEventListener('DOMContentLoaded',function(){
-  install();
-  const obs=new MutationObserver(function(){
-    if(document.getElementById('sssRightsUser')) install();
-  });
-  obs.observe(document.body,{childList:true,subtree:true});
-});
+document.addEventListener('DOMContentLoaded',install,{once:true});
 })();
 </script>
 
