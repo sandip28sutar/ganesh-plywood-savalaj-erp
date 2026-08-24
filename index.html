@@ -3133,197 +3133,265 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<style id="sss-user-management-css">
-#sssUserMgmtOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100010;display:none;padding:14px;overflow:auto}
-#sssUserMgmtBox{max-width:1100px;margin:20px auto;background:#fff;border-radius:14px;padding:18px}
-.sssUMForm{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.sssUMForm input,.sssUMForm select{width:100%;padding:9px;border:1px solid #ccc;border-radius:7px}
-.sssUMTable{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
-.sssUMTable th,.sssUMTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-.sssUMTable th{background:#faf1e7}
-.sssUMPass{font-family:monospace;letter-spacing:1px}
-@media(max-width:800px){.sssUMForm{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.sssUMForm{grid-template-columns:1fr}}
+
+
+
+
+<style id="sss-user-management-safe-css">
+#sssSafeUserOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100020;display:none;padding:14px;overflow:auto}
+#sssSafeUserBox{max-width:1100px;margin:20px auto;background:#fff;border-radius:14px;padding:18px}
+.sssSafeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.sssSafeGrid input,.sssSafeGrid select{width:100%;padding:9px;border:1px solid #ccc;border-radius:7px}
+.sssSafeTable{width:100%;border-collapse:collapse;margin-top:15px;font-size:13px}
+.sssSafeTable th,.sssSafeTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sssSafeTable th{background:#faf1e7}
+@media(max-width:700px){.sssSafeGrid{grid-template-columns:1fr}}
 </style>
-
-<div id="sssUserMgmtOverlay">
- <div id="sssUserMgmtBox">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-   <div>
-    <h2 style="margin:0">👥 User Management</h2>
-    <small>User ID • Password • Role • Branch • Status • Rights</small>
-   </div>
-   <button type="button" class="btn danger" onclick="sssUserMgmtClose()">Close</button>
+<div id="sssSafeUserOverlay">
+ <div id="sssSafeUserBox">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+   <h2>👥 User Management</h2>
+   <button type="button" class="btn danger" onclick="sssSafeCloseUsers()">Close</button>
   </div>
-
-  <div class="sssUMForm" style="margin-top:14px">
-   <input id="sssUMId" placeholder="User ID">
-   <input id="sssUMName" placeholder="Name">
-   <input id="sssUMPass" placeholder="Password">
-   <select id="sssUMRole">
-    <option value="staff">Staff</option>
-    <option value="manager">Manager</option>
-    <option value="admin">Admin</option>
-   </select>
-   <select id="sssUMBranch"></select>
-   <select id="sssUMStatus">
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-   </select>
+  <div class="sssSafeGrid">
+   <input id="sssSafeId" placeholder="User ID">
+   <input id="sssSafeName" placeholder="Name">
+   <input id="sssSafePass" placeholder="Password">
+   <select id="sssSafeRole"><option value="staff">Staff</option><option value="manager">Manager</option><option value="admin">Admin</option></select>
+   <select id="sssSafeBranch"></select>
+   <select id="sssSafeStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select>
   </div>
-  <div style="margin-top:10px">
-   <button type="button" class="btn success" onclick="sssUserSave()">💾 Add / Update User</button>
-   <button type="button" class="btn light" onclick="sssUserClear()">Clear</button>
-  </div>
-
+  <br>
+  <button type="button" class="btn success" onclick="sssSafeSaveUser()">💾 Save User</button>
+  <button type="button" class="btn light" onclick="sssSafeClearUser()">Clear</button>
   <div style="overflow:auto">
-   <table class="sssUMTable">
-    <thead>
-     <tr><th>User ID</th><th>Name</th><th>Password</th><th>Role</th><th>Branch</th><th>Status</th><th>Rights</th><th>Actions</th></tr>
-    </thead>
-    <tbody id="sssUserMgmtRows"></tbody>
+   <table class="sssSafeTable">
+    <thead><tr><th>User ID</th><th>Name</th><th>Role</th><th>Branch</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody id="sssSafeUserRows"></tbody>
    </table>
   </div>
  </div>
 </div>
-
-<script id="sss-user-management-module">
+<script id="sss-user-management-safe-module">
 (function(){
 'use strict';
-
-const USER_KEYS=['GP_ERP_USERS_V1','users','loginUsers','ERP_USERS'];
-
 function readUsers(){
-  let arr=[];
-  for(const key of USER_KEYS){
-    try{
-      const x=JSON.parse(localStorage.getItem(key)||'[]');
-      if(Array.isArray(x))arr=arr.concat(x);
-    }catch(e){}
-  }
-  try{
-    if(typeof users!=='undefined'&&Array.isArray(users))arr=arr.concat(users);
-  }catch(e){}
-  const seen=new Set();
-  return arr.filter(u=>{
-    const id=String(u?.id??u?.userId??u?.username??'').trim();
-    if(!id||seen.has(id))return false;
-    seen.add(id);return true;
-  });
+ try{
+  const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
+  return Array.isArray(a)?a:[];
+ }catch(e){return []}
 }
-function saveUsers(arr){
-  localStorage.setItem('GP_ERP_USERS_V1',JSON.stringify(arr));
-  // Keep compatibility with common ERP user stores.
-  localStorage.setItem('users',JSON.stringify(arr));
+function saveUsers(a){localStorage.setItem('GP_ERP_USERS_V1',JSON.stringify(a))}
+function branchList(){
+ try{
+  const a=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
+  return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',isActive:true}];
+ }catch(e){return [{id:'MAIN',name:'Main Branch',isActive:true}]}
 }
-function branches(){
-  try{
-    const x=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
-    return Array.isArray(x)&&x.length?x:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
-  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
-}
-function rights(){
-  try{return JSON.parse(localStorage.getItem('SSS_USER_FUNCTION_RIGHTS_V2')||'{}')||{}}catch(e){return {}}
-}
-function currentIsAdmin(){
-  try{
-    const id=localStorage.getItem('GP_ERP_SESSION_V1');
-    const u=readUsers().find(x=>String(x.id||x.username)===String(id));
-    return String(u?.role||'').toLowerCase()==='admin';
-  }catch(e){return false}
-}
-function fillBranches(){
-  const s=document.getElementById('sssUMBranch');if(!s)return;
-  s.innerHTML=branches().filter(b=>b.isActive!==false).map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+function isAdmin(){
+ try{
+  const id=localStorage.getItem('GP_ERP_SESSION_V1');
+  const u=readUsers().find(x=>String(x.id||x.username)===String(id));
+  return String(u?.role||'').toLowerCase()==='admin';
+ }catch(e){return false}
 }
 function render(){
-  const r=rights(),rows=document.getElementById('sssUserMgmtRows');
-  if(!rows)return;
-  rows.innerHTML=readUsers().map(u=>{
-    const id=String(u.id??u.userId??u.username);
-    const b=branches().find(x=>String(x.id)===String(u.branchId||u.branch||'MAIN'));
-    const rr=Array.isArray(r[id])?r[id].length:'Default';
-    const safe=id.replace(/'/g,"\\'");
-    return `<tr>
-      <td><b>${id}</b></td>
-      <td>${u.name||u.fullName||''}</td>
-      <td class="sssUMPass">${u.password||'••••••'}</td>
-      <td>${u.role||'staff'}</td>
-      <td>${b?.name||u.branch||'Main Branch'}</td>
-      <td>${String(u.active??u.status??'active')==='false'||u.status==='inactive'?'🔴 Inactive':'🟢 Active'}</td>
-      <td>${rr} functions</td>
-      <td>
-       <button type="button" class="btn light" onclick="sssUserEdit('${safe}')">✏️ Edit</button>
-       <button type="button" class="btn light" onclick="sssUserReset('${safe}')">🔑 Reset</button>
-       <button type="button" class="btn danger" onclick="sssUserDelete('${safe}')">🗑️ Delete</button>
-      </td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="8">No users found.</td></tr>';
+ const b=document.getElementById('sssSafeBranch');
+ if(b)b.innerHTML=branchList().filter(x=>x.isActive!==false).map(x=>'<option value="'+x.id+'">'+x.name+'</option>').join('');
+ const rows=document.getElementById('sssSafeUserRows');if(!rows)return;
+ rows.innerHTML=readUsers().map(u=>{
+  const id=String(u.id||u.username),br=branchList().find(x=>String(x.id)===String(u.branchId||'MAIN'));
+  return '<tr><td>'+id+'</td><td>'+(u.name||'')+'</td><td>'+(u.role||'staff')+'</td><td>'+(br?.name||'Main Branch')+'</td><td>'+(u.status==='inactive'?'🔴 Inactive':'🟢 Active')+'</td><td><button type="button" class="btn light" onclick="sssSafeEditUser(\''+id.replace(/'/g,"\\'")+'\')">✏️ Edit</button></td></tr>';
+ }).join('')||'<tr><td colspan="6">No users.</td></tr>';
 }
-window.sssUserMgmtOpen=function(){
-  if(!currentIsAdmin()){alert('🔒 Admin only.');return}
-  fillBranches();render();
-  document.getElementById('sssUserMgmtOverlay').style.display='block';
+window.sssOpenUserManagement=function(){
+ if(!isAdmin()){alert('🔒 Admin only.');return}
+ render();
+ document.getElementById('sssSafeUserOverlay').style.display='block';
 };
-window.sssUserMgmtClose=function(){document.getElementById('sssUserMgmtOverlay').style.display='none'};
-window.sssUserClear=function(){
- ['sssUMId','sssUMName','sssUMPass'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('sssUMRole').value='staff';
- document.getElementById('sssUMStatus').value='active';
- fillBranches();
+window.sssSafeCloseUsers=function(){document.getElementById('sssSafeUserOverlay').style.display='none'};
+window.sssSafeClearUser=function(){
+ ['sssSafeId','sssSafeName','sssSafePass'].forEach(x=>document.getElementById(x).value='');
+ document.getElementById('sssSafeRole').value='staff';document.getElementById('sssSafeStatus').value='active';render();
 };
-window.sssUserEdit=function(id){
-  const u=readUsers().find(x=>String(x.id??x.userId??x.username)===String(id));
-  if(!u)return;
-  document.getElementById('sssUMId').value=u.id??u.userId??u.username??'';
-  document.getElementById('sssUMName').value=u.name??u.fullName??'';
-  document.getElementById('sssUMPass').value=u.password??'';
-  document.getElementById('sssUMRole').value=u.role??'staff';
-  document.getElementById('sssUMBranch').value=u.branchId??u.branch??'MAIN';
-  document.getElementById('sssUMStatus').value=(u.status==='inactive'||u.active===false)?'inactive':'active';
+window.sssSafeEditUser=function(id){
+ const u=readUsers().find(x=>String(x.id||x.username)===String(id));if(!u)return;
+ document.getElementById('sssSafeId').value=u.id||u.username||'';
+ document.getElementById('sssSafeName').value=u.name||'';
+ document.getElementById('sssSafePass').value=u.password||'';
+ document.getElementById('sssSafeRole').value=u.role||'staff';
+ document.getElementById('sssSafeBranch').value=u.branchId||'MAIN';
+ document.getElementById('sssSafeStatus').value=u.status||'active';
 };
-window.sssUserSave=function(){
-  if(!currentIsAdmin()){alert('🔒 Admin only.');return}
-  const id=document.getElementById('sssUMId').value.trim();
-  const name=document.getElementById('sssUMName').value.trim();
-  const pass=document.getElementById('sssUMPass').value;
-  const role=document.getElementById('sssUMRole').value;
-  const branchId=document.getElementById('sssUMBranch').value||'MAIN';
-  const status=document.getElementById('sssUMStatus').value;
-  if(!id||!pass){alert('User ID and Password required.');return}
-  const a=readUsers();
-  const idx=a.findIndex(u=>String(u.id??u.userId??u.username)===id);
-  const user={id,name,password:pass,role,branchId,status,active:status==='active'};
-  if(idx>=0)a[idx]={...a[idx],...user};else a.push(user);
-  saveUsers(a);
-  alert('✅ User saved: '+id);
-  render();sssUserClear();
+window.sssSafeSaveUser=function(){
+ if(!isAdmin())return alert('Admin only.');
+ const id=document.getElementById('sssSafeId').value.trim(),pass=document.getElementById('sssSafePass').value;
+ if(!id||!pass)return alert('User ID and Password required.');
+ const a=readUsers(),i=a.findIndex(x=>String(x.id||x.username)===id);
+ const u={id,name:document.getElementById('sssSafeName').value.trim(),password:pass,role:document.getElementById('sssSafeRole').value,branchId:document.getElementById('sssSafeBranch').value,status:document.getElementById('sssSafeStatus').value,active:document.getElementById('sssSafeStatus').value==='active'};
+ if(i>=0)a[i]={...a[i],...u};else a.push(u);
+ saveUsers(a);render();alert('✅ User saved');
 };
-window.sssUserReset=function(id){
-  if(!currentIsAdmin())return;
-  const p=prompt('Enter new password for '+id+':');
-  if(p===null)return;
-  if(!p){alert('Password cannot be blank.');return}
-  const a=readUsers(),u=a.find(x=>String(x.id??x.userId??x.username)===id);
-  if(u){u.password=p;saveUsers(a);render();alert('✅ Password reset.')}
+})();
+</script>
+
+<style id="sss-settings-advanced-css">
+#sssAdvSettingsOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100030;display:none;padding:14px;overflow:auto}
+#sssAdvSettingsBox{max-width:1150px;margin:18px auto;background:#fff;border-radius:15px;padding:18px}
+.sssSetGrid{display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:10px}
+.sssSetCard{border:1px solid #e4e4e4;border-radius:10px;padding:12px;background:#fff}
+.sssSetCard h4{margin:0 0 7px}.sssSetCard small{color:#666}
+.sssSetCard input,.sssSetCard select{width:100%;padding:8px;margin-top:7px}
+.sssSetTabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+.sssSetTabs button{padding:8px 11px;border:1px solid #ddd;border-radius:8px;background:#fafafa}
+.sssSetPanel{display:none}.sssSetPanel.active{display:block}
+.sssSetTable{width:100%;border-collapse:collapse;font-size:13px}
+.sssSetTable th,.sssSetTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sssSetTable th{background:#faf1e7}
+@media(max-width:800px){.sssSetGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.sssSetGrid{grid-template-columns:1fr}}
+</style>
+
+<div id="sssAdvSettingsOverlay">
+ <div id="sssAdvSettingsBox">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+   <div><h2 style="margin:0">⚙️ Advanced ERP Settings</h2><small>SSS Technology — System Control Center</small></div>
+   <button type="button" class="btn danger" onclick="sssAdvSettingsClose()">Close</button>
+  </div>
+
+  <div class="sssSetTabs">
+   <button onclick="sssSetTab('general')">⚙️ General</button>
+   <button onclick="sssSetTab('invoice')">🧾 Invoice</button>
+   <button onclick="sssSetTab('finance')">💰 Finance</button>
+   <button onclick="sssSetTab('inventory')">📦 Inventory</button>
+   <button onclick="sssSetTab('security')">🔐 Security</button>
+   <button onclick="sssSetTab('automation')">🤖 Automation</button>
+   <button onclick="sssSetTab('system')">🛠️ System</button>
+  </div>
+
+  <div id="sssSetGeneral" class="sssSetPanel active">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>🏢 Company</h4><small>Business display name</small><input id="sssCfgCompany"></div>
+    <div class="sssSetCard"><h4>📞 Contact</h4><small>Mobile / contact</small><input id="sssCfgMobile"></div>
+    <div class="sssSetCard"><h4>📍 Address</h4><small>Invoice address</small><input id="sssCfgAddress"></div>
+    <div class="sssSetCard"><h4>🧾 GSTIN</h4><small>GST number</small><input id="sssCfgGSTIN"></div>
+    <div class="sssSetCard"><h4>🔢 Invoice Prefix</h4><input id="sssCfgPrefix"></div>
+    <div class="sssSetCard"><h4>📅 Financial Year</h4><select id="sssCfgFY"><option>2026-27</option><option>2027-28</option><option>2028-29</option></select></div>
+   </div>
+  </div>
+
+  <div id="sssSetInvoice" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>🧾 Auto Invoice Number</h4><select id="sssCfgAutoInvoice"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>💵 Default Payment</h4><select id="sssCfgPayment"><option>Cash</option><option>UPI</option><option>Credit</option></select></div>
+    <div class="sssSetCard"><h4>🖨️ Auto Print</h4><select id="sssCfgPrint"><option value="no">Disabled</option><option value="yes">Enabled</option></select></div>
+    <div class="sssSetCard"><h4>📱 WhatsApp Invoice</h4><select id="sssCfgWhatsApp"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>✏️ Edit Invoice</h4><select id="sssCfgEditInvoice"><option value="admin">Admin Only</option><option value="manager">Manager+</option></select></div>
+    <div class="sssSetCard"><h4>🗑️ Delete Invoice</h4><select id="sssCfgDeleteInvoice"><option value="admin">Admin Only</option><option value="none">Disabled</option></select></div>
+   </div>
+  </div>
+
+  <div id="sssSetFinance" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>💰 Credit Limit</h4><input id="sssCfgCreditLimit" type="number" min="0"></div>
+    <div class="sssSetCard"><h4>⏰ Overdue Alert Days</h4><input id="sssCfgDueDays" type="number" min="0"></div>
+    <div class="sssSetCard"><h4>📈 Profit Calculation</h4><select id="sssCfgProfit"><option value="sale-purchase">Sales − Purchase</option><option value="none">Disabled</option></select></div>
+   </div>
+  </div>
+
+  <div id="sssSetInventory" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>⚠️ Low Stock Alert</h4><select id="sssCfgLowStock"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>📦 Minimum Stock</h4><input id="sssCfgMinStock" type="number" min="0"></div>
+    <div class="sssSetCard"><h4>🔄 Stock Transfer Approval</h4><select id="sssCfgTransferApproval"><option value="yes">Required</option><option value="no">Not Required</option></select></div>
+   </div>
+  </div>
+
+  <div id="sssSetSecurity" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>🔐 Login Session</h4><select id="sssCfgSession"><option value="8">8 Hours</option><option value="24">24 Hours</option><option value="168">7 Days</option></select></div>
+    <div class="sssSetCard"><h4>🛡️ Audit Log</h4><select id="sssCfgAudit"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>🚫 Failed Login Limit</h4><input id="sssCfgFailed" type="number" min="1"></div>
+   </div>
+   <p>Admin/Main Manager can control User Function Rights separately.</p>
+   <button type="button" class="btn primary" onclick="sssOpenUserFunctionRights && sssOpenUserFunctionRights()">🔐 User Function Rights</button>
+   <button type="button" class="btn primary" onclick="sssOpenUserManagement && sssOpenUserManagement()">👥 User Management</button>
+  </div>
+
+  <div id="sssSetAutomation" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>⏰ Daily Summary</h4><select id="sssCfgSummary"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>📉 Low Stock Notification</h4><select id="sssCfgLowNotify"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+    <div class="sssSetCard"><h4>💵 Receivable Reminder</h4><select id="sssCfgRecNotify"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+   </div>
+  </div>
+
+  <div id="sssSetSystem" class="sssSetPanel">
+   <div class="sssSetGrid">
+    <div class="sssSetCard"><h4>☁️ Backup</h4><button type="button" class="btn primary" onclick="sssEnterpriseBackup && sssEnterpriseBackup()">Full Backup</button></div>
+    <div class="sssSetCard"><h4>🏢 Branch Control</h4><button type="button" class="btn primary" onclick="sssOpenBranches && sssOpenBranches()">Branch Management</button></div>
+    <div class="sssSetCard"><h4>📊 All Branch Reports</h4><button type="button" class="btn primary" onclick="sssOpenMultiBranchReports && sssOpenMultiBranchReports()">Open Reports</button></div>
+   </div>
+  </div>
+
+  <div style="margin-top:15px">
+   <button type="button" class="btn success" onclick="sssSaveAdvancedSettings()">💾 Save Settings</button>
+   <button type="button" class="btn light" onclick="sssResetAdvancedSettings()">↺ Reset Defaults</button>
+  </div>
+ </div>
+</div>
+
+<script id="sss-advanced-settings-module">
+(function(){
+'use strict';
+const KEY='SSS_TECHNOLOGY_ADVANCED_SETTINGS_V1';
+const defaults={
+ company:'SSS Technology',mobile:'',address:'',gstin:'',prefix:'INV-',fy:'2026-27',
+ autoInvoice:'yes',payment:'Cash',print:'no',whatsapp:'yes',editInvoice:'admin',deleteInvoice:'admin',
+ creditLimit:0,dueDays:30,profit:'sale-purchase',lowStock:'yes',minStock:5,transferApproval:'yes',
+ session:8,audit:'yes',failed:5,summary:'yes',lowNotify:'yes',recNotify:'yes'
 };
-window.sssUserDelete=function(id){
-  if(!currentIsAdmin())return;
-  if(id==='admin'){alert('Admin user cannot be deleted.');return}
-  if(!confirm('Delete User ID '+id+'?'))return;
-  const a=readUsers().filter(u=>String(u.id??u.userId??u.username)!==id);
-  saveUsers(a);render();
+function load(){try{return {...defaults,...(JSON.parse(localStorage.getItem(KEY)||'{}')||{})}}catch(e){return {...defaults}}}
+function val(id,v){const e=document.getElementById(id);if(e)e.value=v}
+function loadUI(){
+ const x=load();
+ Object.keys(x).forEach(k=>val('sssCfg'+k.charAt(0).toUpperCase()+k.slice(1),x[k]));
+}
+function readUI(){
+ const x={};
+ ['company','mobile','address','gstin','prefix','fy','autoInvoice','payment','print','whatsapp','editInvoice','deleteInvoice','creditLimit','dueDays','profit','lowStock','minStock','transferApproval','session','audit','failed','summary','lowNotify','recNotify'].forEach(k=>{
+  const e=document.getElementById('sssCfg'+k.charAt(0).toUpperCase()+k.slice(1));if(e)x[k]=e.value;
+ });
+ return x;
+}
+window.sssSaveAdvancedSettings=function(){
+ localStorage.setItem(KEY,JSON.stringify(readUI()));
+ alert('✅ Advanced ERP Settings saved');
 };
+window.sssResetAdvancedSettings=function(){
+ if(!confirm('Reset Advanced ERP Settings to default?'))return;
+ localStorage.setItem(KEY,JSON.stringify(defaults));loadUI();alert('↺ Defaults restored');
+};
+window.sssSetTab=function(name){
+ ['general','invoice','finance','inventory','security','automation','system'].forEach(x=>{
+  const e=document.getElementById('sssSet'+x.charAt(0).toUpperCase()+x.slice(1));if(e)e.classList.remove('active');
+ });
+ const e=document.getElementById('sssSet'+name.charAt(0).toUpperCase()+name.slice(1));if(e)e.classList.add('active');
+};
+window.sssAdvancedSettingsOpen=function(){loadUI();document.getElementById('sssAdvSettingsOverlay').style.display='block'};
+window.sssAdvSettingsClose=function(){document.getElementById('sssAdvSettingsOverlay').style.display='none'};
+
 document.addEventListener('DOMContentLoaded',function(){
  setTimeout(function(){
-  if(currentIsAdmin()&&!document.getElementById('sssUserManagementBtn')){
+  const old=document.getElementById('sssAdvancedSettingsBtn');
+  if(!old){
    const b=document.createElement('button');
-   b.id='sssUserManagementBtn';b.type='button';b.className='btn primary';
-   b.textContent='👥 User Management';b.onclick=sssUserMgmtOpen;
+   b.id='sssAdvancedSettingsBtn';b.type='button';b.className='btn primary';
+   b.textContent='⚙️ Advanced ERP Settings';b.onclick=sssAdvancedSettingsOpen;
    const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
    host.appendChild(b);
   }
- },800);
+ },900);
 });
 })();
 </script>
