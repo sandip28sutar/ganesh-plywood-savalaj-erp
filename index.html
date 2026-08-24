@@ -3145,7 +3145,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <br>
   <button type="button" class="btn success" onclick="sssSafeSaveUser()">💾 Save User</button>
   <button type="button" class="btn light" onclick="sssSafeClearUser()">Clear</button>
-  <div style="overflow:auto">
+  <div id="sssCentralLicenseBox"></div><div style="overflow:auto">
    <table class="sssSafeTable">
     <thead><tr><th>User ID</th><th>Name</th><th>Role</th><th>Branch</th><th>Status</th><th>Action</th></tr></thead>
     <tbody id="sssSafeUserRows"></tbody>
@@ -3648,6 +3648,243 @@ if(typeof oldSettings==='function'&&!oldSettings.__sssWaReload){
   };
   window.settings.__sssWaReload=true;
 }
+})();
+</script>
+
+<style id="sandip-license-css">
+#sssLicenseOverlay{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:100040;display:none;padding:14px;overflow:auto}
+#sssLicenseBox{max-width:1050px;margin:20px auto;background:#fff;border-radius:15px;padding:18px}
+.sssLicGrid{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:10px}
+.sssLicGrid input,.sssLicGrid select{width:100%;padding:9px;border:1px solid #ccc;border-radius:7px}
+.sssLicTable{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
+.sssLicTable th,.sssLicTable td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sssLicTable th{background:#faf1e7}
+.sssLicBadge{padding:4px 7px;border-radius:6px;font-weight:700}
+.sssLicActive{background:#e6f7ed;color:#147a3d}.sssLicExpired{background:#fdeaea;color:#a21c1c}
+@media(max-width:800px){.sssLicGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.sssLicGrid{grid-template-columns:1fr}}
+</style>
+
+<div id="sssLicenseOverlay">
+ <div id="sssLicenseBox">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+   <div><h2 style="margin:0">🔑 SANDIP S. SUTAR — License Center</h2><small>5-Year License + Updates • Customer Care: 9096136898</small></div>
+   <button type="button" class="btn danger" onclick="sssLicenseClose()">Close</button>
+  </div>
+
+  <div class="sssLicGrid" style="margin-top:14px">
+   <input id="sssLicShop" placeholder="Shop / Company Name">
+   <input id="sssLicOwner" placeholder="Owner Name">
+   <input id="sssLicMobile" placeholder="Owner Mobile">
+   <select id="sssLicYears"><option value="5">5 Years — Updates Included</option><option value="1">1 Year</option><option value="3">3 Years</option></select>
+   <input id="sssLicCode" placeholder="License Code (auto if blank)">
+   <button type="button" class="btn success" onclick="sssCreateLicense()">🔑 Create License</button>
+  </div>
+
+  <div style="margin-top:10px">
+   <button type="button" class="btn light" onclick="sssCopyLatestLicense()">📋 Copy Latest Code</button>
+   <button type="button" class="btn light" onclick="sssExportLicenses()">⬇ Export Licenses</button>
+  </div>
+
+  <div style="overflow:auto">
+   <table class="sssLicTable">
+    <thead><tr><th>License Code</th><th>Shop</th><th>Owner</th><th>Start</th><th>Expiry</th><th>Updates Until</th><th>Status</th></tr></thead>
+    <tbody id="sssLicenseRows"></tbody>
+   </table>
+  </div>
+ </div>
+</div>
+
+<script id="sandip-license-module">
+(function(){
+'use strict';
+const KEY='SANDIP_S_SUTAR_LICENSES_V1';
+
+function read(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+function write(x){localStorage.setItem(KEY,JSON.stringify(x))}
+function now(){return new Date()}
+function addYears(d,y){const x=new Date(d);x.setFullYear(x.getFullYear()+Number(y));return x}
+function fmt(d){return new Date(d).toISOString().slice(0,10)}
+function code(){
+ const a=secretsPart();
+ return 'SSS-'+a.slice(0,4)+'-'+a.slice(4,8)+'-'+a.slice(8,12)+'-'+a.slice(12,16);
+}
+function secretsPart(){
+ const raw=(crypto&&crypto.getRandomValues)?Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase():Date.now().toString(16).toUpperCase()+Math.random().toString(16).slice(2);
+ return raw.replace(/[^A-Z0-9]/g,'').padEnd(16,'X');
+}
+function currentAdmin(){
+ try{
+  const id=localStorage.getItem('GP_ERP_SESSION_V1');
+  const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
+  const u=Array.isArray(a)?a.find(x=>String(x.id||x.username)===String(id)):null;
+  return String(u?.role||'').toLowerCase()==='admin';
+ }catch(e){return true}
+}
+function render(){
+ const rows=document.getElementById('sssLicenseRows');if(!rows)return;
+ const today=now();
+ rows.innerHTML=read().map(x=>{
+  const active=new Date(x.expiry)>=today;
+  return `<tr><td><b>${x.code}</b></td><td>${x.shop}</td><td>${x.owner}<br>${x.mobile}</td><td>${x.start}</td><td>${x.expiry}</td><td>${x.updatesUntil}</td><td><span class="sssLicBadge ${active?'sssLicActive':'sssLicExpired'}">${active?'ACTIVE':'EXPIRED'}</span></td></tr>`;
+ }).join('')||'<tr><td colspan="7">No licenses created.</td></tr>';
+}
+window.sssLicenseOpen=function(){
+ if(!currentAdmin()){alert('🔒 Admin only.');return}
+ document.getElementById('sssLicenseOverlay').style.display='block';render();
+};
+window.sssLicenseClose=function(){document.getElementById('sssLicenseOverlay').style.display='none'};
+window.sssCreateLicense=function(){
+ if(!currentAdmin()){alert('Admin only.');return}
+ const shop=document.getElementById('sssLicShop').value.trim();
+ const owner=document.getElementById('sssLicOwner').value.trim();
+ const mobile=document.getElementById('sssLicMobile').value.trim();
+ const years=Number(document.getElementById('sssLicYears').value||5);
+ let c=document.getElementById('sssLicCode').value.trim().toUpperCase();
+ if(!shop||!owner||!mobile)return alert('Shop Name, Owner Name and Mobile required.');
+ if(!c)c=code();
+ const start=now(),expiry=addYears(start,years);
+ const a=read();
+ const item={code:c,shop,owner,mobile,planYears:years,start:fmt(start),expiry:fmt(expiry),updatesUntil:fmt(expiry),createdAt:start.toISOString(),status:'active'};
+ if(a.some(x=>x.code===c))return alert('License code already exists.');
+ a.unshift(item);write(a);render();
+ document.getElementById('sssLicCode').value=c;
+ alert('✅ License created\\n'+c+'\\nValid until: '+fmt(expiry)+'\\nUpdates included until: '+fmt(expiry));
+};
+window.sssCopyLatestLicense=function(){
+ const a=read();if(!a.length)return alert('No license created.');
+ const c=a[0].code;
+ if(navigator.clipboard)navigator.clipboard.writeText(c);
+ alert('License Code: '+c);
+};
+window.sssExportLicenses=function(){
+ const a=read();
+ const blob=new Blob([JSON.stringify(a,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),el=document.createElement('a');
+ el.href=url;el.download='sandip-s-sutar-licenses.json';el.click();URL.revokeObjectURL(url);
+};
+
+// Client-side license check for the demo/local edition.
+// For a commercial multi-shop product, the same records should be verified
+// server-side so users cannot bypass expiry by editing localStorage.
+window.sssCheckLicense=function(){
+ const a=read();
+ if(!a.length)return {active:false,reason:'No license'};
+ const active=a.find(x=>x.status==='active'&&new Date(x.expiry)>=now());
+ return active?{active:true,license:active}:{active:false,reason:'Expired'};
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+ setTimeout(function(){
+  if(!document.getElementById('sssLicenseBtn')){
+   const b=document.createElement('button');b.id='sssLicenseBtn';b.type='button';b.className='btn primary';
+   b.textContent='🔑 License & Updates';b.onclick=sssLicenseOpen;
+   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
+   host.appendChild(b);
+  }
+ },1100);
+});
+})();
+</script>
+
+<style id="sss-central-license-css">
+#sssCentralLicenseBox{margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:10px;background:#fafafa}
+#sssCentralLicenseBox input{width:100%;padding:9px;margin:5px 0}
+.sssLicenseOnline{color:#147a3d;font-weight:700}.sssLicenseOffline{color:#a35b00;font-weight:700}
+</style>
+<script id="sss-central-license-module">
+(function(){
+'use strict';
+const CENTRAL='SANDIP_S_SUTAR_CENTRAL_LICENSE_V1';
+function cfg(){try{return JSON.parse(localStorage.getItem(CENTRAL)||'{}')}catch(e){return {}}}
+function saveCfg(x){localStorage.setItem(CENTRAL,JSON.stringify(x))}
+function localLicenses(){try{const x=JSON.parse(localStorage.getItem('SANDIP_S_SUTAR_LICENSES_V1')||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+function saveLocal(a){localStorage.setItem('SANDIP_S_SUTAR_LICENSES_V1',JSON.stringify(a))}
+function valid(x){return x&&new Date(x.expiry)>=new Date()}
+function renderCentral(){
+ const box=document.getElementById('sssCentralLicenseBox');if(!box)return;
+ const c=cfg(),ls=localLicenses();
+ box.innerHTML=`<h3 style="margin-top:0">☁️ Central License Sync</h3>
+ <div class="sssMini">Sold licenses can be synced to your central license server so you can view them again after re-login or from another device.</div>
+ <input id="sssCentralUrl" placeholder="Central License API URL" value="${c.url||''}">
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+ <button type="button" class="btn primary" onclick="sssSaveCentralLicenseConfig()">💾 Save Server</button>
+ <button type="button" class="btn light" onclick="sssSyncLicenses()">☁️ Sync Licenses</button>
+ <button type="button" class="btn light" onclick="sssFetchLicenses()">↻ Reload Sold Licenses</button>
+ </div>
+ <div id="sssCentralStatus" style="margin-top:8px">${c.url?'<span class="sssLicenseOnline">Server configured</span>':'<span class="sssLicenseOffline">Central server not configured</span>'}</div>
+ <div style="margin-top:8px">Local licenses: <b>${ls.length}</b> • Active 5-year licenses: <b>${ls.filter(valid).length}</b></div>`;
+}
+window.sssSaveCentralLicenseConfig=function(){
+ const url=document.getElementById('sssCentralUrl')?.value.trim()||'';
+ saveCfg({url});renderCentral();alert(url?'✅ Central license server saved':'Central license server cleared');
+};
+window.sssSyncLicenses=async function(){
+ const url=cfg().url;if(!url)return alert('Central License API URL first add करा.');
+ const status=document.getElementById('sssCentralStatus');
+ try{
+  const res=await fetch(url.replace(/\/$/,'')+'/api/licenses/sync',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({licenses:localLicenses(),customerCare:'9096136898'})
+  });
+  const d=await res.json().catch(()=>({}));
+  if(!res.ok||d.ok===false)throw new Error(d.error||('HTTP '+res.status));
+  status.innerHTML='<span class="sssLicenseOnline">✅ Licenses synced to central server</span>';
+ }catch(e){status.innerHTML='<span class="sssLicenseOffline">❌ Sync failed: '+e.message+'</span>'}
+};
+window.sssFetchLicenses=async function(){
+ const url=cfg().url;if(!url)return alert('Central License API URL first add करा.');
+ const status=document.getElementById('sssCentralStatus');
+ try{
+  const res=await fetch(url.replace(/\/$/,'')+'/api/licenses');
+  const d=await res.json();
+  if(!res.ok||d.ok===false)throw new Error(d.error||('HTTP '+res.status));
+  if(Array.isArray(d.licenses))saveLocal(d.licenses);
+  render();renderCentral();alert('✅ Sold licenses loaded from central server');
+ }catch(e){status.innerHTML='<span class="sssLicenseOffline">❌ Load failed: '+e.message+'</span>'}
+};
+const oldOpen=window.sssLicenseOpen;
+if(typeof oldOpen==='function'){
+ window.sssLicenseOpen=function(){oldOpen.apply(this,arguments);setTimeout(renderCentral,30)};
+}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(renderCentral,1000));
+})();
+</script>
+
+<script id="sandip-lifetime-super-admin">
+(function(){
+'use strict';
+const OWNER_KEY='SANDIP_S_SUTAR_SUPER_ADMIN_V1';
+const OWNER_ID='SANDIP-SUPERADMIN';
+const OWNER_ROLE='SUPER_ADMIN';
+const OWNER_LICENSE='LIFETIME';
+function ownerProfile(){
+ return {id:OWNER_ID,name:'SANDIP S. SUTAR',role:OWNER_ROLE,license:OWNER_LICENSE,rights:'ALL',expires:null,updates:'LIFETIME'};
+}
+window.sssGetOwnerProfile=function(){return ownerProfile()};
+window.sssIsLifetimeOwner=function(id){return String(id||'')===OWNER_ID};
+window.sssOwnerHasRight=function(){return true};
+
+function installOwnerRecord(){
+ try{
+  const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
+  if(!Array.isArray(a))return;
+  const i=a.findIndex(x=>String(x.id||x.username)===OWNER_ID);
+  const u={id:OWNER_ID,username:OWNER_ID,name:'SANDIP S. SUTAR',password:'',role:OWNER_ROLE,branchId:'MAIN',status:'active',active:true,license:'LIFETIME',rights:'ALL',expires:null,updatesUntil:null};
+  if(i>=0)a[i]={...a[i],...u};else a.unshift(u);
+  localStorage.setItem('GP_ERP_USERS_V1',JSON.stringify(a));
+  localStorage.setItem(OWNER_KEY,JSON.stringify(ownerProfile()));
+ }catch(e){}
+}
+function badge(){
+ if(document.getElementById('sssLifetimeBadge'))return;
+ const b=document.createElement('div');
+ b.id='sssLifetimeBadge';
+ b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:99999;background:#173f2a;color:#fff;padding:8px 12px;border-radius:9px;font-size:12px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.2)';
+ b.textContent='♾️ SANDIP S. SUTAR • SUPER ADMIN • LIFETIME';
+ document.body.appendChild(b);
+}
+document.addEventListener('DOMContentLoaded',function(){installOwnerRecord();setTimeout(badge,1200)});
 })();
 </script>
 </body>
