@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5a2b0b">
 <link rel="manifest" href="manifest.json">
-<title>Ganesh Plywood ERP — Advanced | Designed by SSS Technology</title>
+<title>Ganesh Plywood ERP — Advanced | Designed by SANDIP S. SUTAR</title>
 <style>
 :root{--brown:#5a2b0b;--brown2:#7a3b0c;--bg:#f4f4f4;--card:#fff;--line:#e3e3e3;--green:#159447;--red:#c62828;--blue:#1269d8;--orange:#dc6c11}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:#222}
@@ -112,16 +112,6 @@ html,body{overflow-x:hidden}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-<style id="sss-user-rights-css">
-.sss-rights-panel{margin-top:14px}
-.sss-rights-userbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.sss-rights-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.sss-rights-checks label{display:flex!important;align-items:center!important;gap:9px!important;padding:9px 10px!important;border:1px solid #ddd!important;border-radius:8px!important;background:#fff!important;cursor:pointer!important}
-.sss-rights-checks input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;display:block!important;opacity:1!important;visibility:visible!important;position:static!important;width:19px!important;height:19px!important;min-width:19px!important;margin:0!important}
-.sss-rights-checks span{font-size:13px;font-weight:600;color:#222}
-@media(max-width:700px){.sss-rights-userbar,.sss-rights-checks{grid-template-columns:1fr}}
-</style>
-
 <style id="sss-advanced-css">
 #sssAdvancedERP{padding:12px;box-sizing:border-box}
 .sss-adv-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -138,42 +128,6 @@ html,body{overflow-x:hidden}
 </style>
 
 
-<style id="sss-branch-complete-css">
-#sssBranchManagement{box-sizing:border-box;width:100%;padding:12px}
-.sss-branch-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.sss-branch-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.sss-active-badge{display:inline-block;margin-top:6px;padding:8px 12px;border-radius:20px;background:#e9f7ef;color:#157347;font-weight:700}
-.sss-branch-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sss-branch-table{width:100%;border-collapse:collapse}
-.sss-branch-table th,.sss-branch-table td{border:1px solid #ddd;padding:9px;vertical-align:middle}
-.sss-branch-table th{background:#6b310b;color:#fff}
-.sss-branch-table tr.sss-active-row{background:#eef9f1}
-.sss-branch-table button{margin:2px}
-.sss-main-lock{color:#157347;font-weight:700}
-@media(max-width:700px){
-  .sss-branch-grid{grid-template-columns:1fr}
-  .sss-branch-top{align-items:flex-start;flex-direction:column}
-}
-</style>
-
-<style id="sss-hide-branch-menu">
-/* Multiple Branch is not shown as a normal Main Menu item. */
-#nav button[data-p="Multiple Branch"],
-#nav button[data-p="Branch"],
-[data-menu="multiple-branch"],
-.multiple-branch-menu,
-.sss-multiple-branch-menu{display:none!important}
-</style>
-
-<style id="sss-top-branch-switcher-css">
-#sssTopBranchSwitcher{
-  display:inline-flex;align-items:center;gap:6px;margin-left:10px;
-}
-#sssTopBranchSelect{
-  min-width:180px;padding:8px 32px 8px 10px;border:1px solid #d7b994;
-  border-radius:7px;background:#fff;color:#4b250c;font-weight:700;
-}
-</style>
 </head>
 <body>
 
@@ -195,8 +149,7 @@ html,body{overflow-x:hidden}
 
 <div class="modal" id="modal"><div class="modalbox" id="modalbox"></div></div>
 <div class="toast" id="toast"></div>
-<div class="login" id="login"><div class="loginbox"><h2>🔐 Ganesh Plywood</h2><p>Multi User Login</p><div class="field"><label>User ID</label><input id="loginUser" autocomplete="username" placeholder="Enter User ID"></div><div class="field"><label>Password / PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="12" autocomplete="current-password" placeholder="Enter Password"></div><button class="btn primary" style="width:100%" onclick="checkPin()">Login</button><div class="login-users"><button onclick="quickUser('admin')">Admin</button><button onclick="quickUser('manager')">Manager</button><button onclick="quickUser('staff')">Staff</button><button onclick="firebaseLogin()">☁️ Firebase</button></div><small>Default Admin: admin / 2828</small><small style="display:block;margin-top:6px">☁️ Firebase: Email + Password Login</small></div></div>
-
+<div class="login" id="login"><div class="loginbox"><h2>🔐 Ganesh Plywood</h2><p>Admin Login</p><div class="field"><label>User ID</label><input id="loginUser" autocomplete="username" placeholder="Enter User ID"></div><div class="field"><label>Password / PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="12" autocomplete="current-password" placeholder="Enter Password"></div><button class="btn primary" style="width:100%" onclick="checkPin()">Login</button><div class="login-users"><button onclick="quickUser('admin')">Admin</button><button onclick="firebaseLogin()">☁️ Firebase</button></div><small>Default Admin: admin / 2828</small><small style="display:block;margin-top:6px">☁️ Firebase: Email + Password Login</small></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.17.0/firebase-auth-compat.js"></script>
@@ -211,66 +164,6 @@ html,body{overflow-x:hidden}
 
 
 
-
-
-<section id="sssBranchManagement" class="page" style="display:none">
-  <h2>🏢 Multiple Branch Management</h2>
-
-  <div class="panel">
-    <div class="sss-branch-top">
-      <div>
-        <b>Active Branch</b>
-        <div id="sssActiveBranchBadge" class="sss-active-badge">🏠 Main Branch</div>
-      </div>
-      <div class="sss-branch-actions">
-        <button type="button" class="btn primary" onclick="sssBranchNew()">➕ Add Branch</button>
-        <button type="button" class="btn light" onclick="sssBranchRefresh()">↻ Refresh</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3 id="sssBranchFormTitle">➕ Add New Branch</h3>
-    <input type="hidden" id="sssBranchEditId">
-    <div class="sss-branch-grid">
-      <div class="field">
-        <label>Branch Name *</label>
-        <input id="sssBranchName" placeholder="e.g. Sangli Branch">
-      </div>
-      <div class="field">
-        <label>Branch Code *</label>
-        <input id="sssBranchCode" placeholder="e.g. SNG01">
-      </div>
-      <div class="field">
-        <label>Mobile Number</label>
-        <input id="sssBranchMobile" inputmode="numeric" placeholder="Mobile number">
-      </div>
-      <div class="field">
-        <label>Address</label>
-        <input id="sssBranchAddress" placeholder="Branch address">
-      </div>
-    </div>
-    <div class="sss-branch-actions">
-      <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
-      <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h3>📋 All Branches</h3>
-    <div class="table-wrap">
-      <table class="sss-branch-table">
-        <thead>
-          <tr>
-            <th>#</th><th>Branch Name</th><th>Code</th><th>Mobile</th>
-            <th>Address</th><th>Status</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="sssBranchRows"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
 
 
 <script id="sss-technology-erp-all-in-one-js">
@@ -367,9 +260,9 @@ const DBKEY='GP_ERP_ADVANCED_V1';
 const NAV=[['Dashboard','🏠'],['GST Billing','🧾'],['Stock','📦'],['Purchase','🛒'],['Rate Checklist','💹'],['Purchase Return','↪️'],['Sales','🛍️'],['Sales Return','↩️'],['Receivable','💰'],['Payable','💳'],['Customers','👥'],['Suppliers','🚚'],['Reports','📊'],['Transactions','💼'],['Settings','⚙️'],['Data Control','🛠️'],['Backup','💾']];
 const blank={settings:{company:'Ganesh Plywood',address:'Savalaj, Maharashtra',gstin:'',phone:'',prefix:'GP',defaultGST:18},customers:[],suppliers:[],stock:[],invoices:[],purchases:[],transactions:[],payments:[],salesReturns:[],purchaseReturns:[]};
 let db=JSON.parse(localStorage.getItem(DBKEY)||'null')||blank;
-const ROLE_PERMS={Admin:NAV.map(x=>x[0]),Manager:['Dashboard','GST Billing','Stock','Purchase','Rate Checklist','Purchase Return','Sales','Sales Return','Receivable','Payable','Customers','Suppliers','Reports','Transactions'],Staff:['Dashboard','GST Billing','Stock','Sales','Sales Return','Receivable','Customers','Reports']};
+const ROLE_PERMS={Admin:NAV.map(x=>x[0])};
 const USERS_KEY='GP_ERP_USERS_V1', SESSION_KEY='GP_ERP_SESSION_V1';
-let users=JSON.parse(localStorage.getItem(USERS_KEY)||'null')||[{id:'admin',name:'Administrator',username:'admin',password:'2828',role:'Admin',active:true},{id:'manager',name:'Manager',username:'manager',password:'2828',role:'Manager',active:true},{id:'staff',name:'Sales Staff',username:'staff',password:'2828',role:'Staff',active:true}];
+let users=JSON.parse(localStorage.getItem(USERS_KEY)||'null')||[{id:'admin',name:'Administrator',username:'admin',password:'2828',role:'Admin',active:true}]; users=Array.isArray(users)?users.filter(x=>String(x.role||'').toLowerCase()==='admin'):[]; if(!users.length)users=[{id:'admin',name:'Administrator',username:'admin',password:'2828',role:'Admin',active:true}]; localStorage.setItem(USERS_KEY,JSON.stringify(users));
 localStorage.setItem(USERS_KEY,JSON.stringify(users));
 function getCurrentUser(){const id=localStorage.getItem(SESSION_KEY);return users.find(u=>u.id===id&&u.active)||null}
 function setCurrentUser(u){localStorage.setItem(SESSION_KEY,u.id);const t=document.getElementById('currentUserTop'),r=document.getElementById('currentRoleTop');if(t)t.textContent='👤 '+(u.name||u.username);if(r)r.textContent=u.role;nav()}
@@ -639,7 +532,7 @@ document.getElementById('app').innerHTML=`<section class="page"><h2>Dashboard</h
     <button class="btn light" onclick="sssPrintReport()">🖨️ Print Report</button>
   </div>
 </section>
-<div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed by <b>SSS Technology</b> for Ganesh Plywood</span></div></section>`;
+<div class="footer"><span>© 2026 Ganesh Plywood | ERP System</span><span>Designed by <b>SANDIP S. SUTAR</b> for Ganesh Plywood</span></div></section>`;
 renderTodaySummaryValues();
 applyAdminSummaryControls();
 }
@@ -856,7 +749,7 @@ function printTodaySummary(){
   if(!box)return toast('Today summary not available');
   const rows=[...box.querySelectorAll('.summary-row')].map(r=>{const label=r.querySelector('span')?.textContent?.trim()||'';const value=r.querySelector('b')?.innerText?.trim()||'';return {label,value}});
   const date=new Date().toLocaleDateString('en-IN');
-  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SSS Technology</div>
+  const html=`<html><head><title>Today's Summary Report</title><style>body{font-family:Arial;padding:28px;color:#222}h1{text-align:center;color:#6b2d08;margin-bottom:4px}h3{text-align:center;margin-top:0;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #777;padding:10px}th{background:#6b2d08;color:#fff;text-align:left}td:last-child{text-align:right;font-weight:700}.foot{margin-top:28px;text-align:center;color:#666}</style></head><body><h1>Ganesh Plywood</h1><h3>Today's Summary Report — ${date}</h3><table><tr><th>Particular</th><th>Amount</th></tr>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td>${esc(x.value)}</td></tr>`).join('')}</table><div class="foot">Designed by SANDIP S. SUTAR</div>
 
 
 
@@ -1227,7 +1120,7 @@ async function downloadERPReport(section='all'){
   reports.forEach((r,idx)=>{
     if(idx) doc.addPage();
     doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(90,43,11);doc.text('Ganesh Plywood',40,42);
-    doc.setFontSize(12);doc.setTextColor(70,70,70);doc.text(r.title,40,62);doc.setFontSize(9);doc.text('Designed by SSS Technology',40,78);
+    doc.setFontSize(12);doc.setTextColor(70,70,70);doc.text(r.title,40,62);doc.setFontSize(9);doc.text('Designed by SANDIP S. SUTAR',40,78);
     const rows=(r.rows&&r.rows.length)?r.rows:[['No records found','','','','','','','','']];
     doc.autoTable({startY:92,head:[r.cols],body:rows,theme:'grid',styles:{fontSize:8,cellPadding:4,overflow:'linebreak'},headStyles:{fillColor:[90,43,11],textColor:255},margin:{left:40,right:40},didDrawPage:(d)=>{doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text(`Ganesh Plywood ERP • ${new Date().toLocaleString('en-IN')}`,40,doc.internal.pageSize.height-18);doc.text(`Page ${d.pageNumber}`,doc.internal.pageSize.width-70,doc.internal.pageSize.height-18)}});
   });
@@ -1245,7 +1138,7 @@ function reports(){
 
 function printReportsPage(){
   const w=window.open('','_blank'); if(!w)return;
-  w.document.write(`<html><head><title>Ganesh Plywood Reports</title><style>body{font-family:Arial;padding:28px}h1{color:#5a2b0b}.item{border:1px solid #ddd;padding:10px;margin:7px 0;border-radius:8px}.brand{color:#666}</style></head><body><h1>Ganesh Plywood — Reports</h1><div class="brand">Designed by SSS Technology</div><hr>${cardsForPrint()}</body></html>`);
+  w.document.write(`<html><head><title>Ganesh Plywood Reports</title><style>body{font-family:Arial;padding:28px}h1{color:#5a2b0b}.item{border:1px solid #ddd;padding:10px;margin:7px 0;border-radius:8px}.brand{color:#666}</style></head><body><h1>Ganesh Plywood — Reports</h1><div class="brand">Designed by SANDIP S. SUTAR</div><hr>${cardsForPrint()}</body></html>`);
   w.document.close();
 }
 function cardsForPrint(){
@@ -1440,74 +1333,9 @@ function adminDeleteAllData(){
   save(); adminDataControl(); toast('🗑️ All ERP transactional data deleted');
 }
 
-function settings(){const u=getCurrentUser();if(u?.role!=='Admin'){toast('Admin access required');return}document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change Admin Password</button></div><div class="section-title">👥 Multi Login Users</div><div class="actions" data-sss-main-only><button class="btn primary" onclick="sssOpenBranchAssignments()">🔐 Branch-wise Staff Access</button></div>
-<div class="actions" data-sss-main-only id="sssBranchAdminTools">
-  <button type="button" class="btn primary" onclick="sssOpenBranches()">🏢 Branch Management</button>
-  <button type="button" class="btn success" onclick="sssOpenMultiBranchReports()">📊 All Branch Reports</button>
-</div>
-<div class="panel"><div class="permission-note"><b>Roles:</b> Admin = full access • Manager = business operations • Staff = sales/stock/customer access. Passwords are device-local; for multi-device secure access use Firebase Login.</div><div class="actions"><button class="btn primary" onclick="userForm()">+ Add User</button></div><div class="table-wrap"><table class="user-table"><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${users.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.username)}</td><td><span class="role-badge">${esc(x.role)}</span></td><td>${x.active?'Active':'Disabled'}</td><td><button class="btn light" onclick="userForm('${x.id}')">Edit</button> <button class="btn ${x.active?'danger':'success'}" onclick="toggleUser('${x.id}')">${x.active?'Disable':'Enable'}</button></td></tr>`).join('')}</tbody></table></div></div>
-<div class="section-title">🔐 User Function Rights</div>
-<div class="panel sss-rights-panel">
-  <div class="permission-note">Admin can assign individual functions to each User ID. Tick the required checkboxes and press <b>Save Rights</b>.</div>
-  <div class="sss-rights-userbar">
-    <div class="field"><label>User ID</label><select id="sssRightsUser" onchange="sssLoadRightsForSelected()"></select></div>
-    <div class="field"><label>Role</label><input id="sssRightsRole" readonly></div>
-  </div>
-  <div class="sss-rights-checks" id="sssRightsChecks">
-    <label><input type="checkbox" data-right="dashboard_view"><span>Dashboard View</span></label>
-    <label><input type="checkbox" data-right="today_summary_view"><span>Today's Summary View</span></label>
-    <label><input type="checkbox" data-right="today_summary_edit"><span>Today's Summary Edit</span></label>
-    <label><input type="checkbox" data-right="today_summary_delete"><span>Today's Summary Delete</span></label>
-    <label><input type="checkbox" data-right="billing_view"><span>Billing View</span></label>
-    <label><input type="checkbox" data-right="billing_create"><span>Create Bill</span></label>
-    <label><input type="checkbox" data-right="billing_edit"><span>Edit Bill</span></label>
-    <label><input type="checkbox" data-right="billing_delete"><span>Delete Bill</span></label>
-    <label><input type="checkbox" data-right="billing_payment"><span>Payment / Received Update</span></label>
-    <label><input type="checkbox" data-right="purchase_view"><span>Purchase View</span></label>
-    <label><input type="checkbox" data-right="purchase_create"><span>Create Purchase</span></label>
-    <label><input type="checkbox" data-right="purchase_edit"><span>Edit Purchase</span></label>
-    <label><input type="checkbox" data-right="purchase_delete"><span>Delete Purchase</span></label>
-    <label><input type="checkbox" data-right="purchase_payment"><span>Purchase Payment Update</span></label>
-    <label><input type="checkbox" data-right="stock_view"><span>Stock View</span></label>
-    <label><input type="checkbox" data-right="stock_create"><span>Add Stock</span></label>
-    <label><input type="checkbox" data-right="stock_edit"><span>Edit Stock</span></label>
-    <label><input type="checkbox" data-right="stock_delete"><span>Delete Stock</span></label>
-    <label><input type="checkbox" data-right="stock_adjust"><span>Stock In / Out</span></label>
-    <label><input type="checkbox" data-right="customer_view"><span>Customers View</span></label>
-    <label><input type="checkbox" data-right="customer_create"><span>Customer Create</span></label>
-    <label><input type="checkbox" data-right="customer_edit"><span>Customer Edit</span></label>
-    <label><input type="checkbox" data-right="customer_delete"><span>Customer Delete</span></label>
-    <label><input type="checkbox" data-right="supplier_view"><span>Suppliers View</span></label>
-    <label><input type="checkbox" data-right="supplier_create"><span>Supplier Create</span></label>
-    <label><input type="checkbox" data-right="supplier_edit"><span>Supplier Edit</span></label>
-    <label><input type="checkbox" data-right="supplier_delete"><span>Supplier Delete</span></label>
-    <label><input type="checkbox" data-right="reports_view"><span>Reports View</span></label>
-    <label><input type="checkbox" data-right="reports_pdf"><span>PDF Download</span></label>
-    <label><input type="checkbox" data-right="excel_export"><span>Excel / CSV Export</span></label>
-    <label><input type="checkbox" data-right="receivable_view"><span>Receivable View</span></label>
-    <label><input type="checkbox" data-right="receivable_edit"><span>Receivable Update</span></label>
-    <label><input type="checkbox" data-right="payable_view"><span>Payable View</span></label>
-    <label><input type="checkbox" data-right="payable_edit"><span>Payable Update</span></label>
-    <label><input type="checkbox" data-right="expense_create"><span>Expense Entry</span></label>
-    <label><input type="checkbox" data-right="ledger_view"><span>Ledger View</span></label>
-    <label><input type="checkbox" data-right="workorder_create"><span>Furniture / Door Work Order</span></label>
-    <label><input type="checkbox" data-right="settings_view"><span>Settings View</span></label>
-    <label><input type="checkbox" data-right="user_rights"><span>User Rights Management</span></label>
-    <label><input type="checkbox" data-right="all_data_delete"><span>All Data Delete</span></label>
-  </div>
-  <div class="actions" style="margin-top:12px">
-    <button class="btn success" onclick="sssSaveRights()">💾 Save Rights</button>
-    <button class="btn light" onclick="sssLoadRightsForSelected()">↻ Load Rights</button>
-    <button class="btn primary" onclick="sssSelectAllRights(true)">☑ Select All</button>
-    <button class="btn light" onclick="sssSelectAllRights(false)">☐ Clear All</button>
-  </div>
-</div>
-</section>`}
+function settings(){const u=getCurrentUser();if(u?.role!=='Admin'){toast('Admin access required');return}document.getElementById('app').innerHTML=`<section class="page"><h2>⚙️ Settings</h2><div class="panel"><p id="cloudStatus">☁️ Cloud: Firebase</p><div class="actions"><button class="btn bluebtn" onclick="firebaseLogin()">☁️ Firebase Login</button><button class="btn light" onclick="firebaseLogout()">Cloud Logout</button></div><div class="grid2"><div class="field"><label>Company</label><input id="setc" value="${esc(db.settings.company)}"></div><div class="field"><label>GSTIN</label><input id="setg" value="${esc(db.settings.gstin)}"></div><div class="field"><label>Address</label><input id="seta" value="${esc(db.settings.address)}"></div><div class="field"><label>Phone</label><input id="setp" value="${esc(db.settings.phone)}"></div><div class="field"><label>Invoice Prefix</label><input id="setpre" value="${esc(db.settings.prefix)}"></div><div class="field"><label>Default GST %</label><input id="setgst" type="number" value="${db.settings.defaultGST}"></div></div><button class="btn success" onclick="saveSettings()">Save Settings</button><button class="btn light" onclick="changePin()">Change Admin Password</button></div></section>`}
 function saveSettings(){Object.assign(db.settings,{company:setc.value,gstin:setg.value,address:seta.value,phone:setp.value,prefix:setpre.value,defaultGST:+setgst.value||18});save();toast('Settings saved')}
 function changePin(){let p=prompt('Enter new 4-12 character Admin password');if(p&&p.length>=4){const a=users.find(x=>x.username==='admin');if(a)a.password=p;localStorage.setItem(USERS_KEY,JSON.stringify(users));localStorage.setItem('GP_PIN',p);toast('Admin password changed')}else toast('Invalid password')}
-function userForm(id=null){const x=id?users.find(z=>z.id===id):{id:'',name:'',username:'',password:'',role:'Staff',active:true};modal(`<h3>👤 ${id?'Edit':'Add'} User</h3><div class="grid2"><div class="field"><label>Name</label><input id="un" value="${esc(x.name||'')}"></div><div class="field"><label>User ID</label><input id="uu" value="${esc(x.username||'')}" ${id?'disabled':''}></div><div class="field"><label>Password</label><input id="up" type="password" value="${esc(x.password||'')}"></div><div class="field"><label>Role</label><select id="ur"><option ${x.role==='Admin'?'selected':''}>Admin</option><option ${x.role==='Manager'?'selected':''}>Manager</option><option ${x.role==='Staff'?'selected':''}>Staff</option></select></div></div><button class="btn success" onclick="saveUser('${id||''}')">Save User</button> <button class="btn light" onclick="closeModal()">Cancel</button>`)}
-function saveUser(id){const name=document.getElementById('un').value.trim(),username=document.getElementById('uu').value.trim().toLowerCase(),password=document.getElementById('up').value,role=document.getElementById('ur').value;if(!name||!username||password.length<4)return toast('Name, User ID and 4+ password required');if(!id&&users.some(x=>x.username===username))return toast('User ID already exists');if(id){const x=users.find(z=>z.id===id);if(x){x.name=name;x.password=password;x.role=role}}else users.push({id:Date.now().toString(),name,username,password,role,active:true});localStorage.setItem(USERS_KEY,JSON.stringify(users));closeModal();settings();toast('User saved')}
-function toggleUser(id){if(id==='admin')return toast('Admin cannot be disabled');const x=users.find(z=>z.id===id);if(x){x.active=!x.active;localStorage.setItem(USERS_KEY,JSON.stringify(users));settings();toast(x.active?'User enabled':'User disabled')}}
 function backup(){document.getElementById('app').innerHTML=`<section class="page"><h2>💾 Backup & Restore</h2><button type="button" class="btn primary" onclick="sssOpenAdvanced()">⚡ Advanced ERP</button><div class="panel"><p>Backup all customers, suppliers, stock, invoices, purchases and settings.</p><div class="actions"><button class="btn primary" onclick="downloadBackup()">Download JSON Backup</button><label class="btn light">Restore JSON<input type="file" accept=".json" hidden onchange="restore(event)"></label><button class="btn danger" onclick="resetAll()">Reset Device Data</button></div></div></section>`}
 function downloadBackup(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='ganesh-plywood-erp-backup-'+Date.now()+'.json';a.click()}
 function restore(e){let f=e.target.files[0],r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();toast('Restored');openPage('Dashboard')}catch{toast('Invalid JSON')}};r.readAsText(f)}
@@ -1528,8 +1356,8 @@ document.getElementById('today').textContent=dateIN();document.getElementById('m
 nav();if(!ensureSession()){ }else openPage('Dashboard');
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
 
-/* SSS Technology Advanced ERP JS - repaired placement */
-/* ===== SSS Technology Advanced ERP - added to existing index.html ===== */
+/* SANDIP S. SUTAR Advanced ERP JS - repaired placement */
+/* ===== SANDIP S. SUTAR Advanced ERP - added to existing index.html ===== */
 (function(){
   function arr(k){ if(!Array.isArray(db[k])) db[k]=[]; return db[k]; }
   function money(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -1593,7 +1421,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
   window.sssPrintReport=function(){
     sssRefreshAdvanced();
     const w=window.open('','_blank');if(!w)return;
-    w.document.write('<html><head><title>Ganesh Plywood ERP Report</title></head><body style="font-family:Arial;padding:30px"><h1>Ganesh Plywood ERP</h1><p>SSS Technology</p><h2>Advanced Business Report</h2><p>Generated: '+new Date().toLocaleString()+'</p><button onclick="print()">Print</button></body></html>');
+    w.document.write('<html><head><title>Ganesh Plywood ERP Report</title></head><body style="font-family:Arial;padding:30px"><h1>Ganesh Plywood ERP</h1><p>SANDIP S. SUTAR</p><h2>Advanced Business Report</h2><p>Generated: '+new Date().toLocaleString()+'</p><button onclick="print()">Print</button></body></html>');
     w.document.close();
   };
 
@@ -1605,41 +1433,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.ser
 
 
 
-/* SSS Technology - per-user function rights */
-const SSS_RIGHTS_KEY='SSS_ERP_FUNCTION_RIGHTS_V1';
-const SSS_RIGHT_KEYS=[
-'dashboard_view','today_summary_view','today_summary_edit','today_summary_delete',
-'billing_view','billing_create','billing_edit','billing_delete','billing_payment',
-'purchase_view','purchase_create','purchase_edit','purchase_delete','purchase_payment',
-'stock_view','stock_create','stock_edit','stock_delete','stock_adjust',
-'customer_view','customer_create','customer_edit','customer_delete',
-'supplier_view','supplier_create','supplier_edit','supplier_delete',
-'reports_view','reports_pdf','excel_export','receivable_view','receivable_edit',
-'payable_view','payable_edit','expense_create','ledger_view','workorder_create',
-'settings_view','user_rights','all_data_delete'
-];
-function sssRightsStore(){try{return JSON.parse(localStorage.getItem(SSS_RIGHTS_KEY)||'{}')}catch(e){return {}}}
-function sssRightsSaveStore(x){localStorage.setItem(SSS_RIGHTS_KEY,JSON.stringify(x))}
-function sssCurrentRightsUser(){return document.getElementById('sssRightsUser')?.value||''}
-function sssPopulateRightsUsers(){const s=document.getElementById('sssRightsUser');if(!s)return;const old=s.value;s.innerHTML=users.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name||x.username)+' — '+esc(x.username)+'</option>').join('');if(old&&users.some(x=>x.id===old))s.value=old;}
-function sssLoadRightsForSelected(){
- sssPopulateRightsUsers(); const uid=sssCurrentRightsUser(), u=users.find(x=>x.id===uid), store=sssRightsStore(), saved=store[uid]?.rights||{};
- const role=document.getElementById('sssRightsRole'); if(role)role.value=u?.role||'Staff';
- document.querySelectorAll('#sssRightsChecks input[data-right]').forEach(c=>c.checked=!!saved[c.dataset.right]);
- if(u?.role==='Admin') document.querySelectorAll('#sssRightsChecks input[data-right]').forEach(c=>c.checked=true);
-}
-function sssSaveRights(){
- const uid=sssCurrentRightsUser(); if(!uid){toast('Select User ID');return}
- const store=sssRightsStore(), rights={};
- document.querySelectorAll('#sssRightsChecks input[data-right]').forEach(c=>rights[c.dataset.right]=!!c.checked);
- store[uid]={rights,updatedAt:new Date().toISOString()}; sssRightsSaveStore(store); toast('✅ User rights saved');
-}
-function sssSelectAllRights(v){document.querySelectorAll('#sssRightsChecks input[data-right]').forEach(c=>c.checked=v)}
-function sssHasFunctionRight(right){
- const u=getCurrentUser(); if(!u)return false;
- if(u.role==='Admin')return true;
- const x=sssRightsStore()[u.id]; return !!x?.rights?.[right];
-}
+
 
 
 
@@ -1764,811 +1558,5 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 
-(()=>{const K='SSS_ERP_BRANCHES_V1',R='SSS_ERP_BRANCH_RIGHTS_V1',A='SSS_ERP_ACTIVE_BRANCH_V1',D={id:'MAIN',name:'SSS Technology - Main Branch',code:'MAIN',mobile:'',address:''};const rd=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}},wr=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),bs=()=>{let a=rd(K,[]);if(!a.length){a=[D];wr(K,a)}return a},aid=()=>localStorage.getItem(A)||bs()[0].id;window.sssOpenBranches=()=>{document.getElementById('sssBranchManagement').style.display='block';sssRenderBranches();sssLoadBranchRights()};window.sssRenderBranches=()=>{let a=bs(),id=aid(),s=document.getElementById('sssBranchSelect'),t=document.getElementById('sssBranchRows'),x=a.find(z=>z.id===id);if(s)s.innerHTML=a.map(z=>`<option value="${z.id}" ${z.id===id?'selected':''}>${z.name} — ${z.code}</option>`).join('');if(t)t.innerHTML=a.map(z=>`<tr><td>${z.name}</td><td>${z.code}</td><td>${z.mobile||''}</td><td>${z.address||''}</td><td>${z.id===id?'🟢 Active':'Inactive'}</td><td><button class="btn light" onclick="sssEditBranch('${z.id}')">✏️ Edit</button></td></tr>`).join('');if(x)document.getElementById('sssActiveBranchName').value=x.name+' ('+x.code+')'};window.sssSwitchBranch=id=>{if(!bs().find(x=>x.id===id))return;localStorage.setItem(A,id);sssRenderBranches();sssLoadBranchRights()};window.sssSaveBranch=()=>{let n=sssBranchName.value.trim(),c=sssBranchCode.value.trim().toUpperCase();if(!n||!c)return alert('Branch Name आणि Code टाका');let a=bs(),id=sssBranchSelect.value||'BR_'+Date.now(),i=a.findIndex(x=>x.id===id),o={id,name:n,code:c,mobile:sssBranchMobile.value.trim(),address:sssBranchAddress.value.trim()};i<0?a.push(o):a[i]=o;wr(K,a);localStorage.setItem(A,id);sssRenderBranches();alert('✅ Branch saved')};window.sssEditBranch=id=>{let x=bs().find(z=>z.id===id);if(!x)return;sssBranchSelect.value=id;sssBranchName.value=x.name;sssBranchCode.value=x.code;sssBranchMobile.value=x.mobile||'';sssBranchAddress.value=x.address||''};window.sssClearBranchForm=()=>['sssBranchName','sssBranchCode','sssBranchMobile','sssBranchAddress'].forEach(id=>document.getElementById(id).value='');window.sssDeleteBranch=()=>{let id=sssBranchSelect.value;if(id==='MAIN')return alert('Main Branch delete करता येणार नाही');if(confirm('ही Branch delete करायची?')){let a=bs().filter(x=>x.id!==id);wr(K,a);localStorage.setItem(A,a[0].id);sssRenderBranches()}};window.sssLoadBranchRights=()=>{let u=sssBranchUserId.value,allow=rd(R,{})[u]||[];sssBranchRightsChecks.innerHTML=bs().map(x=>`<label class="sss-branch-check"><input type="checkbox" value="${x.id}" ${allow.includes(x.id)?'checked':''}> ${x.name} (${x.code})</label>`).join('')};window.sssSaveBranchRights=()=>{let u=sssBranchUserId.value.trim();if(!u)return alert('User ID टाका');let r=rd(R,{});r[u]=[...document.querySelectorAll('#sssBranchRightsChecks input:checked')].map(x=>x.value);wr(R,r);alert('✅ Branch rights saved')};addEventListener('DOMContentLoaded',sssRenderBranches)})();
-
-
-
-(function(){
-  'use strict';
-
-  const BRANCH_KEY = 'SSS_TECHNOLOGY_BRANCHES_V3';
-  const ACTIVE_KEY = 'SSS_TECHNOLOGY_ACTIVE_BRANCH_V3';
-
-  const MAIN = {
-    id: 'MAIN',
-    name: 'Main Branch',
-    code: 'MAIN',
-    mobile: '',
-    address: '',
-    isMain: true,
-    createdAt: 'system'
-  };
-
-  function getBranches(){
-    try{
-      let a = JSON.parse(localStorage.getItem(BRANCH_KEY) || 'null');
-      if(!Array.isArray(a) || !a.length){
-        a = [MAIN];
-        localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
-      }
-      // Main Branch is always present and always first.
-      if(!a.some(x=>x.id==='MAIN')){
-        a.unshift(MAIN);
-      }else{
-        a = [MAIN].concat(a.filter(x=>x.id!=='MAIN'));
-      }
-      localStorage.setItem(BRANCH_KEY, JSON.stringify(a));
-      return a;
-    }catch(e){
-      localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN]));
-      return [MAIN];
-    }
-  }
-
-  function setBranches(a){
-    localStorage.setItem(BRANCH_KEY, JSON.stringify([MAIN].concat(a.filter(x=>x.id!=='MAIN'))));
-  }
-
-  function getActiveId(){
-    const a=getBranches();
-    const id=localStorage.getItem(ACTIVE_KEY);
-    return a.some(x=>x.id===id) ? id : 'MAIN';
-  }
-
-  function setActiveId(id){
-    const a=getBranches();
-    if(!a.some(x=>x.id===id)) id='MAIN';
-    localStorage.setItem(ACTIVE_KEY,id);
-  }
-
-  function esc(v){
-    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-
-  window.sssOpenBranches = function(){
-    const p=document.getElementById('sssBranchManagement');
-    if(p) p.style.display='block';
-    sssBranchRefresh();
-  };
-
-  window.sssBranchRefresh = function(){
-    getBranches();
-    const a=getBranches(), active=getActiveId();
-    const badge=document.getElementById('sssActiveBranchBadge');
-    if(badge){
-      const b=a.find(x=>x.id===active)||MAIN;
-      badge.textContent='🟢 '+b.name+' ('+b.code+')';
-    }
-
-    const tbody=document.getElementById('sssBranchRows');
-    if(!tbody)return;
-
-    tbody.innerHTML=a.map(function(b,i){
-      const isActive=b.id===active;
-      const status=isActive
-        ? '<span class="sss-main-lock">🟢 Active</span>'
-        : (b.isMain ? '<span class="sss-main-lock">🏠 Main</span>' : 'Inactive');
-
-      const actions = b.isMain
-        ? '<button type="button" class="btn primary" onclick="sssBranchActivate(\'MAIN\')">🟢 Active</button>'
-        : '<button type="button" class="btn light" onclick="sssBranchEdit(\''+esc(b.id)+'\')">✏️ Edit</button>'+
-          '<button type="button" class="btn primary" onclick="sssBranchActivate(\''+esc(b.id)+'\')">🟢 Active</button>'+
-          '<button type="button" class="btn danger" onclick="sssBranchDelete(\''+esc(b.id)+'\')">🗑️ Delete</button>';
-
-      return '<tr class="'+(isActive?'sss-active-row':'')+'">'+
-        '<td>'+(i+1)+'</td>'+
-        '<td><b>'+esc(b.name)+'</b></td>'+
-        '<td>'+esc(b.code)+'</td>'+
-        '<td>'+esc(b.mobile)+'</td>'+
-        '<td>'+esc(b.address)+'</td>'+
-        '<td>'+status+'</td>'+
-        '<td>'+actions+'</td>'+
-      '</tr>';
-    }).join('');
-  };
-
-  window.sssBranchNew = function(){
-    document.getElementById('sssBranchEditId').value='';
-    document.getElementById('sssBranchName').value='';
-    document.getElementById('sssBranchCode').value='';
-    document.getElementById('sssBranchMobile').value='';
-    document.getElementById('sssBranchAddress').value='';
-    document.getElementById('sssBranchFormTitle').textContent='➕ Add New Branch';
-  };
-
-  window.sssBranchEdit = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b || b.isMain){
-      if(b && b.isMain) alert('Main Branch edit/delete करू नका.');
-      return;
-    }
-    document.getElementById('sssBranchEditId').value=b.id;
-    document.getElementById('sssBranchName').value=b.name||'';
-    document.getElementById('sssBranchCode').value=b.code||'';
-    document.getElementById('sssBranchMobile').value=b.mobile||'';
-    document.getElementById('sssBranchAddress').value=b.address||'';
-    document.getElementById('sssBranchFormTitle').textContent='✏️ Update Branch';
-    document.getElementById('sssBranchName').scrollIntoView({behavior:'smooth',block:'center'});
-  };
-
-  window.sssBranchSave = function(){
-    const editId=(document.getElementById('sssBranchEditId').value||'').trim();
-    const name=(document.getElementById('sssBranchName').value||'').trim();
-    const code=(document.getElementById('sssBranchCode').value||'').trim().toUpperCase();
-    const mobile=(document.getElementById('sssBranchMobile').value||'').trim();
-    const address=(document.getElementById('sssBranchAddress').value||'').trim();
-
-    if(!name || !code){
-      alert('❌ Branch Name आणि Branch Code आवश्यक आहेत.');
-      return;
-    }
-
-    const a=getBranches();
-
-    // Branch code must be unique.
-    const duplicate=a.find(x=>x.code.toUpperCase()===code && x.id!==editId);
-    if(duplicate){
-      alert('❌ हा Branch Code आधीपासून वापरलेला आहे: '+code);
-      return;
-    }
-
-    if(editId){
-      const i=a.findIndex(x=>x.id===editId);
-      if(i<0){alert('Branch सापडली नाही.');return;}
-      a[i]=Object.assign({},a[i],{name,code,mobile,address,updatedAt:new Date().toISOString()});
-      setBranches(a);
-      alert('✅ Branch updated successfully.');
-    }else{
-      const b={
-        id:'BR_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-        name,code,mobile,address,isMain:false,
-        createdAt:new Date().toISOString()
-      };
-      a.push(b);
-      setBranches(a);
-      setActiveId(b.id);
-      alert('✅ New branch added and activated.');
-    }
-
-    sssBranchNew();
-    sssBranchRefresh();
-  };
-
-  window.sssBranchDelete = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b)return;
-    if(b.isMain || id==='MAIN'){
-      alert('🏠 Main Branch delete करता येणार नाही.');
-      return;
-    }
-    if(!confirm('Delete branch "'+b.name+'"?'))return;
-
-    const wasActive=getActiveId()===id;
-    setBranches(getBranches().filter(x=>x.id!==id));
-    if(wasActive)setActiveId('MAIN');
-    sssBranchRefresh();
-    alert('🗑️ Branch deleted.');
-  };
-
-  window.sssBranchActivate = function(id){
-    const b=getBranches().find(x=>x.id===id);
-    if(!b)return;
-    setActiveId(id);
-    sssBranchRefresh();
-
-    // Other ERP modules can listen to this event and filter their data by branchId.
-    window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{
-      branchId:b.id,branchName:b.name,branchCode:b.code
-    }}));
-
-    alert('🟢 Active Branch: '+b.name);
-  };
-
-  window.sssGetActiveBranch = function(){
-    return getBranches().find(x=>x.id===getActiveId())||MAIN;
-  };
-
-  window.sssGetBranches = function(){
-    return getBranches();
-  };
-
-  document.addEventListener('DOMContentLoaded',function(){
-    getBranches();
-    sssBranchRefresh();
-  });
-})();
-
-</script>
-
-<style id="sss-branch-access-css">
-.sss-ba-bar{margin:10px 12px;padding:10px 14px;border-radius:10px;background:#fff8ed;border:1px solid #ead6bf;font-weight:700;color:#5a2b0b}
-.sss-ba-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.sss-ba-table{width:100%;border-collapse:collapse}.sss-ba-table th,.sss-ba-table td{border:1px solid #ddd;padding:8px}.sss-ba-table th{background:#5a2b0b;color:#fff}
-.sss-ba-main{background:#fff8ed}.sss-ba-actions{display:flex;gap:7px;flex-wrap:wrap}
-@media(max-width:700px){.sss-ba-grid{grid-template-columns:1fr}}
-</style>
-<div id="sssBranchAccessBar" class="sss-ba-bar" style="display:none"></div>
-<section id="sssBranchAccessPage" class="page" style="display:none">
- <h2>🏢 Branch & Staff Access</h2>
- <div class="panel">
-  <div class="sss-ba-grid">
-   <div class="field"><label>Branch Name</label><input id="sssBAN" placeholder="Branch name"></div>
-   <div class="field"><label>Branch Code</label><input id="sssBAC" placeholder="BR01"></div>
-   <div class="field"><label>Mobile</label><input id="sssBAM" inputmode="numeric"></div>
-   <div class="field"><label>Address</label><input id="sssBAA"></div>
-   <div class="field"><label>Branch Status</label><select id="sssBAS"><option value="1">Active</option><option value="0">Inactive</option></select></div>
-  </div>
-  <div class="sss-ba-actions" style="margin-top:10px">
-   <button class="btn success" type="button" onclick="sssBAAddBranch()">➕ Add Branch</button>
-   <button class="btn light" type="button" onclick="sssBAClearBranchForm()">Clear</button>
-  </div>
- </div>
- <div class="panel">
-  <h3>👥 Staff / Manager Branch Assignment</h3>
-  <div class="sss-ba-grid">
-   <div class="field"><label>User ID</label><select id="sssBAUser" onchange="sssBAPopulateUser()"></select></div>
-   <div class="field"><label>Assigned Branch</label><select id="sssBAUserBranch"></select></div>
-   <div class="field"><label>Role</label><input id="sssBARole" readonly></div>
-  </div>
-  <div class="sss-ba-actions" style="margin-top:10px">
-   <button class="btn primary" type="button" onclick="sssBASaveUserBranch()">💾 Save Assignment</button>
-  </div>
-  <p class="permission-note">Admin = all branches. Main Branch Manager = all branches. Other Managers/Staff = assigned branch only.</p>
- </div>
- <div class="panel">
-  <h3>📋 Branches</h3>
-  <div class="table-wrap"><table class="sss-ba-table"><thead><tr><th>#</th><th>Branch</th><th>Code</th><th>Status</th><th>Action</th></tr></thead><tbody id="sssBABranchRows"></tbody></table></div>
- </div>
-</section>
-<script id="sss-branch-staff-access-engine">
-(function(){
-'use strict';
-const BK='SSS_TECHNOLOGY_BRANCHES_V4';
-const ACTIVE='SSS_TECHNOLOGY_WORKING_BRANCH_V4';
-const DBP='SSS_TECHNOLOGY_BRANCH_DB_V4_';
-const UK='GP_ERP_USERS_V1';
-
-function baBranches(){
-  try{
-    const a=JSON.parse(localStorage.getItem(BK)||'null');
-    if(Array.isArray(a)&&a.length)return a;
-  }catch(e){}
-  return [{id:'MAIN',name:'Main Branch',code:'MAIN',mobile:'',address:'',isMain:true,isActive:true}];
-}
-function baSetBranches(a){localStorage.setItem(BK,JSON.stringify(a))}
-function baUserList(){try{return JSON.parse(localStorage.getItem(UK)||'[]')}catch(e){return []}}
-function baUser(){const id=localStorage.getItem('GP_ERP_SESSION_V1');return baUserList().find(x=>x.id===id&&x.active)!==undefined?baUserList().find(x=>x.id===id&&x.active):null}
-function baRole(u){return String(u?.role||'').toLowerCase()}
-function baBranchId(u){return u?.branchId||'MAIN'}
-function baCanAll(u){
-  if(!u)return false;
-  const r=baRole(u);
-  return r==='admin'||(r==='manager'&&baBranchId(u)==='MAIN');
-}
-function baCanManage(u){return baRole(u)==='admin'||(baRole(u)==='manager'&&baBranchId(u)==='MAIN')}
-function baAllowedBranch(u,id){
-  if(baCanAll(u))return true;
-  return baBranchId(u)===id;
-}
-function baWorking(){
-  const u=baUser(), a=baBranches();
-  let id=localStorage.getItem(ACTIVE)||'MAIN';
-  if(!baAllowedBranch(u,id))id=baBranchId(u)||'MAIN';
-  if(!a.some(x=>x.id===id))id='MAIN';
-  return id;
-}
-function baDBKey(id){return DBP+id}
-function baSaveCurrent(){
-  try{
-    if(typeof db!=='undefined'){
-      localStorage.setItem(baDBKey(baWorking()),JSON.stringify(db));
-      localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
-    }
-  }catch(e){}
-}
-function baLoad(id){
-  const u=baUser();
-  if(!baAllowedBranch(u,id)){toast('⛔ This user can access only '+(baBranches().find(x=>x.id===baBranchId(u))?.name||'assigned branch'));return false}
-  try{
-    const raw=localStorage.getItem(baDBKey(id));
-    if(raw){db=JSON.parse(raw)}
-    else{
-      if(id==='MAIN'){
-        const old=localStorage.getItem('GP_ERP_DB');
-        db=old?JSON.parse(old):db;
-      }else{
-        // New branch starts with its own independent empty ERP database.
-        db={customers:[],suppliers:[],stock:[],invoices:[],purchases:[],salesReturns:[],purchaseReturns:[],transactions:[],receipts:[],payments:[],settings:(typeof db!=='undefined'&&db.settings)?JSON.parse(JSON.stringify(db.settings)):{company:'Ganesh Plywood',address:'',gstin:'',defaultGST:18}};
-      }
-      localStorage.setItem(baDBKey(id),JSON.stringify(db));
-    }
-    localStorage.setItem(ACTIVE,id);
-    localStorage.setItem('GP_ERP_DB',JSON.stringify(db));
-    baBar();
-    return true;
-  }catch(e){console.error(e);return false}
-}
-function baBar(){
-  const e=document.getElementById('sssBranchAccessBar');if(!e)return;
-  const u=baUser(),id=baWorking(),b=baBranches().find(x=>x.id===id)||baBranches()[0];
-  e.style.display=u?'block':'none';
-  e.textContent=u?(baCanAll(u)?'🔐 ALL BRANCH ACCESS':'🔒 BRANCH ACCESS')+'  |  🏢 Working: '+b.name+' ('+b.code+')  |  👤 '+u.name:'';
-}
-function baSwitch(id){
-  const u=baUser();
-  if(!baAllowedBranch(u,id)){toast('⛔ Branch access denied');return}
-  baSaveCurrent(); if(baLoad(id)){
-    try{if(typeof dashboard==='function')dashboard()}catch(e){}
-    try{if(typeof nav==='function')nav()}catch(e){}
-    baRender();
-  }
-}
-function baInit(){
-  let a=baBranches();
-  if(!a.some(x=>x.id==='MAIN'))a.unshift({id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true});
-  a=a.map(x=>({...x,isActive:x.id==='MAIN'?true:x.isActive!==false}));
-  baSetBranches(a);
-  const u=baUser();
-  baLoad(baCanAll(u)?(localStorage.getItem(ACTIVE)||'MAIN'):(baBranchId(u)||'MAIN'));
-  baBar();
-}
-window.sssBAOpen=function(){
-  const u=baUser(); if(!baCanManage(u)){toast('⛔ Admin / Main Branch Manager only');return}
-  const p=document.getElementById('sssBranchAccessPage');if(p)p.style.display='block';
-  baRender();baUsersRender();
-}
-window.sssBAAddBranch=function(){
-  const u=baUser();if(!baCanManage(u)){toast('⛔ Admin / Main Branch Manager only');return}
-  const name=document.getElementById('sssBAN')?.value.trim(),code=document.getElementById('sssBAC')?.value.trim().toUpperCase();
-  if(!name||!code)return toast('Branch Name and Code required');
-  const a=baBranches();if(a.some(x=>x.code.toUpperCase()===code))return toast('Branch code already exists');
-  const id='BR_'+Date.now();
-  a.push({id,name,code,mobile:document.getElementById('sssBAM')?.value.trim()||'',address:document.getElementById('sssBAA')?.value.trim()||'',isMain:false,isActive:document.getElementById('sssBAS')?.value!=='0'});
-  baSetBranches(a);
-  localStorage.setItem(baDBKey(id),JSON.stringify({customers:[],suppliers:[],stock:[],invoices:[],purchases:[],salesReturns:[],purchaseReturns:[],transactions:[],receipts:[],payments:[],settings:(typeof db!=='undefined'&&db.settings)?JSON.parse(JSON.stringify(db.settings)):{company:'Ganesh Plywood',address:'',gstin:'',defaultGST:18}}));
-  sssBAClearBranchForm();baRender();toast('✅ Branch created');
-}
-window.sssBAClearBranchForm=function(){['sssBAN','sssBAC','sssBAM','sssBAA'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''})}
-window.sssBAEditBranch=function(id){
- const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
- const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
- const name=prompt('Branch Name',b.name);if(name===null)return;
- const code=prompt('Branch Code',b.code);if(code===null)return;
- b.name=name.trim()||b.name;b.code=code.trim().toUpperCase()||b.code;
- baSetBranches(a);baRender();baBar();
-}
-window.sssBADeleteBranch=function(id){
- const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
- if(id==='MAIN')return toast('🏠 Main Branch cannot be deleted');
- const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
- if(!confirm('Delete branch '+b.name+' and its branch data?'))return;
- baSetBranches(a.filter(x=>x.id!==id));localStorage.removeItem(baDBKey(id));
- if(baWorking()===id)localStorage.setItem(ACTIVE,'MAIN');
- baRender();baBar();
-}
-window.sssBASetActive=function(id,active){
- const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
- const a=baBranches(),b=a.find(x=>x.id===id);if(!b)return;
- if(id==='MAIN')active=true;b.isActive=!!active;baSetBranches(a);baRender();
-}
-window.sssBASaveUserBranch=function(){
- const u=baUser();if(!baCanManage(u))return toast('⛔ Access denied');
- const id=document.getElementById('sssBAUser')?.value,branchId=document.getElementById('sssBAUserBranch')?.value;
- const list=baUserList(),x=list.find(v=>v.id===id);if(!x)return;
- x.branchId=branchId;localStorage.setItem(UK,JSON.stringify(list));
- toast('✅ User branch assigned');setTimeout(()=>location.reload(),400);
-}
-window.sssBAPopulateUser=function(){
- const id=document.getElementById('sssBAUser')?.value,u=baUserList().find(x=>x.id===id);if(!u)return;
- const r=document.getElementById('sssBARole');if(r)r.value=u.role||'';
- const s=document.getElementById('sssBAUserBranch');if(s)s.value=u.branchId||'MAIN';
-}
-function baUsersRender(){
- const s=document.getElementById('sssBAUser');if(!s)return;
- s.innerHTML=baUserList().map(x=>`<option value="${x.id}">${x.name} (${x.username}) — ${x.role}</option>`).join('');
- const b=document.getElementById('sssBAUserBranch');if(b)b.innerHTML=baBranches().map(x=>`<option value="${x.id}">${x.name} (${x.code})</option>`).join('');
- sssBAPopulateUser();
-}
-function baRender(){
- const tb=document.getElementById('sssBABranchRows');if(!tb)return;
- const u=baUser(),cur=baWorking();
- tb.innerHTML=baBranches().map((b,i)=>`<tr class="${b.id==='MAIN'?'sss-ba-main':''}">
- <td>${i+1}</td><td><b>${b.name}</b>${b.id==='MAIN'?' 🏠':''}</td><td>${b.code}</td><td>${b.isActive?'🟢 Active':'⚪ Inactive'}</td>
- <td><div class="sss-ba-actions">
- <button class="btn primary" onclick="sssBASwitch('${b.id}')">🔵 Work Here</button>
- ${baCanManage(u)?`<button class="btn light" onclick="sssBAEditBranch('${b.id}')">✏️ Edit</button>${b.id!=='MAIN'?`<button class="btn danger" onclick="sssBADeleteBranch('${b.id}')">🗑️ Delete</button><button class="btn light" onclick="sssBASetActive('${b.id}',${!b.isActive})">${b.isActive?'Deactivate':'Activate'}</button>`:''}`:''}
- </div></td></tr>`).join('');
-}
-window.sssBASwitch=function(id){baSwitch(id)}
-window.sssBARefresh=baRender;
-window.sssBAGetBranches=baBranches;
-window.sssBAUserCanAll=baCanAll;
-window.sssBAGetWorking=baWorking;
-
-// Assign default branch IDs to existing users once.
-(function(){
- const list=baUserList();let changed=false;
- list.forEach(u=>{if(!u.branchId){u.branchId=(String(u.role).toLowerCase()==='admin'?'MAIN':'MAIN');changed=true}});
- if(changed)localStorage.setItem(UK,JSON.stringify(list));
-})();
-
-// Wrap save so every change is stored in the current branch database.
-const originalSave=window.save;
-if(typeof originalSave==='function'&&!originalSave.__sssBranchAccess){
- window.save=function(){const r=originalSave.apply(this,arguments);baSaveCurrent();return r};
- window.save.__sssBranchAccess=true;
-}
-
-// Protect openPage: branch users only see their own branch data. Main Admin/Manager can switch.
-const originalOpenPage=window.openPage;
-if(typeof originalOpenPage==='function'&&!originalOpenPage.__sssBranchAccess){
- window.openPage=function(p){
-   const u=baUser();
-   if(!u){return originalOpenPage.apply(this,arguments)}
-   const allowed=baCanAll(u)||baAllowedBranch(u,baWorking());
-   if(!allowed){toast('⛔ Access denied');return}
-   if(p==='Branch & Staff Access'){return sssBAOpen()}
-   return originalOpenPage.apply(this,arguments);
- };
- window.openPage.__sssBranchAccess=true;
-}
-
-window.addEventListener('load',function(){setTimeout(baInit,250)});
-
-// Expose branch selector for top bar.
-window.sssBARenderSelector=function(){
- const u=baUser();if(!u)return '';
- const a=baBranches().filter(b=>b.isActive!==false&&baAllowedBranch(u,b.id));
- return `<select onchange="sssBASwitch(this.value)" style="max-width:190px">${a.map(b=>`<option value="${b.id}" ${b.id===baWorking()?'selected':''}>🏢 ${b.name}</option>`).join('')}</select>`;
-};
-})();
-</script>
-<script id="sss-branch-access-ui">
-(function(){
-  function install(){
-    const nav=document.getElementById('nav');
-    if(nav && !document.getElementById('sssBAButton')){
-      const u=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]').find(x=>x.id===localStorage.getItem('GP_ERP_SESSION_V1'));
-      const role=String(u?.role||'').toLowerCase();
-      const main=(u?.branchId||'MAIN')==='MAIN';
-      if(role==='admin'||(role==='manager'&&main)){
-        const b=document.createElement('button');b.id='sssBAButton';b.dataset.p='Branch & Staff Access';b.textContent='🏢 Branch & Staff Access';b.onclick=sssBAOpen;nav.appendChild(b);
-      }
-    }
-    const top=document.querySelector('.topbar');
-    if(top && !document.getElementById('sssBranchQuickSelect')){
-      const u=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]').find(x=>x.id===localStorage.getItem('GP_ERP_SESSION_V1'));
-      if(u){
-        const sel=document.createElement('span');sel.id='sssBranchQuickSelect';sel.innerHTML=sssBARenderSelector();
-        top.appendChild(sel);
-      }
-    }
-  }
-  window.addEventListener('load',()=>setTimeout(install,500));
-  window.addEventListener('sssBranchDataLoaded',install);
-})();
-</script>
-
-<script id="sss-branch-record-stamper">
-(function(){
-  function stamp(){
-    try{
-      const id=localStorage.getItem('SSS_TECHNOLOGY_WORKING_BRANCH_V4')||'MAIN';
-      if(typeof db==='undefined')return;
-      ['customers','suppliers','stock','invoices','purchases','salesReturns','purchaseReturns','transactions','receipts','payments'].forEach(k=>{
-        (db[k]||[]).forEach(x=>{if(x&&x.branchId==null)x.branchId=id});
-      });
-    }catch(e){}
-  }
-  const old=window.save;
-  if(typeof old==='function'&&!old.__sssStamp){
-    window.save=function(){stamp();return old.apply(this,arguments)};
-    window.save.__sssStamp=true;
-  }
-  setInterval(stamp,1000);
-})();
-</script>
-
-
-<div id="sssTopBranchSwitcher" title="Working Branch">
-  <span>🏢</span>
-  <select id="sssTopBranchSelect" onchange="sssTopBranchChange(this.value)" aria-label="Working Branch"></select>
-</div>
-<script id="sss-top-branch-switcher-js">
-(function(){
-'use strict';
-function getBranches(){
-  try{
-    const a=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
-    return Array.isArray(a)&&a.length?a:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
-  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
-}
-function currentId(){return localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN'}
-function allowed(){
-  try{
-    if(window.SSS_ACCESS){
-      if(window.SSS_ACCESS.isMainManager())return getBranches().filter(b=>b.isActive!==false);
-      const u=window.SSS_ACCESS.currentUser();
-      return getBranches().filter(b=>window.SSS_ACCESS.assigned(u).includes(String(b.id)) && b.isActive!==false);
-    }
-  }catch(e){}
-  return getBranches().filter(b=>b.isActive!==false);
-}
-function fill(){
-  const el=document.getElementById('sssTopBranchSelect');if(!el)return;
-  const list=allowed();
-  const cur=currentId();
-  el.innerHTML=list.map(b=>`<option value="${String(b.id).replace(/"/g,'&quot;')}">${String(b.name)}${b.code?' ('+String(b.code)+')':''}</option>`).join('');
-  if(list.some(b=>String(b.id)===String(cur)))el.value=cur;
-  else if(list[0]){
-    el.value=list[0].id;
-    localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',list[0].id);
-  }
-}
-window.sssTopBranchChange=function(id){
-  const list=allowed(), b=list.find(x=>String(x.id)===String(id));
-  if(!b){alert('⛔ This branch is not assigned to you.');fill();return}
-  localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-  try{
-    if(typeof window.sssSwitchWorkingBranch==='function'){
-      window.sssSwitchWorkingBranch(String(id));
-    }else if(typeof window.sssSwitchBranch==='function'){
-      window.sssSwitchBranch(String(id));
-    }
-  }catch(e){console.error(e)}
-  fill();
-  // Refresh visible ERP screen after branch change.
-  setTimeout(function(){
-    try{if(typeof nav==='function')nav()}catch(e){}
-    try{if(typeof dashboard==='function')dashboard()}catch(e){}
-    try{if(typeof stock==='function')stock()}catch(e){}
-  },80);
-};
-window.sssRefreshTopBranchSwitcher=fill;
-document.addEventListener('DOMContentLoaded',fill);
-window.addEventListener('sssBranchDataLoaded',fill);
-window.addEventListener('sssActiveBranchChanged',fill);
-})();
-</script>
-
-<div id="sssBranchAccessBadge" style="position:fixed;right:10px;top:10px;z-index:9998;padding:7px 12px;border-radius:18px;background:#fff8ed;border:1px solid #e4c9a5;color:#5a2b0b;font-size:12px;font-weight:700;display:none"></div>
-<style>
-#sssBranchAccessBadge{display:block}
-</style>
-
-<script id="sss-main-branch-access-control">
-(function(){
-'use strict';
-
-const SSS_ACCESS_KEY='SSS_BRANCH_USER_ACCESS_V2';
-
-function sssUsers(){
-  try{
-    const u=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
-    return Array.isArray(u)?u:[];
-  }catch(e){return []}
-}
-function sssBranches(){
-  try{
-    const b=JSON.parse(localStorage.getItem('SSS_TECHNOLOGY_BRANCHES_V3')||'[]');
-    return Array.isArray(b)&&b.length?b:[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}];
-  }catch(e){return [{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]}
-}
-function sssCurrentUser(){
-  try{
-    const id=localStorage.getItem('GP_ERP_SESSION_V1');
-    return sssUsers().find(x=>String(x.id)===String(id)&&x.active)!==undefined
-      ? sssUsers().find(x=>String(x.id)===String(id)&&x.active) : null;
-  }catch(e){return null}
-}
-function sssRole(){
-  return String(sssCurrentUser()?.role||'').toLowerCase();
-}
-function sssIsMainManager(){
-  const u=sssCurrentUser();
-  if(!u)return false;
-  if(sssRole()==='admin')return true;
-  if(sssRole()==='manager'){
-    const ids=sssAssigned(u);
-    return ids.includes('MAIN');
-  }
-  return false;
-}
-function sssAssigned(u){
-  try{
-    const all=JSON.parse(localStorage.getItem(SSS_ACCESS_KEY)||'{}');
-    const a=all[String(u?.id||u?.username||'')];
-    if(Array.isArray(a)&&a.length)return a;
-  }catch(e){}
-  // Existing users without assignment:
-  // admin = Main/all, manager = Main by default, staff = Main by default.
-  if(String(u?.role||'').toLowerCase()==='admin')return sssBranches().map(b=>b.id);
-  return ['MAIN'];
-}
-function sssCanSeeBranch(branchId){
-  if(sssIsMainManager())return true;
-  const u=sssCurrentUser();
-  if(!u)return false;
-  return sssAssigned(u).includes(String(branchId));
-}
-function sssWorkingBranch(){
-  const id=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
-  return sssCanSeeBranch(id)?id:sssAssigned(sssCurrentUser())[0]||'MAIN';
-}
-function sssTagRecord(x){
-  if(!x || typeof x!=='object')return x;
-  if(!x.branchId)x.branchId=sssWorkingBranch();
-  return x;
-}
-function sssFilter(list){
-  if(!Array.isArray(list))return [];
-  if(sssIsMainManager())return list;
-  const allowed=new Set(sssAssigned(sssCurrentUser()).map(String));
-  return list.filter(x=>{
-    const id=String(x?.branchId||'MAIN');
-    return allowed.has(id);
-  });
-}
-
-window.SSS_ACCESS={
-  users:sssUsers,
-  branches:sssBranches,
-  currentUser:sssCurrentUser,
-  assigned:sssAssigned,
-  canSee:sssCanSeeBranch,
-  isMainManager:sssIsMainManager,
-  workingBranch:sssWorkingBranch,
-  filter:sssFilter
-};
-
-// Main Branch = consolidated view; other branches = only their assigned data.
-window.sssGetVisibleERPData=function(){
-  if(typeof db==='undefined')return {};
-  const keys=['invoices','purchases','stock','customers','suppliers','transactions','salesReturns','purchaseReturns','receipts','payments'];
-  const out={};
-  keys.forEach(k=>{
-    const a=Array.isArray(db[k])?db[k]:[];
-    out[k]=sssFilter(a);
-  });
-  return out;
-};
-
-// Automatically stamp new/edited records with the current branch.
-// Admin/Main Manager can intentionally switch to another branch before entry.
-function wrapSaveRecord(fnName, collection){
-  const original=window[fnName];
-  if(typeof original!=='function'||original.__sssWrapped)return;
-  window[fnName]=function(){
-    const before=Array.isArray(db?.[collection])?db[collection].length:0;
-    const result=original.apply(this,arguments);
-    try{
-      const a=db?.[collection];
-      if(Array.isArray(a)){
-        const start=Math.max(0,before-2);
-        for(let i=start;i<a.length;i++) if(a[i]&&!a[i].branchId)a[i].branchId=sssWorkingBranch();
-      }
-    }catch(e){}
-    return result;
-  };
-  window[fnName].__sssWrapped=true;
-}
-
-// Hide branch management/report controls for non-main users.
-function applyAccessUI(){
-  const main=sssIsMainManager();
-  document.querySelectorAll('[data-sss-main-only]').forEach(el=>el.style.display=main?'':'none');
-  const badge=document.getElementById('sssBranchAccessBadge');
-  if(badge){
-    const b=sssBranches().find(x=>x.id===sssWorkingBranch())||{name:'Main Branch',code:'MAIN'};
-    badge.textContent=main
-      ? '🔐 Main Branch — All Branch Data & Rights'
-      : '🔒 '+b.name+' — Branch Data Only';
-  }
-}
-window.sssApplyAccessUI=applyAccessUI;
-
-// Ensure an ordinary user can never open a different branch manually.
-const oldOpen=window.sssOpenBranches;
-if(typeof oldOpen==='function'){
-  window.sssOpenBranches=function(){
-    if(!sssIsMainManager()){
-      alert('🔒 Branch management is available only to Admin / Main Branch Manager.');
-      return;
-    }
-    return oldOpen.apply(this,arguments);
-  };
-}
-
-// Make the working branch switch enforce assignment.
-const oldSwitch=window.sssSwitchWorkingBranch;
-window.sssSwitchWorkingBranch=function(id){
-  if(!window.SSS_ACCESS || !window.SSS_ACCESS.canSee(String(id))){
-    alert('⛔ You do not have access to this branch.');
-    return;
-  }
-  localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-  if(typeof window.sssSwitchWorkingBranchData==='function'){
-    return window.sssSwitchWorkingBranchData(String(id));
-  }
-  if(typeof window.sssSwitchBranch==='function'){
-    return window.sssSwitchBranch(String(id));
-  }
-};
-
-// Stamp common collections whenever the current data is saved.
-function stampAll(){
-  if(typeof db==='undefined')return;
-  const collections=['invoices','purchases','stock','customers','suppliers','transactions','salesReturns','purchaseReturns','receipts','payments'];
-  const branch=sssWorkingBranch();
-  collections.forEach(k=>{
-    if(Array.isArray(db[k])) db[k].forEach(x=>{if(x && !x.branchId)x.branchId=branch});
-  });
-}
-const oldSave=window.save;
-if(typeof oldSave==='function'&&!oldSave.__sssAccessWrapped){
-  window.save=function(){
-    stampAll();
-    const r=oldSave.apply(this,arguments);
-    applyAccessUI();
-    return r;
-  };
-  window.save.__sssAccessWrapped=true;
-}
-
-document.addEventListener('DOMContentLoaded',function(){
-  // Main Branch remains the default for Admin/Main Manager.
-  if(sssIsMainManager())localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3','MAIN');
-  applyAccessUI();
-});
-
-window.addEventListener('sssBranchDataLoaded',applyAccessUI);
-})();
-</script>
-
-<script id="sss-branch-user-assignment">
-(function(){
-window.sssOpenBranchAssignments=function(){
-  if(!window.SSS_ACCESS?.isMainManager()){alert('Admin / Main Branch Manager only');return;}
-  const users=SSS_ACCESS.users(), branches=SSS_ACCESS.branches();
-  const accessKey='SSS_BRANCH_USER_ACCESS_V2';
-  let access={};try{access=JSON.parse(localStorage.getItem(accessKey)||'{}')}catch(e){}
-  const rows=users.map(u=>{
-    const current=Array.isArray(access[u.id])?access[u.id]:(String(u.role).toLowerCase()==='admin'?branches.map(b=>b.id):['MAIN']);
-    const checks=branches.map(b=>`<label style="display:inline-flex;gap:5px;align-items:center;margin:3px 8px 3px 0"><input type="checkbox" data-sss-user="${u.id}" value="${b.id}" ${current.includes(b.id)?'checked':''}>${b.name}</label>`).join('');
-    return `<div style="padding:10px;border:1px solid #ddd;border-radius:9px;margin:8px 0"><b>${u.name}</b> (${u.role})<div>${checks}</div></div>`;
-  }).join('');
-  modal(`<h3>🔐 Branch-wise Staff / Manager Access</h3>
-  <p><b>Main Branch Admin/Manager</b> can see all branch data. Other users can see only their assigned branches.</p>
-  ${rows}
-  <button class="btn success" onclick="sssSaveBranchAssignments()">💾 Save Access</button>
-  <button class="btn light" onclick="closeModal()">Close</button>`);
-};
-window.sssSaveBranchAssignments=function(){
-  const access={};
-  document.querySelectorAll('[data-sss-user]').forEach(c=>{
-    const id=c.getAttribute('data-sss-user');
-    if(!access[id])access[id]=[];
-    if(c.checked)access[id].push(c.value);
-  });
-  localStorage.setItem('SSS_BRANCH_USER_ACCESS_V2',JSON.stringify(access));
-  closeModal();toast('✅ Branch access saved');
-};
-})();
-</script>
-
-<script id="sss-branch-menu-access">
-(function(){
-  function update(){
-    const main=window.SSS_ACCESS && window.SSS_ACCESS.isMainManager && window.SSS_ACCESS.isMainManager();
-    const e=document.getElementById('sssBranchAdminTools');
-    if(e)e.style.display=main?'flex':'none';
-  }
-  document.addEventListener('DOMContentLoaded',update);
-  window.addEventListener('sssBranchDataLoaded',update);
-  window.addEventListener('storage',update);
-})();
-</script>
 </body>
 </html>
