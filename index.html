@@ -138,21 +138,6 @@ html,body{overflow-x:hidden}
 </style>
 
 
-<style id="sss-branch-live-css">
-.sss-live-branch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.sss-live-branch-card{border:1px solid #e1d7cc;border-radius:12px;padding:13px;background:#fffdf9;box-shadow:0 2px 7px #0000000a}
-.sss-live-branch-card.active{border:2px solid #159447;background:#f5fff8}
-.sss-live-branch-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:10px}
-.sss-live-branch-name{font-weight:800;color:#5a2b0b}
-.sss-live-branch-code{font-size:11px;color:#777;margin-top:2px}
-.sss-live-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.sss-live-stat{padding:8px;border:1px solid #eee;border-radius:8px;background:#fff}
-.sss-live-stat small{display:block;color:#777;font-size:10px}
-.sss-live-stat b{display:block;margin-top:2px;font-size:14px}
-.sss-live-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-@media(max-width:900px){.sss-live-branch-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.sss-live-branch-grid{grid-template-columns:1fr}}
-</style>
 <style id="sss-branch-complete-css">
 #sssBranchManagement{box-sizing:border-box;width:100%;padding:12px}
 .sss-branch-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -181,10 +166,13 @@ html,body{overflow-x:hidden}
 </style>
 
 <style id="sss-top-branch-switcher-css">
-#sssTopBranchSwitcher{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
-#sssTopBranchSelect{min-width:170px;max-width:260px;padding:7px 30px 7px 10px;border:1px solid #d7b994;border-radius:7px;background:#fff;color:#4b250c;font-weight:700}
-@media(max-width:700px){#sssTopBranchSwitcher{margin-left:4px}#sssTopBranchSelect{min-width:125px;max-width:180px;padding:6px 24px 6px 7px;font-size:12px}.topbar{gap:7px;padding:0 8px}.topbar .right{margin-left:auto}}
-
+#sssTopBranchSwitcher{
+  display:inline-flex;align-items:center;gap:6px;margin-left:10px;
+}
+#sssTopBranchSelect{
+  min-width:180px;padding:8px 32px 8px 10px;border:1px solid #d7b994;
+  border-radius:7px;background:#fff;color:#4b250c;font-weight:700;
+}
 </style>
 </head>
 <body>
@@ -200,10 +188,7 @@ html,body{overflow-x:hidden}
 <div class="nav" id="nav"></div>
 </aside>
 <main class="content">
-<div class="topbar"><button class="menu-btn" onclick="toggleMenu()">☰</button><b id="currentUserTop">👤 SANDIP28</b><span id="currentRoleTop" class="role-badge">Admin</span><div id="sssTopBranchSwitcher" title="Working Branch">
-  <span>🏢</span>
-  <select id="sssTopBranchSelect" onchange="sssTopBranchChange(this.value)" aria-label="Working Branch"></select>
-</div><span>|</span><span>📅 <span id="today"></span></span><span id="cloudStatus" style="font-size:12px">☁️ Cloud</span><span class="right">🔔</span></div>
+<div class="topbar"><button class="menu-btn" onclick="toggleMenu()">☰</button><b id="currentUserTop">👤 SANDIP28</b><span id="currentRoleTop" class="role-badge">Admin</span><span>|</span><span>📅 <span id="today"></span></span><span id="cloudStatus" style="font-size:12px">☁️ Cloud</span><span class="right">🔔</span></div>
 <div id="app"></div>
 </main>
 </div>
@@ -269,14 +254,6 @@ html,body{overflow-x:hidden}
       <button type="button" class="btn success" onclick="sssBranchSave()">💾 Save Branch</button>
       <button type="button" class="btn light" onclick="sssBranchNew()">Cancel / New</button>
     </div>
-  </div>
-
-  <div class="panel" id="sssAllBranchLivePanel">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <h3 style="margin:0">📊 All Branch Live Data</h3>
-      <span class="badge paid">Admin / Main Manager — All Branches</span>
-    </div>
-    <div id="sssAllBranchLiveData" class="sss-live-branch-grid" style="margin-top:12px"></div>
   </div>
 
   <div class="panel">
@@ -1890,54 +1867,6 @@ document.addEventListener('DOMContentLoaded',function(){
         '<td>'+actions+'</td>'+
       '</tr>';
     }).join('');
-    try{sssRenderAllBranchLiveData()}catch(e){}
-  };
-
-  window.sssRenderAllBranchLiveData = function(){
-    const box=document.getElementById('sssAllBranchLiveData');
-    if(!box || typeof db==='undefined') return;
-    const branches=getBranches();
-    const active=getActiveId();
-    const arr=k=>Array.isArray(db[k])?db[k]:[];
-    const moneySafe=v=>{
-      try{return typeof money==='function'?money(Number(v)||0):'₹'+(Number(v)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
-      catch(e){return '₹'+(Number(v)||0).toFixed(2)}
-    };
-    const by=(list,id)=>list.filter(x=>String(x?.branchId||'MAIN')===String(id));
-    box.innerHTML=branches.map(b=>{
-      const invoices=by(arr('invoices'),b.id);
-      const purchases=by(arr('purchases'),b.id);
-      const stock=by(arr('stock'),b.id);
-      const customers=by(arr('customers'),b.id);
-      const suppliers=by(arr('suppliers'),b.id);
-      const sales=invoices.reduce((n,x)=>n+(Number(x.grand)||0),0);
-      const received=invoices.reduce((n,x)=>n+(Number(x.receivedAmount??x.cashReceived??0)||0),0);
-      const receivable=invoices.reduce((n,x)=>n+(Number(x.outstandingAmount??Math.max(0,(Number(x.grand)||0)-(Number(x.receivedAmount)||0)))||0),0);
-      const purchase=purchases.reduce((n,x)=>n+(Number(x.total)||0),0);
-      const paid=purchases.reduce((n,x)=>n+(Number(x.paidAmount??x.cashPaid??0)||0),0);
-      const payable=purchases.reduce((n,x)=>n+(Number(x.outstandingAmount??Math.max(0,(Number(x.total)||0)-(Number(x.paidAmount)||0)))||0),0);
-      const stockQty=stock.reduce((n,x)=>n+(Number(x.qty)||0),0);
-      const isActive=String(active)===String(b.id);
-      return `<div class="sss-live-branch-card ${isActive?'active':''}">
-        <div class="sss-live-branch-head">
-          <div><div class="sss-live-branch-name">${esc(b.name||'Unnamed Branch')}</div><div class="sss-live-branch-code">${esc(b.code||'')}</div></div>
-          <span class="badge ${isActive?'paid':''}">${isActive?'🟢 Active':'⚪ Available'}</span>
-        </div>
-        <div class="sss-live-stats">
-          <div class="sss-live-stat"><small>Sales</small><b class="green">${moneySafe(sales)}</b></div>
-          <div class="sss-live-stat"><small>Purchase</small><b class="orange">${moneySafe(purchase)}</b></div>
-          <div class="sss-live-stat"><small>Received</small><b>${moneySafe(received)}</b></div>
-          <div class="sss-live-stat"><small>Paid</small><b>${moneySafe(paid)}</b></div>
-          <div class="sss-live-stat"><small>Receivable</small><b class="red">${moneySafe(receivable)}</b></div>
-          <div class="sss-live-stat"><small>Payable</small><b class="red">${moneySafe(payable)}</b></div>
-          <div class="sss-live-stat"><small>Stock Qty</small><b class="blue">${stockQty.toLocaleString('en-IN')}</b></div>
-          <div class="sss-live-stat"><small>Parties</small><b>${customers.length+suppliers.length}</b></div>
-        </div>
-        <div class="sss-live-actions">
-          <button type="button" class="btn primary" onclick="sssBranchActivate('${esc(b.id)}')">${isActive?'✓ Viewing':'👁 View Branch'}</button>
-        </div>
-      </div>`;
-    }).join('');
   };
 
   window.sssBranchNew = function(){
@@ -2020,31 +1949,20 @@ document.addEventListener('DOMContentLoaded',function(){
     setBranches(getBranches().filter(x=>x.id!==id));
     if(wasActive)setActiveId('MAIN');
     sssBranchRefresh();
-    try{sssRenderAllBranchLiveData()}catch(e){}
     alert('🗑️ Branch deleted.');
   };
 
   window.sssBranchActivate = function(id){
     const b=getBranches().find(x=>x.id===id);
     if(!b)return;
-    try{
-      if(typeof window.sssSwitchWorkingBranch==='function'){
-        window.sssSwitchWorkingBranch(String(id));
-      }else{
-        setActiveId(id);
-        localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-      }
-    }catch(e){
-      setActiveId(id);
-      localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-    }
     setActiveId(id);
     sssBranchRefresh();
-    try{sssRenderAllBranchLiveData()}catch(e){}
+
+    // Other ERP modules can listen to this event and filter their data by branchId.
     window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{
       branchId:b.id,branchName:b.name,branchCode:b.code
     }}));
-    if(typeof window.sssRefreshTopBranchSwitcher==='function')window.sssRefreshTopBranchSwitcher();
+
     alert('🟢 Active Branch: '+b.name);
   };
 
@@ -2354,7 +2272,10 @@ window.sssBARenderSelector=function(){
 </script>
 
 
-
+<div id="sssTopBranchSwitcher" title="Working Branch">
+  <span>🏢</span>
+  <select id="sssTopBranchSelect" onchange="sssTopBranchChange(this.value)" aria-label="Working Branch"></select>
+</div>
 <script id="sss-top-branch-switcher-js">
 (function(){
 'use strict';
@@ -2389,33 +2310,25 @@ function fill(){
 window.sssTopBranchChange=function(id){
   const list=allowed(), b=list.find(x=>String(x.id)===String(id));
   if(!b){alert('⛔ This branch is not assigned to you.');fill();return}
+  localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
   try{
     if(typeof window.sssSwitchWorkingBranch==='function'){
       window.sssSwitchWorkingBranch(String(id));
-    }else{
-      localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-      localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-      window.dispatchEvent(new CustomEvent('sssActiveBranchChanged',{detail:{branchId:b.id,branchName:b.name,branchCode:b.code}}));
+    }else if(typeof window.sssSwitchBranch==='function'){
+      window.sssSwitchBranch(String(id));
     }
-  }catch(e){
-    console.error(e);
-    localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
-  }
-  localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',String(id));
+  }catch(e){console.error(e)}
   fill();
+  // Refresh visible ERP screen after branch change.
   setTimeout(function(){
-    try{if(typeof window.sssBranchRefresh==='function')window.sssBranchRefresh()}catch(e){}
     try{if(typeof nav==='function')nav()}catch(e){}
     try{if(typeof dashboard==='function')dashboard()}catch(e){}
     try{if(typeof stock==='function')stock()}catch(e){}
-    try{if(typeof renderDashboard==='function')renderDashboard()}catch(e){}
-  },120);
+  },80);
 };
 window.sssRefreshTopBranchSwitcher=fill;
 document.addEventListener('DOMContentLoaded',fill);
 window.addEventListener('sssBranchDataLoaded',fill);
-setTimeout(fill,250);
-setTimeout(fill,800);
 window.addEventListener('sssActiveBranchChanged',fill);
 })();
 </script>
@@ -2491,17 +2404,11 @@ function sssTagRecord(x){
 }
 function sssFilter(list){
   if(!Array.isArray(list))return [];
-  const active=sssWorkingBranch();
-  // Admin / Main Manager: Main Branch shows consolidated all-branch data.
-  // Selecting another branch from the top switcher shows only that branch's data.
-  if(sssIsMainManager() && String(active)==='MAIN')return list;
-  if(sssIsMainManager()){
-    return list.filter(x=>String(x?.branchId||'MAIN')===String(active));
-  }
+  if(sssIsMainManager())return list;
   const allowed=new Set(sssAssigned(sssCurrentUser()).map(String));
   return list.filter(x=>{
     const id=String(x?.branchId||'MAIN');
-    return allowed.has(id) && id===String(active);
+    return allowed.has(id);
   });
 }
 
@@ -2611,16 +2518,9 @@ if(typeof oldSave==='function'&&!oldSave.__sssAccessWrapped){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
-  // Keep the last selected working branch. Main Branch is only the initial/default branch.
-  const active=localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3');
-  if(!active){
-    const first=sssIsMainManager()?'MAIN':(sssAssigned(sssCurrentUser())[0]||'MAIN');
-    localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',first);
-  }else if(!sssCanSeeBranch(active)){
-    localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3',sssAssigned(sssCurrentUser())[0]||'MAIN');
-  }
+  // Main Branch remains the default for Admin/Main Manager.
+  if(sssIsMainManager())localStorage.setItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3','MAIN');
   applyAccessUI();
-  setTimeout(function(){if(typeof window.sssRefreshTopBranchSwitcher==='function')window.sssRefreshTopBranchSwitcher();},0);
 });
 
 window.addEventListener('sssBranchDataLoaded',applyAccessUI);
@@ -2658,24 +2558,6 @@ window.sssSaveBranchAssignments=function(){
 })();
 </script>
 
-<script id="sss-admin-all-branch-live-refresh">
-(function(){
-  function refresh(){
-    try{
-      const ok=window.SSS_ACCESS?.isMainManager?.();
-      const p=document.getElementById('sssAllBranchLivePanel');
-      if(p)p.style.display=ok?'':'none';
-      if(ok && typeof window.sssRenderAllBranchLiveData==='function') window.sssRenderAllBranchLiveData();
-    }catch(e){}
-  }
-  document.addEventListener('DOMContentLoaded',refresh);
-  window.addEventListener('sssActiveBranchChanged',refresh);
-  window.addEventListener('sssBranchDataLoaded',refresh);
-  window.addEventListener('storage',refresh);
-  setInterval(refresh,1500);
-})();
-</script>
-
 <script id="sss-branch-menu-access">
 (function(){
   function update(){
@@ -2689,158 +2571,359 @@ window.sssSaveBranchAssignments=function(){
 })();
 </script>
 
-<style>
-#sssRightsPanel{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:none;padding:18px;overflow:auto}
-#sssRightsBox{max-width:760px;margin:35px auto;background:#fff;border-radius:12px;padding:18px}
-.sssRightsGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sssRightsGrid label{padding:9px;border:1px solid #ddd;border-radius:7px;background:#fafafa}
-@media(max-width:650px){.sssRightsGrid{grid-template-columns:1fr}}
-</style>
-<div id="sssRightsPanel">
- <div id="sssRightsBox">
-  <h2>🔐 User Function Rights</h2>
-  <p>Select a user and give only the required functions.</p>
-  <select id="sssRightsUser" style="width:100%;padding:10px;margin-bottom:12px"></select>
-  <div id="sssRightsGrid" class="sssRightsGrid"></div>
-  <br>
-  <button type="button" class="btn success" onclick="sssSaveRights()">💾 Save Rights</button>
-  <button type="button" class="btn light" onclick="sssSelectAllRights(true)">✅ All</button>
-  <button type="button" class="btn light" onclick="sssSelectAllRights(false)">☐ Clear</button>
-  <button type="button" class="btn danger" onclick="sssCloseRights()">Close</button>
- </div>
-</div>
-
-<script id="sss-user-function-rights-v2">
+<script id="sss-user-rights-final-fix">
 (function(){
 'use strict';
-const KEY='SSS_USER_FUNCTION_RIGHTS_V2';
-const RIGHTS=[
-['dashboard','📊 Dashboard'],['billing','🧾 Billing / Sales'],['purchase','🛒 Purchase'],
-['stock','📦 Stock'],['rate','💰 Rate Checklist'],['purchaseReturn','↩️ Purchase Return'],
-['salesReturn','↪️ Sales Return'],['receivable','💵 Receivable'],['payable','💳 Payable'],
-['customers','👥 Customers'],['suppliers','🚚 Suppliers'],['reports','📈 Reports'],
-['transactions','💼 Transactions'],['settings','⚙️ Settings'],['dataControl','🛠️ Data Control'],
-['backup','💾 Backup'],['users','👤 Login Users'],['branchManagement','🏢 Branch Management'],
-['allBranchReports','📊 All Branch Reports']
-];
-
-function readArray(key){
- try{
-  const x=JSON.parse(localStorage.getItem(key)||'[]');
-  return Array.isArray(x)?x:[];
- }catch(e){return []}
+function getUsers(){
+  try{
+    if(Array.isArray(window.users) && window.users.length) return window.users;
+  }catch(e){}
+  try{
+    const a=JSON.parse(localStorage.getItem('GP_ERP_USERS_V1')||'[]');
+    return Array.isArray(a)?a:[];
+  }catch(e){return []}
 }
-function users(){
- const keys=['GP_ERP_USERS_V1','SSS_ERP_USERS','ERP_USERS','users','loginUsers'];
- let out=[];
- for(const k of keys){
-  const a=readArray(k);
-  if(a.length) out=out.concat(a);
- }
- // Also support an existing db.users array.
- try{
-  if(typeof db!=='undefined' && Array.isArray(db.users)) out=out.concat(db.users);
- }catch(e){}
- const seen=new Set();
- return out.filter(u=>{
-  if(!u||typeof u!=='object')return false;
-  const id=String(u.id??u.userId??u.username??u.email??'').trim();
-  if(!id||seen.has(id))return false;
-  seen.add(id); return true;
- });
-}
-function identity(u){return String(u?.id??u?.userId??u?.username??u?.email??'').trim()}
-function current(){
- const ids=[
-  localStorage.getItem('GP_ERP_SESSION_V1'),
-  localStorage.getItem('SSS_CURRENT_USER_ID'),
-  localStorage.getItem('currentUserId'),
-  localStorage.getItem('erpUserId')
- ].filter(Boolean).map(String);
- const a=users();
- return a.find(u=>ids.includes(identity(u))) || window.currentUser || null;
-}
-function isManager(){
- const u=current(), role=String(u?.role||u?.type||'').toLowerCase();
- return role==='admin' || (role==='manager' && window.SSS_ACCESS?.isMainManager?.());
-}
-function load(){
- try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){return {}}
-}
-function defaults(u){
- const role=String(u?.role||u?.type||'').toLowerCase();
- if(role==='admin') return RIGHTS.map(x=>x[0]);
- return ['dashboard','billing','purchase','stock','rate','purchaseReturn','salesReturn','receivable','payable','customers','suppliers','reports','transactions'];
-}
-function getRights(u){
- if(!u)return [];
- const a=load(),id=identity(u);
- return Array.isArray(a[id])?a[id]:defaults(u);
-}
-window.sssUserHasRight=function(k){
- const u=current(); return !u || getRights(u).includes(k);
-};
-
-function renderUserSelect(){
- const sel=document.getElementById('sssRightsUser');
- if(!sel)return;
- const a=users();
- sel.innerHTML='<option value="">— Select User ID / Staff —</option>'+
-   a.map(u=>{
-    const id=identity(u);
-    const name=String(u.name||u.fullName||u.username||u.email||id);
-    const role=String(u.role||u.type||'Staff');
-    return '<option value="'+id.replace(/"/g,'&quot;')+'">ID: '+id+' — '+name+' ('+role+')</option>';
-   }).join('');
- if(!a.length){
-  sel.innerHTML='<option value="">No users found — create Login User first</option>';
- }
-}
-function renderChecks(){
- const id=document.getElementById('sssRightsUser')?.value;
- const u=users().find(x=>identity(x)===id);
- const r=getRights(u);
- const box=document.getElementById('sssRightsGrid');
- if(!box)return;
- box.innerHTML=RIGHTS.map(x=>'<label><input type="checkbox" data-right="'+x[0]+'" '+(r.includes(x[0])?'checked':'')+'> '+x[1]+'</label>').join('');
-}
-window.sssOpenUserFunctionRights=function(){
- if(!isManager()){alert('🔒 Only Admin / Main Branch Manager can change rights.');return;}
- const p=document.getElementById('sssRightsPanel');
- if(!p){alert('User Function Rights panel not found.');return;}
- p.style.display='block';
- renderUserSelect();
- renderChecks();
-};
-window.sssRefreshUserFunctionRights=renderUserSelect;
-window.sssCloseRights=function(){const p=document.getElementById('sssRightsPanel');if(p)p.style.display='none'};
-window.sssSaveRights=function(){
- if(!isManager())return alert('Access denied');
- const sel=document.getElementById('sssRightsUser'), id=sel?.value;
- if(!id)return alert('Please select a User ID first.');
- const a=load();
- a[id]=[...document.querySelectorAll('#sssRightsGrid input:checked')].map(x=>x.dataset.right);
- localStorage.setItem(KEY,JSON.stringify(a));
- alert('✅ Rights saved for User ID: '+id);
-};
-
-document.addEventListener('DOMContentLoaded',function(){
- const sel=document.getElementById('sssRightsUser');
- if(sel)sel.addEventListener('change',renderChecks);
- setTimeout(function(){
-  renderUserSelect();
-  // Ensure the rights button exists for Admin/Main Manager.
-  if(isManager()&&!document.getElementById('sssUserRightsMenuBtn')){
-   const b=document.createElement('button');
-   b.id='sssUserRightsMenuBtn';b.type='button';b.className='btn primary';
-   b.textContent='🔐 User Function Rights';b.onclick=sssOpenUserFunctionRights;
-   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
-   host.appendChild(b);
+function populate(){
+  const s=document.getElementById('sssRightsUser');
+  if(!s)return false;
+  const us=getUsers();
+  const old=s.value;
+  s.innerHTML='';
+  if(!us.length){
+    const o=document.createElement('option');
+    o.value='';o.textContent='No users found';
+    s.appendChild(o); return true;
   }
- },300);
+  us.filter(u=>u && u.active!==false).forEach(u=>{
+    const o=document.createElement('option');
+    o.value=String(u.id);
+    o.textContent=(u.name||u.username||u.id)+' — '+(u.username||u.id);
+    s.appendChild(o);
+  });
+  if(old && us.some(u=>String(u.id)===old)) s.value=old;
+  else if(s.options.length) s.selectedIndex=0;
+  loadSelected();
+  return true;
+}
+function loadSelected(){
+  const s=document.getElementById('sssRightsUser');
+  if(!s || !s.value)return;
+  const us=getUsers(),u=us.find(x=>String(x.id)===String(s.value));
+  const role=document.getElementById('sssRightsRole');
+  if(role)role.value=u?.role||'Staff';
+  // Use the existing rights store if available.
+  try{
+    if(typeof window.sssLoadRightsForSelected==='function'){
+      // Avoid recursion by only calling the original when it isn't this wrapper.
+      const f=window.sssLoadRightsForSelected;
+      if(!f.__sssFinalWrapper) f();
+    }
+  }catch(e){}
+}
+function install(){
+  const s=document.getElementById('sssRightsUser');
+  if(!s)return;
+  if(!s.__sssFinalListener){
+    s.addEventListener('change',loadSelected);
+    s.__sssFinalListener=true;
+  }
+  populate();
+}
+const oldSettings=window.settings;
+if(typeof oldSettings==='function'&&!oldSettings.__sssRightsWrapped){
+  window.settings=function(){
+    const r=oldSettings.apply(this,arguments);
+    setTimeout(install,0);
+    setTimeout(install,80);
+    setTimeout(install,300);
+    return r;
+  };
+  window.settings.__sssRightsWrapped=true;
+}
+window.sssFixUserRightsDropdown=install;
+document.addEventListener('DOMContentLoaded',function(){
+  install();
+  const obs=new MutationObserver(function(){
+    if(document.getElementById('sssRightsUser')) install();
+  });
+  obs.observe(document.body,{childList:true,subtree:true});
 });
 })();
 </script>
 
+<style id="sss-advanced-erp-css">
+#sssAdvOverlay{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:99990;display:none;padding:14px;overflow:auto}
+#sssAdvBox{max-width:1100px;margin:20px auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 35px rgba(0,0,0,.25)}
+.sssAdvHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sssAdvGrid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:12px 0}
+.sssAdvCard{border:1px solid #e5e5e5;border-radius:10px;padding:12px;background:#fff}
+.sssAdvCard b{font-size:20px;display:block;margin-top:5px}
+.sssAdvTabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.sssAdvTabs button{border:1px solid #ddd;border-radius:8px;padding:8px 11px;background:#fafafa}
+.sssAdvPanel{display:none}.sssAdvPanel.active{display:block}
+.sssAdvTable{width:100%;border-collapse:collapse;font-size:13px}
+.sssAdvTable th,.sssAdvTable td{border-bottom:1px solid #eee;padding:8px;text-align:left}
+.sssAdvTable th{background:#faf3ea}
+.sssAuditList{max-height:380px;overflow:auto}
+.sssMini{font-size:12px;color:#666}
+.sssTransfer{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sssTransfer select,.sssTransfer input{width:100%;padding:9px}
+@media(max-width:800px){.sssAdvGrid{grid-template-columns:1fr 1fr}.sssTransfer{grid-template-columns:1fr}}
+@media(max-width:520px){.sssAdvGrid{grid-template-columns:1fr}}
+</style>
+
+<div id="sssAdvOverlay">
+ <div id="sssAdvBox">
+  <div class="sssAdvHead">
+   <div>
+    <h2 style="margin:0">🚀 SSS Technology — Advanced ERP Control Center</h2>
+    <div class="sssMini">Branch analytics • audit log • stock transfer • management controls</div>
+   </div>
+   <button type="button" class="btn danger" onclick="sssAdvClose()">Close</button>
+  </div>
+
+  <div class="sssAdvGrid" id="sssAdvCards"></div>
+
+  <div class="sssAdvTabs">
+   <button type="button" onclick="sssAdvTab('overview')">📊 Overview</button>
+   <button type="button" onclick="sssAdvTab('branches')">🏢 Branch Performance</button>
+   <button type="button" onclick="sssAdvTab('transfer')">📦 Stock Transfer</button>
+   <button type="button" onclick="sssAdvTab('audit')">🛡️ Audit Log</button>
+  </div>
+
+  <div id="sssAdvOverview" class="sssAdvPanel active"></div>
+  <div id="sssAdvBranches" class="sssAdvPanel"></div>
+
+  <div id="sssAdvTransfer" class="sssAdvPanel">
+   <h3>📦 Branch Stock Transfer</h3>
+   <div class="sssTransfer">
+    <div><label>From Branch</label><select id="sssTrFrom"></select></div>
+    <div><label>To Branch</label><select id="sssTrTo"></select></div>
+    <div><label>Item</label><select id="sssTrItem"></select></div>
+    <div><label>Quantity</label><input id="sssTrQty" type="number" min="0.001" step="0.001"></div>
+    <div style="grid-column:1/-1"><label>Reference / Reason</label><input id="sssTrReason" placeholder="Branch transfer / stock movement"></div>
+   </div>
+   <br>
+   <button type="button" class="btn success" onclick="sssDoStockTransfer()">🔄 Transfer Stock</button>
+   <div id="sssTrMsg" class="sssMini" style="margin-top:8px"></div>
+  </div>
+
+  <div id="sssAdvAudit" class="sssAdvPanel">
+   <h3>🛡️ Activity / Audit Log</h3>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button type="button" class="btn light" onclick="sssRenderAudit()">↻ Refresh</button>
+    <button type="button" class="btn light" onclick="sssExportAudit()">⬇ Export CSV</button>
+   </div>
+   <div class="sssAuditList">
+    <table class="sssAdvTable">
+     <thead><tr><th>Date/Time</th><th>User</th><th>Branch</th><th>Action</th><th>Reference</th></tr></thead>
+     <tbody id="sssAuditBody"></tbody>
+    </table>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script id="sss-advanced-erp-module">
+(function(){
+'use strict';
+
+const AUDIT_KEY='SSS_TECHNOLOGY_AUDIT_LOG_V1';
+
+function readJSON(key,fallback){
+ try{const x=JSON.parse(localStorage.getItem(key)||'');return x??fallback}catch(e){return fallback}
+}
+function saveJSON(key,val){localStorage.setItem(key,JSON.stringify(val))}
+function getUsers(){
+ try{
+  if(typeof users!=='undefined' && Array.isArray(users)) return users;
+ }catch(e){}
+ return readJSON('GP_ERP_USERS_V1',[]);
+}
+function getCurrent(){
+ try{if(typeof getCurrentUser==='function')return getCurrentUser()}catch(e){}
+ const us=getUsers(), ids=[
+  localStorage.getItem('GP_ERP_SESSION_V1'),
+  localStorage.getItem('SSS_CURRENT_USER_ID'),
+  localStorage.getItem('currentUserId')
+ ].filter(Boolean).map(String);
+ return us.find(u=>ids.includes(String(u.id||u.username)))||null;
+}
+function isMainAdmin(){
+ const u=getCurrent(),r=String(u?.role||'').toLowerCase();
+ try{if(r==='admin')return true;if(r==='manager'&&window.SSS_ACCESS?.isMainManager?.())return true}catch(e){}
+ return r==='admin';
+}
+function branchList(){
+ try{
+  if(typeof sssBranches==='function'){
+   const x=sssBranches(); if(Array.isArray(x)&&x.length)return x;
+  }
+ }catch(e){}
+ return readJSON('SSS_TECHNOLOGY_BRANCHES_V3',[{id:'MAIN',name:'Main Branch',code:'MAIN',isMain:true,isActive:true}]);
+}
+function branchName(id){
+ const b=branchList().find(x=>String(x.id)===String(id));
+ return b?.name||String(id||'Main Branch');
+}
+function currentBranch(){
+ return localStorage.getItem('SSS_TECHNOLOGY_ACTIVE_BRANCH_V3')||'MAIN';
+}
+function visible(arr){
+ if(!Array.isArray(arr))return [];
+ if(isMainAdmin())return arr;
+ const u=getCurrent();
+ try{if(window.SSS_ACCESS?.filter)return window.SSS_ACCESS.filter(arr)}catch(e){}
+ return arr.filter(x=>String(x?.branchId||'MAIN')===String(currentBranch()));
+}
+function collection(name){
+ try{return Array.isArray(db?.[name])?db[name]:[]}catch(e){return []}
+}
+function money(n){return '₹ '+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function num(n){return Number(n||0)||0}
+
+function audit(action,ref,extra){
+ const u=getCurrent();
+ const a=readJSON(AUDIT_KEY,[]);
+ a.unshift({
+  at:new Date().toISOString(),
+  userId:String(u?.id||u?.username||'unknown'),
+  user:String(u?.name||u?.username||'Unknown'),
+  branchId:currentBranch(),
+  branch:branchName(currentBranch()),
+  action:String(action||''),
+  ref:String(ref||''),
+  extra:extra||''
+ });
+ if(a.length>2000)a.length=2000;
+ saveJSON(AUDIT_KEY,a);
+}
+window.sssAudit=audit;
+
+function metrics(){
+ const inv=visible(collection('invoices'));
+ const pur=visible(collection('purchases'));
+ const tr=visible(collection('transactions'));
+ const stock=visible(collection('stock'));
+ const sales=inv.reduce((s,x)=>s+num(x.grand||x.total||x.amount),0);
+ const purchase=pur.reduce((s,x)=>s+num(x.grand||x.total||x.amount),0);
+ const received=inv.reduce((s,x)=>s+num(x.receivedAmount||x.received||x.cashReceived)+num(x.upiReceived),0);
+ const outstanding=inv.reduce((s,x)=>s+num(x.outstandingAmount||x.outstanding),0);
+ const stockQty=stock.reduce((s,x)=>s+num(x.qty||x.quantity),0);
+ const stockValue=stock.reduce((s,x)=>s+num(x.qty||x.quantity)*num(x.saleRate||x.rate),0);
+ return {sales,purchase,received,outstanding,stockQty,stockValue,customers:visible(collection('customers')).length,suppliers:visible(collection('suppliers')).length,transactions:tr.length};
+}
+function cards(){
+ const m=metrics();
+ document.getElementById('sssAdvCards').innerHTML=[
+  ['🧾 Sales',money(m.sales)],['🛒 Purchase',money(m.purchase)],
+  ['💵 Received',money(m.received)],['⏳ Receivable',money(m.outstanding)],
+  ['📦 Stock Qty',m.stockQty.toLocaleString('en-IN')],['💰 Stock Value',money(m.stockValue)],
+  ['👥 Customers',m.customers],['🚚 Suppliers',m.suppliers]
+ ].map(x=>`<div class="sssAdvCard"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+}
+function branchPerformance(){
+ const bs=branchList().filter(b=>b.isActive!==false);
+ const inv=collection('invoices'),pur=collection('purchases'),stock=collection('stock');
+ document.getElementById('sssAdvBranches').innerHTML=`<h3>🏢 Branch Performance</h3>
+ <table class="sssAdvTable"><thead><tr><th>Branch</th><th>Sales</th><th>Purchase</th><th>Received</th><th>Outstanding</th><th>Stock Qty</th></tr></thead><tbody>
+ ${bs.map(b=>{
+  const ii=inv.filter(x=>String(x.branchId||'MAIN')===String(b.id));
+  const pp=pur.filter(x=>String(x.branchId||'MAIN')===String(b.id));
+  const ss=stock.filter(x=>String(x.branchId||'MAIN')===String(b.id));
+  const sales=ii.reduce((s,x)=>s+num(x.grand||x.total||x.amount),0);
+  const purchase=pp.reduce((s,x)=>s+num(x.grand||x.total||x.amount),0);
+  const rec=ii.reduce((s,x)=>s+num(x.receivedAmount||x.received||x.cashReceived)+num(x.upiReceived),0);
+  const out=ii.reduce((s,x)=>s+num(x.outstandingAmount||x.outstanding),0);
+  const qty=ss.reduce((s,x)=>s+num(x.qty||x.quantity),0);
+  return `<tr><td><b>${b.name}</b></td><td>${money(sales)}</td><td>${money(purchase)}</td><td>${money(rec)}</td><td>${money(out)}</td><td>${qty}</td></tr>`;
+ }).join('')}</tbody></table>`;
+}
+function fillTransfer(){
+ const bs=branchList().filter(b=>b.isActive!==false);
+ const f=document.getElementById('sssTrFrom'),t=document.getElementById('sssTrTo'),i=document.getElementById('sssTrItem');
+ if(!f)return;
+ f.innerHTML=bs.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+ t.innerHTML=bs.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+ const st=visible(collection('stock'));
+ i.innerHTML=st.map(x=>`<option value="${x.id}">${x.name||x.itemName||'Item'} — Qty ${num(x.qty||x.quantity)}</option>`).join('');
+}
+window.sssDoStockTransfer=function(){
+ if(!isMainAdmin()){alert('🔒 Stock transfer is available to Admin / Main Branch Manager.');return}
+ const from=document.getElementById('sssTrFrom').value,to=document.getElementById('sssTrTo').value;
+ const id=document.getElementById('sssTrItem').value,q=num(document.getElementById('sssTrQty').value);
+ if(from===to)return alert('Select different From and To branches.');
+ if(!id||q<=0)return alert('Select item and valid quantity.');
+ const item=collection('stock').find(x=>String(x.id)===String(id)&&String(x.branchId||'MAIN')===String(from));
+ if(!item)return alert('Item not found in selected From Branch.');
+ const have=num(item.qty||item.quantity);
+ if(q>have)return alert('Insufficient stock in From Branch.');
+ const dest=collection('stock').find(x=>
+  String(x.branchId||'MAIN')===String(to) &&
+  String(x.hsn||'')===String(item.hsn||'') &&
+  String(x.name||x.itemName||'').toLowerCase()===String(item.name||item.itemName||'').toLowerCase()
+ );
+ item.qty=have-q;
+ if(dest)dest.qty=num(dest.qty||dest.quantity)+q;
+ else collection('stock').push({...item,id:'ST-'+Date.now(),branchId:to,qty:q});
+ const tr=collection('transactions');
+ tr.push({id:'TR-'+Date.now(),date:new Date().toISOString(),particular:'Stock Transfer',type:'Transfer',fromBranchId:from,toBranchId:to,itemId:id,qty:q,amount:0});
+ try{if(typeof save==='function')save()}catch(e){}
+ audit('Stock Transfer',item.name||item.itemName||id,`Qty ${q}: ${branchName(from)} → ${branchName(to)}`);
+ document.getElementById('sssTrMsg').textContent='✅ Stock transferred successfully.';
+ fillTransfer(); cards(); branchPerformance();
+};
+
+window.sssAdvTab=function(name){
+ ['overview','branches','transfer','audit'].forEach(x=>document.getElementById('sssAdv'+x.charAt(0).toUpperCase()+x.slice(1)).classList.remove('active'));
+ document.getElementById('sssAdv'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+ if(name==='branches')branchPerformance();
+ if(name==='transfer')fillTransfer();
+ if(name==='audit')sssRenderAudit();
+};
+window.sssRenderAudit=function(){
+ const a=readJSON(AUDIT_KEY,[]);
+ const body=document.getElementById('sssAuditBody');if(!body)return;
+ body.innerHTML=a.map(x=>`<tr><td>${new Date(x.at).toLocaleString('en-IN')}</td><td>${x.user}</td><td>${x.branch}</td><td>${x.action}</td><td>${x.ref||''}</td></tr>`).join('')||'<tr><td colspan="5">No activity yet.</td></tr>';
+};
+window.sssExportAudit=function(){
+ const a=readJSON(AUDIT_KEY,[]);
+ const rows=[['Date/Time','User ID','User','Branch','Action','Reference','Details'],...a.map(x=>[x.at,x.userId,x.user,x.branch,x.action,x.ref,x.extra])];
+ const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+ const blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),ael=document.createElement('a');
+ ael.href=url;ael.download='sss-technology-audit-log.csv';ael.click();URL.revokeObjectURL(url);
+};
+window.sssAdvOpen=function(){
+ if(!isMainAdmin()){alert('🔒 Admin / Main Branch Manager only.');return}
+ document.getElementById('sssAdvOverlay').style.display='block';
+ cards();branchPerformance();fillTransfer();sssRenderAudit();
+};
+window.sssAdvClose=function(){document.getElementById('sssAdvOverlay').style.display='none'};
+
+// Add audit records to common ERP save/delete actions without replacing their logic.
+function wrap(name,action,refIndex){
+ const fn=window[name];
+ if(typeof fn!=='function'||fn.__sssAudit)return;
+ window[name]=function(){
+  const r=fn.apply(this,arguments);
+  try{audit(action,arguments[refIndex||0]||'ERP action')}catch(e){}
+  return r;
+ };
+ window[name].__sssAudit=true;
+}
+document.addEventListener('DOMContentLoaded',function(){
+ setTimeout(function(){
+  if(isMainAdmin() && !document.getElementById('sssAdvancedControlBtn')){
+   const b=document.createElement('button');
+   b.id='sssAdvancedControlBtn';b.type='button';b.className='btn primary';
+   b.textContent='🚀 Advanced ERP Control Center';b.onclick=sssAdvOpen;
+   const host=document.querySelector('#settings .actions')||document.querySelector('#settings')||document.body;
+   host.appendChild(b);
+  }
+  audit('Login / ERP Open','');
+ },500);
+});
+})();
+</script>
 </body>
 </html>
